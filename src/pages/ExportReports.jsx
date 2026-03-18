@@ -1,0 +1,490 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "../supabase";
+import Sidebar from "../components/Sidebar";
+
+export default function ExportReports() {
+  const navigate = useNavigate();
+  const [profile, setProfile] = useState(null);
+  const [reps, setReps] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(null); // 'excel' | 'pdf' | null
+
+  const [exportRange, setExportRange] = useState("sprint");
+  const [customStart, setCustomStart] = useState("");
+  const [customEnd, setCustomEnd] = useState("");
+  const [selectedReps, setSelectedReps] = useState([]);
+  const [includeOptions, setIncludeOptions] = useState({
+    activity_log: true,
+    account_status: true,
+    contact_details: true,
+    scheduled_activities: true,
+    sprint_progress: true,
+    at_risk: true,
+  });
+
+  const INCLUDE_LABELS = {
+    activity_log: "Activity Log",
+    account_status: "Account Status",
+    contact_details: "Contact Details",
+    scheduled_activities: "Scheduled Activities",
+    sprint_progress: "Sprint Progress",
+    at_risk: "At-Risk Accounts",
+  };
+
+  useEffect(() => { loadData(); }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { navigate("/login"); return; }
+
+    const { data: profileData } = await supabase
+      .from("profiles").select("*").eq("id", user.id).single();
+    setProfile(profileData);
+    if (profileData?.role !== "manager") { navigate("/accounts"); return; }
+
+    const { data: repsData } = await supabase
+      .from("profiles").select("*").eq("role", "rep");
+    setReps(repsData || []);
+    setSelectedReps((repsData || []).map(r => r.id));
+    setLoading(false);
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate("/login");
+  };
+
+  const toggleRep = (repId) => {
+    setSelectedReps(prev =>
+      prev.includes(repId) ? prev.filter(id => id !== repId) : [...prev, repId]
+    );
+  };
+
+  const toggleInclude = (key) => {
+    setIncludeOptions(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const getDateRange = () => {
+    const today = new Date();
+    if (exportRange === "7days") {
+      const start = new Date();
+      start.setDate(start.getDate() - 7);
+      return { start: start.toISOString().split("T")[0], end: today.toISOString().split("T")[0] };
+    }
+    if (exportRange === "30days") {
+      const start = new Date();
+      start.setDate(start.getDate() - 30);
+      return { start: start.toISOString().split("T")[0], end: today.toISOString().split("T")[0] };
+    }
+    if (exportRange === "custom") {
+      return { start: customStart, end: customEnd };
+    }
+    return null; // sprint = no date filter
+  };
+
+  const fetchExportData = async () => {
+    const dateRange = getDateRange();
+    const results = [];
+
+    for (const repId of selectedReps) {
+      const rep = reps.find(r => r.id === repId);
+      if (!rep) continue;
+
+      // Accounts
+      const { data: accounts } = await supabase
+        .from("accounts").select("*").eq("rep_id", repId);
+
+      for (const account of (accounts || [])) {
+        // Activities
+        let actsQuery = supabase.from("activities").select("*")
+          .eq("account_id", account.id).order("activity_date", { ascending: false });
+        if (dateRange?.start) actsQuery = actsQuery.gte("activity_date", dateRange.start);
+        if (dateRange?.end) actsQuery = actsQuery.lte("activity_date", dateRange.end);
+        const { data: activities } = await actsQuery;
+
+        // Contacts
+        const { data: contacts } = await supabase
+          .from("contacts").select("*").eq("account_id", account.id);
+
+        // Sprint
+        const today = new Date().toISOString().split("T")[0];
+        const { data: sprint } = await supabase
+          .from("sprints").select("*").eq("rep_id", repId)
+          .lte("start_date", today).gte("end_date", today).single();
+
+        const daysLeft = sprint
+          ? Math.max(0, Math.ceil((new Date(sprint.end_date) - new Date()) / (1000 * 60 * 60 * 24)))
+          : null;
+
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        const recentActs = (activities || []).filter(a =>
+          new Date(a.activity_date) >= weekAgo
+        );
+        const atRisk = recentActs.length === 0 && (activities || []).length >= 0;
+
+        const primaryContact = (contacts || []).find(c => c.is_primary) || (contacts || [])[0];
+        const lastAct = (activities || [])[0];
+        const nextAct = (activities || []).find(a => a.scheduled_next_date);
+
+        results.push({
+          rep: rep.full_name,
+          account: account.name || account.company,
+          address: account.address || "",
+          status: account.status || "New",
+          contactName: primaryContact ? `${primaryContact.first_name} ${primaryContact.last_name}` : "",
+          contactPhone: primaryContact?.phone || "",
+          contactEmail: primaryContact?.email || "",
+          lastActivity: lastAct ? `${lastAct.activity_type} on ${lastAct.activity_date}` : "None",
+          lastNotes: lastAct?.notes || "",
+          activityCount: (activities || []).length,
+          nextScheduled: nextAct ? `${nextAct.scheduled_next_type} on ${nextAct.scheduled_next_date}` : "None",
+          sprintDaysLeft: daysLeft !== null ? `${daysLeft} days` : "No sprint",
+          atRisk: atRisk ? "At Risk" : "On Track",
+        });
+      }
+    }
+
+    return results;
+  };
+
+  const exportExcel = async () => {
+    setExporting("excel");
+    try {
+      const XLSX = await import("xlsx");
+      const data = await fetchExportData();
+
+      const headers = [];
+      if (includeOptions.account_status) headers.push("Rep", "Account", "Address", "Status");
+      if (includeOptions.contact_details) headers.push("Contact Name", "Phone", "Email");
+      if (includeOptions.activity_log) headers.push("Last Activity", "Notes", "Total Activities");
+      if (includeOptions.scheduled_activities) headers.push("Next Scheduled");
+      if (includeOptions.sprint_progress) headers.push("Days Left in Sprint");
+      if (includeOptions.at_risk) headers.push("Risk Status");
+
+      const rows = data.map(row => {
+        const r = [];
+        if (includeOptions.account_status) r.push(row.rep, row.account, row.address, row.status);
+        if (includeOptions.contact_details) r.push(row.contactName, row.contactPhone, row.contactEmail);
+        if (includeOptions.activity_log) r.push(row.lastActivity, row.lastNotes, row.activityCount);
+        if (includeOptions.scheduled_activities) r.push(row.nextScheduled);
+        if (includeOptions.sprint_progress) r.push(row.sprintDaysLeft);
+        if (includeOptions.at_risk) r.push(row.atRisk);
+        return r;
+      });
+
+      const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Pro-Tracker Report");
+
+      // Style header row
+      const range = XLSX.utils.decode_range(ws["!ref"]);
+      for (let c = range.s.c; c <= range.e.c; c++) {
+        const cell = ws[XLSX.utils.encode_cell({ r: 0, c })];
+        if (cell) cell.s = { font: { bold: true } };
+      }
+
+      const date = new Date().toISOString().split("T")[0];
+      XLSX.writeFile(wb, `ProTracker-Report-${date}.xlsx`);
+    } catch (err) {
+      console.error("Export error:", err);
+    }
+    setExporting(null);
+  };
+
+  const exportPDF = async () => {
+    setExporting("pdf");
+    try {
+      const data = await fetchExportData();
+      const date = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Pro-Tracker Report</title>
+          <style>
+            body { font-family: Arial, sans-serif; font-size: 12px; color: #1A1A1A; padding: 32px; }
+            h1 { font-size: 20px; color: #367C2B; margin-bottom: 4px; }
+            .meta { color: #767676; font-size: 11px; margin-bottom: 24px; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 32px; }
+            th { background: #367C2B; color: #fff; padding: 8px 10px; text-align: left; font-size: 11px; }
+            td { padding: 7px 10px; border-bottom: 1px solid #E8E8E6; vertical-align: top; }
+            tr:nth-child(even) { background: #F9F9F8; }
+            .badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: 10px; font-weight: bold; }
+            .at-risk { background: #FEF2F2; color: #DC2626; }
+            .on-track { background: #F0FDF4; color: #16A34A; }
+            .accent { height: 3px; background: #FFDE00; margin-bottom: 16px; border-radius: 2px; width: 120px; }
+          </style>
+        </head>
+        <body>
+          <h1>Pro-Tracker Report</h1>
+          <div class="accent"></div>
+          <p class="meta">United Ag & Turf · Generated ${date} · ${data.length} accounts</p>
+          <table>
+            <thead>
+              <tr>
+                ${includeOptions.account_status ? "<th>Rep</th><th>Account</th><th>Status</th>" : ""}
+                ${includeOptions.contact_details ? "<th>Contact</th><th>Phone</th>" : ""}
+                ${includeOptions.activity_log ? "<th>Last Activity</th><th>Logs</th>" : ""}
+                ${includeOptions.scheduled_activities ? "<th>Next Scheduled</th>" : ""}
+                ${includeOptions.sprint_progress ? "<th>Days Left</th>" : ""}
+                ${includeOptions.at_risk ? "<th>Status</th>" : ""}
+              </tr>
+            </thead>
+            <tbody>
+              ${data.map(row => `
+                <tr>
+                  ${includeOptions.account_status ? `<td>${row.rep}</td><td>${row.account}</td><td>${row.status}</td>` : ""}
+                  ${includeOptions.contact_details ? `<td>${row.contactName}</td><td>${row.contactPhone}</td>` : ""}
+                  ${includeOptions.activity_log ? `<td>${row.lastActivity}</td><td>${row.activityCount}</td>` : ""}
+                  ${includeOptions.scheduled_activities ? `<td>${row.nextScheduled}</td>` : ""}
+                  ${includeOptions.sprint_progress ? `<td>${row.sprintDaysLeft}</td>` : ""}
+                  ${includeOptions.at_risk ? `<td><span class="badge ${row.atRisk === 'At Risk' ? 'at-risk' : 'on-track'}">${row.atRisk}</span></td>` : ""}
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </body>
+        </html>
+      `;
+
+      const blob = new Blob([html], { type: "text/html" });
+      const url = URL.createObjectURL(blob);
+      const win = window.open(url, "_blank");
+      setTimeout(() => {
+        win.print();
+        URL.revokeObjectURL(url);
+      }, 500);
+    } catch (err) {
+      console.error("PDF export error:", err);
+    }
+    setExporting(null);
+  };
+
+  if (loading) {
+    return <div style={styles.loadingPage}><div style={styles.spinner} /></div>;
+  }
+
+  return (
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #F5F5F3; font-family: 'DM Sans', sans-serif; }
+
+        .range-pill {
+          padding: 8px 18px; border-radius: 100px;
+          font-size: 13px; font-weight: 500;
+          border: 1.5px solid #E0E0DC; background: #fff;
+          color: #767676; cursor: pointer;
+          font-family: 'DM Sans', sans-serif;
+          transition: all 0.15s; white-space: nowrap;
+        }
+        .range-pill.active {
+          background: #367C2B; border-color: #367C2B; color: #fff; font-weight: 600;
+        }
+        .range-pill:hover:not(.active) { border-color: #367C2B; color: #367C2B; }
+
+        .field-input {
+          padding: 9px 12px; font-size: 13px;
+          font-family: 'DM Sans', sans-serif;
+          border: 1.5px solid #E0E0DC; border-radius: 6px;
+          background: #fff; color: #1A1A1A; outline: none;
+        }
+        .field-input:focus { border-color: #367C2B; }
+
+        .check-row {
+          display: flex; align-items: center; gap: 10px;
+          padding: 9px 0; border-bottom: 1px solid #F0F0ED;
+          cursor: pointer; font-size: 14px; color: #374151;
+        }
+        .check-row:last-child { border-bottom: none; }
+        .check-row input { accent-color: #367C2B; width: 16px; height: 16px; }
+
+        .export-btn {
+          flex: 1; padding: 13px 20px;
+          border-radius: 6px; font-size: 14px; font-weight: 600;
+          font-family: 'DM Sans', sans-serif;
+          cursor: pointer; transition: all 0.15s;
+          display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .export-btn:disabled { opacity: 0.65; cursor: not-allowed; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 768px) {
+          .main-content { margin-left: 0 !important; }
+        }
+      `}</style>
+
+      <div style={styles.layout}>
+        <Sidebar role="manager" profile={profile} onSignOut={handleSignOut} activePath="/dashboard/export" />
+
+        {/* MAIN */}
+        <div className="main-content" style={styles.main}>
+          <h1 style={styles.pageTitle}>Export Reports</h1>
+
+          <div style={styles.exportCard}>
+
+            {/* Date range */}
+            <div style={styles.section}>
+              <p style={styles.sectionLabel}>Date Range</p>
+              <div style={styles.pillRow}>
+                {[
+                  ["sprint", "This Sprint"],
+                  ["7days", "Last 7 Days"],
+                  ["30days", "Last 30 Days"],
+                  ["custom", "Custom Range"],
+                ].map(([key, label]) => (
+                  <button key={key}
+                    className={`range-pill${exportRange === key ? " active" : ""}`}
+                    onClick={() => setExportRange(key)}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {exportRange === "custom" && (
+                <div style={styles.dateRow}>
+                  <div style={styles.dateField}>
+                    <label style={styles.fieldLabel}>Start Date</label>
+                    <input className="field-input" type="date"
+                      value={customStart} onChange={e => setCustomStart(e.target.value)} />
+                  </div>
+                  <span style={styles.dateSep}>to</span>
+                  <div style={styles.dateField}>
+                    <label style={styles.fieldLabel}>End Date</label>
+                    <input className="field-input" type="date"
+                      value={customEnd} onChange={e => setCustomEnd(e.target.value)} />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div style={styles.divider} />
+
+            {/* Columns layout */}
+            <div style={styles.columns}>
+
+              {/* Rep selector */}
+              <div style={styles.col}>
+                <div style={styles.colHeader}>
+                  <p style={styles.sectionLabel}>Sales Reps</p>
+                  <div style={styles.selectLinks}>
+                    <button style={styles.textLink}
+                      onClick={() => setSelectedReps(reps.map(r => r.id))}>
+                      All
+                    </button>
+                    <span style={styles.textLinkDivider}>·</span>
+                    <button style={styles.textLink}
+                      onClick={() => setSelectedReps([])}>
+                      None
+                    </button>
+                  </div>
+                </div>
+                <div style={styles.checkList}>
+                  {reps.map(rep => (
+                    <label key={rep.id} className="check-row">
+                      <input type="checkbox"
+                        checked={selectedReps.includes(rep.id)}
+                        onChange={() => toggleRep(rep.id)} />
+                      {rep.full_name}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Include options */}
+              <div style={styles.col}>
+                <p style={styles.sectionLabel}>Include in Report</p>
+                <div style={styles.checkList}>
+                  {Object.entries(INCLUDE_LABELS).map(([key, label]) => (
+                    <label key={key} className="check-row">
+                      <input type="checkbox"
+                        checked={includeOptions[key]}
+                        onChange={() => toggleInclude(key)} />
+                      {label}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+
+            <div style={styles.divider} />
+
+            {/* Summary */}
+            <div style={styles.summary}>
+              <p style={styles.summaryText}>
+                Exporting <strong>{selectedReps.length} rep{selectedReps.length !== 1 ? "s" : ""}</strong> ·{" "}
+                <strong>{Object.values(includeOptions).filter(Boolean).length} sections</strong> ·{" "}
+                <strong>
+                  {exportRange === "sprint" && "This Sprint"}
+                  {exportRange === "7days" && "Last 7 Days"}
+                  {exportRange === "30days" && "Last 30 Days"}
+                  {exportRange === "custom" && (customStart && customEnd ? `${customStart} to ${customEnd}` : "Custom range")}
+                </strong>
+              </p>
+            </div>
+
+            {/* Export buttons */}
+            <div style={styles.btnRow}>
+              <button
+                className="export-btn"
+                disabled={!!exporting || selectedReps.length === 0}
+                onClick={exportExcel}
+                style={{
+                  background: "#367C2B", color: "#fff", border: "none",
+                }}
+              >
+                {exporting === "excel" ? "Generating…" : "Export as Excel (.xlsx)"}
+              </button>
+              <button
+                className="export-btn"
+                disabled={!!exporting || selectedReps.length === 0}
+                onClick={exportPDF}
+                style={{
+                  background: "#fff", color: "#374151",
+                  border: "1.5px solid #E0E0DC",
+                }}
+              >
+                {exporting === "pdf" ? "Generating…" : "Export as PDF (.pdf)"}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+const styles = {
+  layout: { display: "flex", minHeight: "100vh", backgroundColor: "#F5F5F3" },
+  loadingPage: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#F5F5F3" },
+  spinner: { width: "32px", height: "32px", borderRadius: "50%", border: "3px solid #E0E0DC", borderTopColor: "#367C2B", animation: "spin 0.8s linear infinite" },
+  main: { marginLeft: "220px", flex: 1, padding: "28px 32px", display: "flex", flexDirection: "column", gap: "20px", minHeight: "100vh" },
+  pageTitle: { fontSize: "22px", fontWeight: 600, color: "#1A1A1A" },
+  exportCard: { backgroundColor: "#ffffff", border: "1px solid #E8E8E6", borderRadius: "8px", padding: "28px", display: "flex", flexDirection: "column", gap: "24px", maxWidth: "800px" },
+  section: { display: "flex", flexDirection: "column", gap: "14px" },
+  sectionLabel: { fontSize: "11px", fontWeight: 600, color: "#ABABAB", textTransform: "uppercase", letterSpacing: "0.08em" },
+  pillRow: { display: "flex", gap: "8px", flexWrap: "wrap" },
+  dateRow: { display: "flex", gap: "16px", alignItems: "flex-end" },
+  dateField: { display: "flex", flexDirection: "column", gap: "6px" },
+  dateSep: { fontSize: "13px", color: "#767676", paddingBottom: "10px" },
+  fieldLabel: { fontSize: "12px", fontWeight: 600, color: "#374151" },
+  divider: { height: "1px", backgroundColor: "#F0F0ED" },
+  columns: { display: "flex", gap: "48px" },
+  col: { flex: 1, display: "flex", flexDirection: "column", gap: "12px" },
+  colHeader: { display: "flex", justifyContent: "space-between", alignItems: "center" },
+  selectLinks: { display: "flex", gap: "6px", alignItems: "center" },
+  textLink: { background: "none", border: "none", padding: 0, fontSize: "12px", color: "#367C2B", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontWeight: 600, textDecoration: "underline" },
+  textLinkDivider: { fontSize: "12px", color: "#ABABAB" },
+  checkList: { display: "flex", flexDirection: "column" },
+  summary: { backgroundColor: "#F9F9F8", borderRadius: "6px", padding: "12px 14px" },
+  summaryText: { fontSize: "13px", color: "#374151" },
+  btnRow: { display: "flex", gap: "12px" },
+};
