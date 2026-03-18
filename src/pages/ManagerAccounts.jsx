@@ -12,6 +12,8 @@ export default function ManagerAccounts() {
   const [search, setSearch] = useState("");
   const [filterRep, setFilterRep] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [deleting, setDeleting] = useState(false);
 
   const STATUS_COLORS = {
     New:       { bg: "#EFF6FF", color: "#2563EB", border: "#BFDBFE" },
@@ -66,6 +68,19 @@ export default function ManagerAccounts() {
     return new Date(latest.activity_date).toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm(`Delete ${selectedIds.length} account${selectedIds.length > 1 ? "s" : ""}? This cannot be undone.`)) return;
+    setDeleting(true);
+    await supabase.from("accounts").delete().in("id", selectedIds);
+    setSelectedIds([]);
+    await loadData();
+    setDeleting(false);
+  };
+
+  const toggleSelect = (id) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
   const filtered = accounts.filter(a => {
     const matchSearch = !search ||
       (a.name || a.company || "").toLowerCase().includes(search.toLowerCase());
@@ -89,7 +104,7 @@ export default function ManagerAccounts() {
 
         .account-row {
           display: grid;
-          grid-template-columns: 2fr 120px 120px 110px 100px;
+          grid-template-columns: 32px 2fr 120px 120px 110px 100px;
           gap: 12px; align-items: center;
           padding: 13px 20px;
           border-bottom: 1px solid #F0F0ED;
@@ -156,9 +171,22 @@ export default function ManagerAccounts() {
             </select>
           </div>
 
+          {/* Delete button */}
+          {selectedIds.length > 0 && (
+            <button onClick={handleDelete} disabled={deleting} style={styles.deleteBtn}>
+              {deleting ? "Deleting…" : `Delete selected (${selectedIds.length})`}
+            </button>
+          )}
+
           {/* Table */}
           <div style={styles.tableCard}>
             <div style={{ ...styles.accountRow, ...styles.tableHeader }}>
+              <input
+                type="checkbox"
+                checked={filtered.length > 0 && filtered.every(a => selectedIds.includes(a.id))}
+                onChange={e => setSelectedIds(e.target.checked ? filtered.map(a => a.id) : [])}
+                style={styles.checkbox}
+              />
               <span>Account</span>
               <span>Status</span>
               <span>Assigned Rep</span>
@@ -174,6 +202,13 @@ export default function ManagerAccounts() {
                 return (
                   <div key={account.id} className="account-row"
                     onClick={() => navigate(`/dashboard/reps/${account.rep_id}`)}>
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(account.id)}
+                      onChange={e => { e.stopPropagation(); toggleSelect(account.id); }}
+                      onClick={e => e.stopPropagation()}
+                      style={styles.checkbox}
+                    />
                     <span style={styles.accountName}>{account.name || account.company}</span>
                     <span style={{
                       ...styles.statusBadge,
@@ -205,7 +240,9 @@ const styles = {
   subTitle: { fontSize: "13px", color: "#767676" },
   filterBar: { display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" },
   tableCard: { backgroundColor: "#ffffff", border: "1px solid #E8E8E6", borderRadius: "8px", overflow: "hidden" },
-  accountRow: { display: "grid", gridTemplateColumns: "2fr 120px 120px 110px 100px", gap: "12px", alignItems: "center", padding: "13px 20px", borderBottom: "1px solid #F0F0ED" },
+  accountRow: { display: "grid", gridTemplateColumns: "32px 2fr 120px 120px 110px 100px", gap: "12px", alignItems: "center", padding: "13px 20px", borderBottom: "1px solid #F0F0ED" },
+  checkbox: { width: "16px", height: "16px", cursor: "pointer", accentColor: "#367C2B" },
+  deleteBtn: { alignSelf: "flex-start", padding: "8px 16px", backgroundColor: "#DC2626", color: "#fff", border: "none", borderRadius: "6px", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" },
   tableHeader: { fontSize: "11px", fontWeight: 600, color: "#ABABAB", textTransform: "uppercase", letterSpacing: "0.06em", cursor: "default" },
   accountName: { fontSize: "14px", fontWeight: 500, color: "#1A1A1A" },
   statusBadge: { fontSize: "11px", fontWeight: 600, padding: "4px 10px", borderRadius: "100px", whiteSpace: "nowrap", textAlign: "center", display: "inline-block" },
