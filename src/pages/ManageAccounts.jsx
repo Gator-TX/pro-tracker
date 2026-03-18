@@ -261,8 +261,6 @@ export default function ManageAccounts() {
     );
   }
 
-  const unassignedAccounts = allAccounts.filter(a => !a.rep_id || a.rep_id === selectedRep?.id);
-
   return (
     <>
       <style>{`

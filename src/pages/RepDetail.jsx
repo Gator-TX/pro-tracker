@@ -119,12 +119,6 @@ export default function RepDetail() {
     return Math.min(100, Math.max(0, Math.round(((today - start) / (end - start)) * 100)));
   };
 
-  const getLastActivity = (accountId) => {
-    const acts = accountActivities[accountId] || [];
-    if (!acts.length) return null;
-    return new Date(acts[0].activity_date).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  };
-
   const getNextScheduled = (accountId) => {
     const acts = accountActivities[accountId] || [];
     const next = acts.find(a => a.scheduled_next_date);
