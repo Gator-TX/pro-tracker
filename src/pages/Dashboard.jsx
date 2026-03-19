@@ -204,14 +204,15 @@ export default function Dashboard() {
         }
 
         .table-scroll {
-          max-height: 600px; overflow-y: auto;
+          max-height: 600px; overflow-y: auto; min-width: 600px;
           scrollbar-width: thin; scrollbar-color: #E0E0DC transparent;
         }
+        .rep-row { min-width: 600px; }
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
         @media (max-width: 768px) {
-          .main-content { margin-left: 0 !important; padding-top: 70px !important; overflow-x: hidden; }
+          .main-content { margin-left: 0 !important; padding-top: 70px !important; }
           .table-scroll { max-height: 70vh; }
           .stat-grid { grid-template-columns: repeat(2, 1fr) !important; }
           .rep-table-header { display: none !important; }
@@ -331,7 +332,7 @@ export default function Dashboard() {
           <div className="rep-table-card" style={styles.tableCard}>
             <p style={styles.tableTitle}>Rep Activity</p>
 
-            <div className="rep-table-header" style={{ ...styles.repRowStyle, ...styles.tableHeader, boxShadow: "0 2px 4px rgba(0,0,0,0.06)", position: "relative", zIndex: 1 }}>
+            <div className="rep-table-header" style={{ ...styles.repRowStyle, ...styles.tableHeader, boxShadow: "0 2px 4px rgba(0,0,0,0.06)", position: "relative", zIndex: 1, minWidth: "600px" }}>
               <span style={{ cursor: "pointer" }} onClick={() => setSortDirection(d => d === "asc" ? "desc" : "asc")}>
                 Rep {sortDirection === "asc" ? "↑" : "↓"}
               </span>
@@ -441,7 +442,7 @@ const styles = {
   statAccent: { position: "absolute", bottom: 0, left: 0, right: 0, height: "3px" },
   tableCard: {
     backgroundColor: "#ffffff", border: "1px solid #E8E8E6",
-    borderRadius: "8px", overflow: "hidden",
+    borderRadius: "8px", overflowX: "auto", WebkitOverflowScrolling: "touch",
   },
   tableTitle: {
     fontSize: "14px", fontWeight: 600, color: "#1A1A1A",

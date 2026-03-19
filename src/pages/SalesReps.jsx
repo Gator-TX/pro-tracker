@@ -135,13 +135,14 @@ export default function SalesReps() {
         .rep-checkbox { width: 16px; height: 16px; cursor: pointer; accent-color: #367C2B; flex-shrink: 0; }
 
         .table-scroll {
-          max-height: 600px; overflow-y: auto;
+          max-height: 600px; overflow-y: auto; min-width: 700px;
           scrollbar-width: thin; scrollbar-color: #E0E0DC transparent;
         }
+        .rep-row { min-width: 700px; }
 
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
-          .main-content { margin-left: 0 !important; padding-top: 70px !important; overflow-x: hidden; }
+          .main-content { margin-left: 0 !important; padding-top: 70px !important; }
           .table-scroll { max-height: 70vh; }
           .rep-table-header { display: none !important; }
           .rep-row {
@@ -174,7 +175,7 @@ export default function SalesReps() {
 
           <div style={styles.tableCard}>
             {/* Desktop header */}
-            <div className="rep-row rep-table-header" style={{ ...styles.tableHeader, boxShadow: "0 2px 4px rgba(0,0,0,0.06)", position: "relative", zIndex: 1 }}>
+            <div className="rep-row rep-table-header" style={{ ...styles.tableHeader, boxShadow: "0 2px 4px rgba(0,0,0,0.06)", position: "relative", zIndex: 1, minWidth: "700px" }}>
               <input
                 type="checkbox"
                 className="rep-checkbox"
@@ -254,7 +255,7 @@ const styles = {
   spinner: { width: "32px", height: "32px", borderRadius: "50%", border: "3px solid #E0E0DC", borderTopColor: "#367C2B", animation: "spin 0.8s linear infinite" },
   main: { marginLeft: "220px", flex: 1, padding: "28px 32px", display: "flex", flexDirection: "column", gap: "20px", minHeight: "100vh" },
   subTitle: { fontSize: "13px", color: "#767676" },
-  tableCard: { backgroundColor: "#ffffff", border: "1px solid #E8E8E6", borderRadius: "8px", overflow: "hidden" },
+  tableCard: { backgroundColor: "#ffffff", border: "1px solid #E8E8E6", borderRadius: "8px", overflowX: "auto", WebkitOverflowScrolling: "touch" },
   tableHeader: { fontSize: "11px", fontWeight: 600, color: "#ABABAB", textTransform: "uppercase", letterSpacing: "0.06em" },
   deleteBtn: { alignSelf: "flex-start", padding: "8px 16px", backgroundColor: "#DC2626", color: "#fff", border: "none", borderRadius: "6px", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" },
   repName: { fontSize: "14px", fontWeight: 600, color: "#1A1A1A" },

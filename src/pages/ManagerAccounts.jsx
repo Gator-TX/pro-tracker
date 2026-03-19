@@ -186,13 +186,14 @@ export default function ManagerAccounts() {
         .field-input:focus { border-color: #367C2B; }
 
         .table-scroll {
-          max-height: 600px; overflow-y: auto;
+          max-height: 600px; overflow-y: auto; min-width: 700px;
           scrollbar-width: thin; scrollbar-color: #E0E0DC transparent;
         }
+        .account-row { min-width: 700px; }
 
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
-          .main-content { margin-left: 0 !important; padding-top: 70px !important; overflow-x: hidden; }
+          .main-content { margin-left: 0 !important; padding-top: 70px !important; }
           .table-scroll { max-height: 70vh; }
         }
       `}</style>
@@ -239,7 +240,7 @@ export default function ManagerAccounts() {
 
           {/* Table */}
           <div style={styles.tableCard}>
-            <div style={{ ...styles.accountRow, ...styles.tableHeader, boxShadow: "0 2px 4px rgba(0,0,0,0.06)", position: "relative", zIndex: 1 }}>
+            <div style={{ ...styles.accountRow, ...styles.tableHeader, boxShadow: "0 2px 4px rgba(0,0,0,0.06)", position: "relative", zIndex: 1, minWidth: "700px" }}>
               <input
                 type="checkbox"
                 checked={filtered.length > 0 && filtered.every(a => selectedIds.includes(a.id))}
@@ -437,7 +438,7 @@ const styles = {
   pageTitle: { fontSize: "22px", fontWeight: 600, color: "#1A1A1A" },
   subTitle: { fontSize: "13px", color: "#767676" },
   filterBar: { display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" },
-  tableCard: { backgroundColor: "#ffffff", border: "1px solid #E8E8E6", borderRadius: "8px", overflow: "hidden" },
+  tableCard: { backgroundColor: "#ffffff", border: "1px solid #E8E8E6", borderRadius: "8px", overflowX: "auto", WebkitOverflowScrolling: "touch" },
   accountRow: { display: "grid", gridTemplateColumns: "32px 2fr 120px 120px 110px 80px 100px", gap: "12px", alignItems: "center", padding: "13px 20px", borderBottom: "1px solid #F0F0ED" },
   checkbox: { width: "16px", height: "16px", cursor: "pointer", accentColor: "#367C2B" },
   deleteBtn: { alignSelf: "flex-start", padding: "8px 16px", backgroundColor: "#DC2626", color: "#fff", border: "none", borderRadius: "6px", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" },

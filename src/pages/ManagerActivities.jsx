@@ -117,12 +117,13 @@ export default function ManagerActivities() {
         .mobile-select-all { display: none; }
 
         .table-scroll {
-          max-height: 600px; overflow-y: auto;
+          max-height: 600px; overflow-y: auto; min-width: 650px;
           scrollbar-width: thin; scrollbar-color: #E0E0DC transparent;
         }
+        .act-row { min-width: 650px; }
 
         @media (max-width: 768px) {
-          .main-content { margin-left: 0 !important; padding-top: 70px !important; overflow-x: hidden; }
+          .main-content { margin-left: 0 !important; padding-top: 70px !important; }
           .table-scroll { max-height: 70vh; }
           .filter-bar { flex-direction: column !important; }
           .filter-bar .filter-select { width: 100%; }
@@ -210,7 +211,7 @@ export default function ManagerActivities() {
 
           {/* Table */}
           <div className="act-table-card" style={styles.tableCard}>
-            <div className="act-table-header" style={{ ...styles.actRowStyle, ...styles.tableHeader, boxShadow: "0 2px 4px rgba(0,0,0,0.06)", position: "relative", zIndex: 1 }}>
+            <div className="act-table-header" style={{ ...styles.actRowStyle, ...styles.tableHeader, boxShadow: "0 2px 4px rgba(0,0,0,0.06)", position: "relative", zIndex: 1, minWidth: "650px" }}>
               <input
                 type="checkbox"
                 checked={filtered.length > 0 && filtered.every(a => selectedIds.includes(a.id))}
@@ -277,7 +278,7 @@ const styles = {
   pageTitle: { fontSize: "22px", fontWeight: 600, color: "#1A1A1A" },
   subTitle: { fontSize: "13px", color: "#767676" },
   filterBar: { display: "flex", gap: "10px", flexWrap: "wrap" },
-  tableCard: { backgroundColor: "#ffffff", border: "1px solid #E8E8E6", borderRadius: "8px", overflow: "hidden" },
+  tableCard: { backgroundColor: "#ffffff", border: "1px solid #E8E8E6", borderRadius: "8px", overflowX: "auto", WebkitOverflowScrolling: "touch" },
   actRowStyle: { display: "grid", gridTemplateColumns: "32px 130px 1.2fr 1fr 100px 1.5fr", gap: "12px", alignItems: "start", padding: "13px 20px", borderBottom: "1px solid #F0F0ED" },
   checkbox: { width: "16px", height: "16px", cursor: "pointer", accentColor: "#367C2B", marginTop: "2px" },
   deleteBtn: { alignSelf: "flex-start", padding: "8px 16px", backgroundColor: "#DC2626", color: "#fff", border: "none", borderRadius: "6px", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" },
