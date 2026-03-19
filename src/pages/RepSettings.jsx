@@ -4,6 +4,7 @@ import { supabase } from "../supabase";
 import Sidebar from "../components/Sidebar";
 import MobileHeader from "../components/MobileHeader";
 import TopBar from "../components/TopBar";
+import { subscribeToPush } from "../utils/pushNotifications";
 
 export default function RepSettings() {
   const navigate = useNavigate();
@@ -19,6 +20,9 @@ export default function RepSettings() {
   const [passwordSaving, setPasswordSaving] = useState(false);
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [passwordError, setPasswordError] = useState("");
+
+  const [pushEnabled, setPushEnabled] = useState(() => !!localStorage.getItem("push_enabled"));
+  const [pushLoading, setPushLoading] = useState(false);
 
   useEffect(() => { loadData(); }, []);
 
@@ -61,6 +65,16 @@ export default function RepSettings() {
       setNewPassword("");
       setConfirmPassword("");
       setTimeout(() => setPasswordSuccess(false), 3000);
+    }
+  };
+
+  const handleEnablePush = async () => {
+    setPushLoading(true);
+    const sub = await subscribeToPush(profile.id);
+    setPushLoading(false);
+    if (sub) {
+      localStorage.setItem("push_enabled", "1");
+      setPushEnabled(true);
     }
   };
 
@@ -171,6 +185,27 @@ export default function RepSettings() {
             </div>
           </div>
 
+          {/* Notifications */}
+          <div style={styles.section}>
+            <p style={styles.sectionTitle}>Notifications</p>
+            <div style={styles.card}>
+              <div style={styles.notifRow}>
+                <div>
+                  <p style={styles.notifLabel}>Push Notifications</p>
+                  <p style={styles.notifHint}>Enable push notifications to receive activity reminders</p>
+                </div>
+                {pushEnabled ? (
+                  <span style={styles.notifEnabled}>✓ Enabled</span>
+                ) : (
+                  <button className="btn-primary" disabled={pushLoading} onClick={handleEnablePush}
+                    style={{ padding: "8px 16px", fontSize: "13px", whiteSpace: "nowrap" }}>
+                    {pushLoading ? "Enabling…" : "Enable Notifications"}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* Session */}
           <div style={styles.section}>
             <p style={styles.sectionTitle}>Session</p>
@@ -213,4 +248,8 @@ const styles = {
   signOutLabel: { fontSize: "14px", fontWeight: 500, color: "#1A1A1A" },
   signOutHint: { fontSize: "12px", color: "#767676", marginTop: "2px" },
   signOutBtn2: { padding: "8px 16px", background: "#FEF2F2", color: "#DC2626", border: "1px solid #FECACA", borderRadius: "6px", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" },
+  notifRow: { display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px" },
+  notifLabel: { fontSize: "14px", fontWeight: 500, color: "#1A1A1A" },
+  notifHint: { fontSize: "12px", color: "#767676", marginTop: "2px" },
+  notifEnabled: { fontSize: "13px", fontWeight: 600, color: "#16A34A", whiteSpace: "nowrap" },
 };
