@@ -16,6 +16,8 @@ export default function ManagerAccounts() {
   const [deleting, setDeleting] = useState(false);
   const [expandedAccount, setExpandedAccount] = useState(null);
   const [accountDetails, setAccountDetails] = useState({});
+  const [sprintEdits, setSprintEdits] = useState({});
+  const [sprintSaved, setSprintSaved] = useState({});
 
   const STATUS_COLORS = {
     New:       { bg: "#EFF6FF", color: "#2563EB", border: "#BFDBFE" },
@@ -95,6 +97,22 @@ export default function ManagerAccounts() {
       ]);
       setAccountDetails(prev => ({ ...prev, [accountId]: { acts: acts || [], cons: cons || [] } }));
     }
+    const acct = accounts.find(a => a.id === accountId);
+    if (acct && !sprintEdits[accountId]) {
+      setSprintEdits(prev => ({ ...prev, [accountId]: { start_date: acct.start_date || "", end_date: acct.end_date || "" } }));
+    }
+  };
+
+  const saveDates = async (accountId) => {
+    const edit = sprintEdits[accountId] || {};
+    await supabase.from("accounts")
+      .update({ start_date: edit.start_date, end_date: edit.end_date })
+      .eq("id", accountId);
+    setAccounts(prev => prev.map(a =>
+      a.id === accountId ? { ...a, start_date: edit.start_date, end_date: edit.end_date } : a
+    ));
+    setSprintSaved(prev => ({ ...prev, [accountId]: true }));
+    setTimeout(() => setSprintSaved(prev => ({ ...prev, [accountId]: false })), 3000);
   };
 
   const formatDate = (d) => d
@@ -150,6 +168,15 @@ export default function ManagerAccounts() {
           width: 220px;
         }
         .search-input:focus { border-color: #367C2B; }
+
+        .field-input {
+          padding: 7px 10px; font-size: 13px;
+          font-family: 'DM Sans', sans-serif;
+          border: 1.5px solid #E0E0DC; border-radius: 6px;
+          background: #fff; color: #1A1A1A; outline: none;
+          transition: border-color 0.15s;
+        }
+        .field-input:focus { border-color: #367C2B; }
 
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
@@ -306,6 +333,41 @@ export default function ManagerAccounts() {
                           </div>
                         )}
 
+                        {/* Sprint Dates */}
+                        <div style={styles.detailSection}>
+                          <p style={styles.detailLabel}>Sprint Dates</p>
+                          <div style={styles.sprintDateRow}>
+                            <div style={styles.sprintDateField}>
+                              <label style={styles.sprintDateLabel}>Start Date</label>
+                              <input
+                                type="date"
+                                className="field-input"
+                                style={styles.sprintDateInput}
+                                value={sprintEdits[account.id]?.start_date || ""}
+                                onChange={e => setSprintEdits(prev => ({ ...prev, [account.id]: { ...prev[account.id], start_date: e.target.value } }))}
+                              />
+                            </div>
+                            <div style={styles.sprintDateField}>
+                              <label style={styles.sprintDateLabel}>End Date</label>
+                              <input
+                                type="date"
+                                className="field-input"
+                                style={styles.sprintDateInput}
+                                value={sprintEdits[account.id]?.end_date || ""}
+                                onChange={e => setSprintEdits(prev => ({ ...prev, [account.id]: { ...prev[account.id], end_date: e.target.value } }))}
+                              />
+                            </div>
+                            <div style={styles.sprintSaveWrap}>
+                              <button style={styles.saveDatesBtn} onClick={() => saveDates(account.id)}>
+                                Save Dates
+                              </button>
+                              {sprintSaved[account.id] && (
+                                <span style={styles.savedMsg}>Dates saved</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
                         {/* Activity log */}
                         <div style={styles.detailSection}>
                           <p style={styles.detailLabel}>Activity Log</p>
@@ -390,4 +452,11 @@ const styles = {
   actOutcome: { fontSize: "12px", color: "#374151" },
   actNotes: { fontSize: "12px", color: "#767676" },
   emptySmall: { fontSize: "13px", color: "#ABABAB" },
+  sprintDateRow: { display: "flex", alignItems: "flex-end", gap: "12px", flexWrap: "wrap" },
+  sprintDateField: { display: "flex", flexDirection: "column", gap: "4px" },
+  sprintDateLabel: { fontSize: "11px", fontWeight: 600, color: "#374151" },
+  sprintDateInput: { width: "150px" },
+  sprintSaveWrap: { display: "flex", alignItems: "center", gap: "10px" },
+  saveDatesBtn: { padding: "7px 14px", backgroundColor: "#367C2B", color: "#fff", border: "none", borderRadius: "6px", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" },
+  savedMsg: { fontSize: "12px", color: "#16A34A", fontWeight: 500 },
 };
