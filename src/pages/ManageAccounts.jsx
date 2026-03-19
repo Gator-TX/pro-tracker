@@ -61,6 +61,7 @@ export default function ManageAccounts() {
 
     const { data: accountsData } = await supabase
       .from("accounts").select("id, name, company, rep_id");
+    (accountsData || []).sort((a, b) => (a.name || a.company || "").localeCompare(b.name || b.company || ""));
     setAllAccounts(accountsData || []);
 
     setLoading(false);
