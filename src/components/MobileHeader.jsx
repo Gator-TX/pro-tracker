@@ -119,7 +119,7 @@ const styles = {
     width: "40px", display: "flex", alignItems: "center", justifyContent: "center",
   },
   headerLogo: {
-    height: "26px", objectFit: "contain",
+    height: "60px", objectFit: "contain",
     position: "absolute", left: "50%", transform: "translateX(-50%)",
   },
   overlay: {
