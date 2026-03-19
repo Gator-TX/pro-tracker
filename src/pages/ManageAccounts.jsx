@@ -37,6 +37,7 @@ export default function ManageAccounts() {
   const [sprintEnd, setSprintEnd] = useState("");
   const [savingAssign, setSavingAssign] = useState(false);
   const [assignSuccess, setAssignSuccess] = useState(false);
+  const [unassignMsg, setUnassignMsg] = useState(null);
 
   const PROTO_FIELDS = [
     "Company name", "Physical address", "Contact name",
@@ -238,6 +239,14 @@ export default function ManageAccounts() {
         ? prev.filter(id => id !== accountId)
         : [...prev, accountId]
     );
+  };
+
+  const handleUnassignAccount = async (accountId) => {
+    await supabase.from("accounts").update({ rep_id: null }).eq("id", accountId);
+    setAllAccounts(prev => prev.map(a => a.id === accountId ? { ...a, rep_id: null } : a));
+    setRepAccounts(prev => prev.filter(id => id !== accountId));
+    setUnassignMsg(accountId);
+    setTimeout(() => setUnassignMsg(null), 2000);
   };
 
   const saveAssignments = async () => {
@@ -628,6 +637,15 @@ export default function ManageAccounts() {
                               {otherRepName && (
                                 <span style={styles.otherRepTag}>→ {otherRepName}</span>
                               )}
+                              {assignedToOther && (
+                                unassignMsg === account.id
+                                  ? <span style={{ fontSize: "12px", color: "#16A34A", fontWeight: 500, flexShrink: 0 }}>Unassigned</span>
+                                  : <button
+                                      onClick={e => { e.stopPropagation(); e.preventDefault(); handleUnassignAccount(account.id); }}
+                                      style={styles.unassignLink}>
+                                      Unassign
+                                    </button>
+                              )}
                             </label>
                           );
                         })
@@ -780,4 +798,5 @@ const styles = {
     backgroundColor: "#FFFBEB", border: "1px solid #FDE68A", flexShrink: 0,
   },
   legendText: { fontSize: "12px", color: "#767676" },
+  unassignLink: { background: "none", border: "none", fontSize: "12px", color: "#DC2626", cursor: "pointer", textDecoration: "underline", fontFamily: "'DM Sans', sans-serif", padding: 0, flexShrink: 0 },
 };
