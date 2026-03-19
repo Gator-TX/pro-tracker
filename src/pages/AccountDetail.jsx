@@ -215,6 +215,7 @@ export default function AccountDetail() {
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 56px !important; }
+          .desktop-header { display: none !important; }
         }
       `}</style>
 
@@ -224,7 +225,7 @@ export default function AccountDetail() {
         <div className="main-content" style={styles.page}>
 
         {/* ── HEADER ── */}
-        <div style={styles.header}>
+        <div className="desktop-header" style={styles.header}>
           <button onClick={() => navigate("/accounts")} style={styles.backBtn}>← Back</button>
           <img src={logo} alt="United Ag & Turf" style={styles.headerLogo} />
           <span style={{
