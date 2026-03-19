@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
+import MobileHeader from "../components/MobileHeader";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabase";
 
@@ -181,11 +182,12 @@ export default function Accounts() {
 
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
-          .main-content { margin-left: 0 !important; }
+          .main-content { margin-left: 0 !important; padding-top: 56px !important; }
         }
       `}</style>
 
       <div style={styles.layout}>
+        <MobileHeader activePath="/accounts" profile={profile} />
         <Sidebar role="rep" profile={profile} onSignOut={handleSignOut} activePath="/accounts" />
         <div className="main-content" style={styles.page}>
 
@@ -331,6 +333,7 @@ const styles = {
     backgroundColor: "#ffffff",
     fontFamily: "'DM Sans', sans-serif",
     paddingBottom: "40px",
+    paddingTop: "0",
   },
 
   loadingPage: {

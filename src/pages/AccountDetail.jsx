@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../supabase";
 import logo from "../assets/uatprologo.png";
 import Sidebar from "../components/Sidebar";
+import MobileHeader from "../components/MobileHeader";
 
 export default function AccountDetail() {
   const { id } = useParams();
@@ -213,11 +214,12 @@ export default function AccountDetail() {
 
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
-          .main-content { margin-left: 0 !important; }
+          .main-content { margin-left: 0 !important; padding-top: 56px !important; }
         }
       `}</style>
 
       <div style={styles.layout}>
+        <MobileHeader activePath="/accounts" profile={profile} />
         <Sidebar role="rep" profile={profile} onSignOut={handleSignOut} activePath="/accounts" />
         <div className="main-content" style={styles.page}>
 

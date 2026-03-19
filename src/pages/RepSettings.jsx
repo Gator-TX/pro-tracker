@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabase";
 import Sidebar from "../components/Sidebar";
+import MobileHeader from "../components/MobileHeader";
 
 export default function RepSettings() {
   const navigate = useNavigate();
@@ -104,11 +105,12 @@ export default function RepSettings() {
 
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
-          .main-content { margin-left: 0 !important; }
+          .main-content { margin-left: 0 !important; padding-top: 56px !important; }
         }
       `}</style>
 
       <div style={styles.layout}>
+        <MobileHeader activePath="/rep/settings" profile={profile} />
         <Sidebar role="rep" profile={profile} onSignOut={handleSignOut} activePath="/rep/settings" />
 
         <div className="main-content" style={styles.main}>
