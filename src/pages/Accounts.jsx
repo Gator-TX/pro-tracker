@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import MobileHeader from "../components/MobileHeader";
+import RepTopBar from "../components/RepTopBar";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabase";
 
@@ -228,6 +229,7 @@ export default function Accounts() {
         <MobileHeader activePath="/accounts" profile={profile} />
         <Sidebar role="rep" profile={profile} onSignOut={handleSignOut} activePath="/accounts" />
         <div className="main-content" style={styles.page}>
+          <RepTopBar title="My Accounts" profile={profile} onSignOut={handleSignOut} />
 
           {/* ══════════ MOBILE LAYOUT ══════════ */}
           <div className="mobile-only">
@@ -373,7 +375,6 @@ export default function Accounts() {
 
           {/* ══════════ DESKTOP LAYOUT ══════════ */}
           <div className="desktop-only">
-            <h1 style={styles.pageTitle}>My Accounts</h1>
 
             {/* Upcoming strip */}
             {upcomingActivities.length > 0 && (

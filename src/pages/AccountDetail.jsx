@@ -4,6 +4,7 @@ import { supabase } from "../supabase";
 import logo from "../assets/uatprologo.png";
 import Sidebar from "../components/Sidebar";
 import MobileHeader from "../components/MobileHeader";
+import RepTopBar from "../components/RepTopBar";
 
 export default function AccountDetail() {
   const { id } = useParams();
@@ -223,6 +224,8 @@ export default function AccountDetail() {
         <MobileHeader activePath="/accounts" profile={profile} />
         <Sidebar role="rep" profile={profile} onSignOut={handleSignOut} activePath="/accounts" />
         <div className="main-content" style={styles.page}>
+
+        <RepTopBar title="Account Detail" profile={profile} onSignOut={handleSignOut} />
 
         {/* ── HEADER ── */}
         <div className="desktop-header" style={styles.header}>

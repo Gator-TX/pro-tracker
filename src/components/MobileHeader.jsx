@@ -53,8 +53,10 @@ export default function MobileHeader({ activePath, profile }) {
         {/* Centered logo */}
         <img src={logo} alt="UAT Pro" style={styles.headerLogo} />
 
-        {/* Right spacer to keep logo centered */}
-        <div style={{ width: "40px" }} />
+        {/* Sign out */}
+        <button onClick={handleSignOut} style={styles.signOutTopBtn}>
+          Sign out
+        </button>
       </div>
 
       {/* Overlay */}
@@ -182,6 +184,12 @@ const styles = {
     fontSize: "13px", fontWeight: 600,
     color: "#1A1A1A", marginBottom: "8px",
     fontFamily: "'DM Sans', sans-serif",
+  },
+  signOutTopBtn: {
+    background: "none", border: "none", padding: 0,
+    fontSize: "13px", color: "#367C2B", fontWeight: 600,
+    cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
+    whiteSpace: "nowrap",
   },
   signOutBtn: {
     background: "none", border: "none", padding: 0,
