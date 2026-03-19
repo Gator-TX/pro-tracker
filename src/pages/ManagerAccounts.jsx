@@ -185,9 +185,15 @@ export default function ManagerAccounts() {
         }
         .field-input:focus { border-color: #367C2B; }
 
+        .table-scroll {
+          max-height: 600px; overflow-y: auto;
+          scrollbar-width: thin; scrollbar-color: #E0E0DC transparent;
+        }
+
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 70px !important; overflow-x: hidden; }
+          .table-scroll { max-height: 70vh; }
         }
       `}</style>
 
@@ -233,7 +239,7 @@ export default function ManagerAccounts() {
 
           {/* Table */}
           <div style={styles.tableCard}>
-            <div style={{ ...styles.accountRow, ...styles.tableHeader }}>
+            <div style={{ ...styles.accountRow, ...styles.tableHeader, boxShadow: "0 2px 4px rgba(0,0,0,0.06)", position: "relative", zIndex: 1 }}>
               <input
                 type="checkbox"
                 checked={filtered.length > 0 && filtered.every(a => selectedIds.includes(a.id))}
@@ -250,6 +256,7 @@ export default function ManagerAccounts() {
               <span>Logs</span>
             </div>
 
+            <div className="table-scroll">
             {filtered.length === 0 ? (
               <p style={styles.emptyText}>No accounts found</p>
             ) : (
@@ -413,6 +420,7 @@ export default function ManagerAccounts() {
                 );
               })
             )}
+            </div>
           </div>
         </div>
       </div>

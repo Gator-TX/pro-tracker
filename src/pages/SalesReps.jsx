@@ -124,9 +124,15 @@ export default function SalesReps() {
         .rep-row:last-child { border-bottom: none; }
         .rep-checkbox { width: 16px; height: 16px; cursor: pointer; accent-color: #367C2B; flex-shrink: 0; }
 
+        .table-scroll {
+          max-height: 600px; overflow-y: auto;
+          scrollbar-width: thin; scrollbar-color: #E0E0DC transparent;
+        }
+
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 70px !important; overflow-x: hidden; }
+          .table-scroll { max-height: 70vh; }
           .rep-table-header { display: none !important; }
           .rep-row {
             display: flex !important;
@@ -158,7 +164,7 @@ export default function SalesReps() {
 
           <div style={styles.tableCard}>
             {/* Desktop header */}
-            <div className="rep-row rep-table-header" style={styles.tableHeader}>
+            <div className="rep-row rep-table-header" style={{ ...styles.tableHeader, boxShadow: "0 2px 4px rgba(0,0,0,0.06)", position: "relative", zIndex: 1 }}>
               <input
                 type="checkbox"
                 className="rep-checkbox"
@@ -176,6 +182,7 @@ export default function SalesReps() {
               <span>Status</span>
             </div>
 
+            <div className="table-scroll">
             {sorted.length === 0 ? (
               <p style={styles.emptyText}>No reps found</p>
             ) : (
@@ -223,6 +230,7 @@ export default function SalesReps() {
                 );
               })
             )}
+            </div>
           </div>
         </div>
       </div>

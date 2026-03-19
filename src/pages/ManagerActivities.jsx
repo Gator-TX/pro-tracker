@@ -116,8 +116,14 @@ export default function ManagerActivities() {
         @keyframes spin { to { transform: rotate(360deg); } }
         .mobile-select-all { display: none; }
 
+        .table-scroll {
+          max-height: 600px; overflow-y: auto;
+          scrollbar-width: thin; scrollbar-color: #E0E0DC transparent;
+        }
+
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 70px !important; overflow-x: hidden; }
+          .table-scroll { max-height: 70vh; }
           .filter-bar { flex-direction: column !important; }
           .filter-bar .filter-select { width: 100%; }
           .act-table-header { display: none !important; }
@@ -204,7 +210,7 @@ export default function ManagerActivities() {
 
           {/* Table */}
           <div className="act-table-card" style={styles.tableCard}>
-            <div className="act-table-header" style={{ ...styles.actRowStyle, ...styles.tableHeader }}>
+            <div className="act-table-header" style={{ ...styles.actRowStyle, ...styles.tableHeader, boxShadow: "0 2px 4px rgba(0,0,0,0.06)", position: "relative", zIndex: 1 }}>
               <input
                 type="checkbox"
                 checked={filtered.length > 0 && filtered.every(a => selectedIds.includes(a.id))}
@@ -218,6 +224,7 @@ export default function ManagerActivities() {
               <span>Notes</span>
             </div>
 
+            <div className="table-scroll">
             {filtered.length === 0 ? (
               <p style={styles.emptyText}>No activities found</p>
             ) : (
@@ -253,6 +260,7 @@ export default function ManagerActivities() {
                 );
               })
             )}
+            </div>
           </div>
         </div>
       </div>

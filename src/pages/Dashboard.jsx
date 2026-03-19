@@ -193,10 +193,16 @@ export default function Dashboard() {
           background: #367C2B; border-color: #367C2B; color: #fff;
         }
 
+        .table-scroll {
+          max-height: 600px; overflow-y: auto;
+          scrollbar-width: thin; scrollbar-color: #E0E0DC transparent;
+        }
+
         @keyframes spin { to { transform: rotate(360deg); } }
 
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 70px !important; overflow-x: hidden; }
+          .table-scroll { max-height: 70vh; }
           .stat-grid { grid-template-columns: repeat(2, 1fr) !important; }
           .rep-table-header { display: none !important; }
           .rep-table-card { background: transparent !important; border: none !important; border-radius: 0 !important; overflow: visible !important; }
@@ -315,7 +321,7 @@ export default function Dashboard() {
           <div className="rep-table-card" style={styles.tableCard}>
             <p style={styles.tableTitle}>Rep Activity</p>
 
-            <div className="rep-table-header" style={{ ...styles.repRowStyle, ...styles.tableHeader }}>
+            <div className="rep-table-header" style={{ ...styles.repRowStyle, ...styles.tableHeader, boxShadow: "0 2px 4px rgba(0,0,0,0.06)", position: "relative", zIndex: 1 }}>
               <span style={{ cursor: "pointer" }} onClick={() => setSortDirection(d => d === "asc" ? "desc" : "asc")}>
                 Rep {sortDirection === "asc" ? "↑" : "↓"}
               </span>
@@ -324,29 +330,31 @@ export default function Dashboard() {
               <span>Status</span>
             </div>
 
-            {reps.length === 0 ? (
-              <p style={styles.emptyText}>No reps found</p>
-            ) : (
-              [...reps].sort((a, b) => sortDirection === "asc"
-                ? a.full_name.localeCompare(b.full_name)
-                : b.full_name.localeCompare(a.full_name)
-              ).map(rep => (
-                <div key={rep.id} className="rep-row"
-                  onClick={() => navigate(`/dashboard/reps/${rep.id}`)}>
-                  <span className="rep-col-name" style={styles.repName}>{rep.full_name}</span>
-                  <span className="rep-col-accounts" style={styles.repStat}>{rep.accountCount}</span>
-                  <span className="rep-col-logs" style={styles.repStat}>{rep.logsThisWeek}</span>
-                  <span className="rep-col-status" style={{
-                    ...styles.statusBadge,
-                    background: rep.atRisk ? "#FEF2F2" : "#F0FDF4",
-                    color: rep.atRisk ? "#DC2626" : "#16A34A",
-                    border: `1px solid ${rep.atRisk ? "#FECACA" : "#BBF7D0"}`,
-                  }}>
-                    {rep.atRisk ? "At Risk" : "On Track"}
-                  </span>
-                </div>
-              ))
-            )}
+            <div className="table-scroll">
+              {reps.length === 0 ? (
+                <p style={styles.emptyText}>No reps found</p>
+              ) : (
+                [...reps].sort((a, b) => sortDirection === "asc"
+                  ? a.full_name.localeCompare(b.full_name)
+                  : b.full_name.localeCompare(a.full_name)
+                ).map(rep => (
+                  <div key={rep.id} className="rep-row"
+                    onClick={() => navigate(`/dashboard/reps/${rep.id}`)}>
+                    <span className="rep-col-name" style={styles.repName}>{rep.full_name}</span>
+                    <span className="rep-col-accounts" style={styles.repStat}>{rep.accountCount}</span>
+                    <span className="rep-col-logs" style={styles.repStat}>{rep.logsThisWeek}</span>
+                    <span className="rep-col-status" style={{
+                      ...styles.statusBadge,
+                      background: rep.atRisk ? "#FEF2F2" : "#F0FDF4",
+                      color: rep.atRisk ? "#DC2626" : "#16A34A",
+                      border: `1px solid ${rep.atRisk ? "#FECACA" : "#BBF7D0"}`,
+                    }}>
+                      {rep.atRisk ? "At Risk" : "On Track"}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
 
         </div>
