@@ -182,7 +182,7 @@ export default function LogActivity() {
 
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
-          .main-content { margin-left: 0 !important; padding-top: 56px !important; }
+          .main-content { margin-left: 0 !important; padding-top: 70px !important; }
         }
       `}</style>
 

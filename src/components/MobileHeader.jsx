@@ -30,7 +30,7 @@ export default function MobileHeader({ activePath, profile }) {
             justify-content: space-between;
             position: fixed;
             top: 0; left: 0; right: 0;
-            height: 56px;
+            height: 70px;
             background: #ffffff;
             border-bottom: 1px solid #E8E8E6;
             padding: 0 16px;
