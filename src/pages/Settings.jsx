@@ -11,6 +11,13 @@ export default function Settings() {
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
+
   const [fullName, setFullName] = useState("");
   const [sprintLength, setSprintLength] = useState("60");
   const [accountsPerRep, setAccountsPerRep] = useState("10");
@@ -34,6 +41,31 @@ export default function Settings() {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate("/login");
+  };
+
+  const handlePasswordUpdate = async () => {
+    setPasswordError("");
+    setPasswordSuccess(false);
+    if (newPassword !== confirmPassword) {
+      setPasswordError("Passwords do not match");
+      return;
+    }
+    if (newPassword.length < 8) {
+      setPasswordError("Password must be at least 8 characters");
+      return;
+    }
+    setPasswordSaving(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setPasswordSaving(false);
+    if (error) {
+      setPasswordError(error.message);
+    } else {
+      setPasswordSuccess(true);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setTimeout(() => setPasswordSuccess(false), 3000);
+    }
   };
 
   const handleSave = async () => {
@@ -152,6 +184,39 @@ export default function Settings() {
             </div>
           </div>
 
+          {/* Change Password */}
+          <div style={styles.section}>
+            <p style={styles.sectionTitle}>Change Password</p>
+            <div style={styles.card}>
+              {passwordError && (
+                <div style={styles.errorBanner}>{passwordError}</div>
+              )}
+              {passwordSuccess && (
+                <div style={styles.successBanner}>Password updated successfully</div>
+              )}
+              <div style={styles.field}>
+                <label style={styles.fieldLabel}>Current Password</label>
+                <input className="field-input" type="password" value={currentPassword}
+                  onChange={e => setCurrentPassword(e.target.value)} />
+              </div>
+              <div style={styles.field}>
+                <label style={styles.fieldLabel}>New Password</label>
+                <input className="field-input" type="password" value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)} />
+              </div>
+              <div style={styles.field}>
+                <label style={styles.fieldLabel}>Confirm New Password</label>
+                <input className="field-input" type="password" value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)} />
+              </div>
+              <div>
+                <button className="btn-primary" disabled={passwordSaving} onClick={handlePasswordUpdate}>
+                  {passwordSaving ? "Updating…" : "Update Password"}
+                </button>
+              </div>
+            </div>
+          </div>
+
           {/* Sign out */}
           <div style={styles.section}>
             <p style={styles.sectionTitle}>Session</p>
@@ -187,6 +252,7 @@ const styles = {
   main: { marginLeft: "220px", flex: 1, padding: "28px 32px", display: "flex", flexDirection: "column", gap: "20px", minHeight: "100vh", maxWidth: "720px" },
   pageTitle: { fontSize: "22px", fontWeight: 600, color: "#1A1A1A" },
   successBanner: { backgroundColor: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: "6px", padding: "10px 14px", fontSize: "13px", color: "#16A34A", fontWeight: 500 },
+  errorBanner: { backgroundColor: "#FEF2F2", border: "1px solid #FECACA", borderRadius: "6px", padding: "10px 14px", fontSize: "13px", color: "#DC2626", fontWeight: 500 },
   section: { display: "flex", flexDirection: "column", gap: "10px" },
   sectionTitle: { fontSize: "13px", fontWeight: 600, color: "#374151" },
   card: { backgroundColor: "#ffffff", border: "1px solid #E8E8E6", borderRadius: "8px", padding: "20px", display: "flex", flexDirection: "column", gap: "16px" },
