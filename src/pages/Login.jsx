@@ -9,11 +9,19 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [keepLoggedIn, setKeepLoggedIn] = useState(true);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+
+    // Set storage mode before sign-in so Supabase writes to the right store
+    if (keepLoggedIn) {
+      sessionStorage.removeItem('supabase_session_only');
+    } else {
+      sessionStorage.setItem('supabase_session_only', 'true');
+    }
 
     const { data, error: authError } = await supabase.auth.signInWithPassword({
       email,
@@ -138,6 +146,16 @@ export default function Login() {
               />
             </div>
 
+            <label style={styles.keepRow}>
+              <input
+                type="checkbox"
+                checked={keepLoggedIn}
+                onChange={(e) => setKeepLoggedIn(e.target.checked)}
+                style={{ width: "15px", height: "15px", cursor: "pointer", accentColor: "#367C2B" }}
+              />
+              Keep me logged in
+            </label>
+
             {error && (
               <div style={styles.errorBox}>
                 {error}
@@ -225,6 +243,15 @@ const styles = {
     fontSize: "13px",
     fontWeight: 600,
     color: "#374151",
+  },
+  keepRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    fontSize: "13px",
+    color: "#767676",
+    cursor: "pointer",
+    userSelect: "none",
   },
   errorBox: {
     fontSize: "13px",
