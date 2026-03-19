@@ -143,13 +143,14 @@ export default function SalesReps() {
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 70px !important; }
-          .table-scroll { max-height: 70vh; }
+          .table-scroll { max-height: 70vh; min-width: unset !important; }
           .rep-table-header { display: none !important; }
           .rep-row {
             display: flex !important;
             align-items: center !important;
             padding: 14px 16px !important;
             gap: 12px !important;
+            min-width: unset !important;
           }
           .rep-row-left { flex: 1; min-width: 0; }
           .rep-row-right { flex-shrink: 0; }

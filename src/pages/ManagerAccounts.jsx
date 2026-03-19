@@ -194,7 +194,27 @@ export default function ManagerAccounts() {
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 70px !important; }
-          .table-scroll { max-height: 70vh; }
+          .table-scroll { max-height: 70vh; min-width: unset !important; overflow-x: visible !important; }
+          .acct-table-header { display: none !important; }
+          .acct-table-card { background: transparent !important; border: none !important; overflow: visible !important; }
+          .account-row {
+            display: flex !important; flex-wrap: wrap !important; align-items: center !important;
+            min-width: unset !important;
+            padding: 14px 16px !important; padding-right: 44px !important; gap: 4px 8px !important;
+            background: #fff; border: 1px solid #E8E8E6 !important; border-bottom: 1px solid #E8E8E6 !important;
+            border-radius: 8px !important; margin-bottom: 8px; position: relative !important;
+          }
+          .account-row input[type="checkbox"] {
+            position: absolute !important; top: 14px !important; right: 14px !important;
+            width: 18px !important; height: 18px !important;
+          }
+          .acct-name { flex: 1 1 100% !important; font-size: 15px !important; font-weight: 600 !important; color: #1A1A1A !important; margin-bottom: 4px !important; }
+          .acct-status { font-size: 11px !important; }
+          .acct-rep, .acct-last, .acct-days, .acct-logs { font-size: 12px !important; color: #767676 !important; }
+          .acct-rep::before { content: "Rep: "; font-weight: 600; color: #ABABAB; font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; }
+          .acct-last::before { content: " · "; color: #D0D0CC; }
+          .acct-days::before { content: " · "; color: #D0D0CC; }
+          .acct-logs::before { content: " · "; color: #D0D0CC; }
         }
       `}</style>
 
@@ -239,8 +259,8 @@ export default function ManagerAccounts() {
           )}
 
           {/* Table */}
-          <div style={styles.tableCard}>
-            <div style={{ ...styles.accountRow, ...styles.tableHeader, boxShadow: "0 2px 4px rgba(0,0,0,0.06)", position: "relative", zIndex: 1, minWidth: "700px" }}>
+          <div className="acct-table-card" style={styles.tableCard}>
+            <div className="acct-table-header" style={{ ...styles.accountRow, ...styles.tableHeader, boxShadow: "0 2px 4px rgba(0,0,0,0.06)", position: "relative", zIndex: 1, minWidth: "700px" }}>
               <input
                 type="checkbox"
                 checked={filtered.length > 0 && filtered.every(a => selectedIds.includes(a.id))}
@@ -289,19 +309,19 @@ export default function ManagerAccounts() {
                         onClick={e => e.stopPropagation()}
                         style={styles.checkbox}
                       />
-                      <span style={styles.accountName}>{account.name || account.company}</span>
-                      <span style={{
+                      <span className="acct-name" style={styles.accountName}>{account.name || account.company}</span>
+                      <span className="acct-status" style={{
                         ...styles.statusBadge,
                         background: sc.bg, color: sc.color, border: `1px solid ${sc.border}`,
                       }}>
                         {account.status || "New"}
                       </span>
-                      <span style={styles.cellText}>{getRepName(account.rep_id)}</span>
-                      <span style={styles.cellText}>{getLastActivity(account) || "—"}</span>
-                      <span style={styles.cellText}>
+                      <span className="acct-rep" style={styles.cellText}>{getRepName(account.rep_id)}</span>
+                      <span className="acct-last" style={styles.cellText}>{getLastActivity(account) || "—"}</span>
+                      <span className="acct-days" style={styles.cellText}>
                         {account.end_date ? Math.max(0, Math.ceil((new Date(account.end_date) - new Date()) / (1000 * 60 * 60 * 24))) : "—"}
                       </span>
-                      <span style={styles.cellText}>{account.activities?.length || 0}</span>
+                      <span className="acct-logs" style={styles.cellText}>{account.activities?.length || 0}</span>
                     </div>
 
                     {/* Expanded detail */}

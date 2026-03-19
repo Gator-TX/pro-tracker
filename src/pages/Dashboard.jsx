@@ -213,13 +213,13 @@ export default function Dashboard() {
 
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 70px !important; }
-          .table-scroll { max-height: 70vh; }
+          .table-scroll { max-height: 70vh; min-width: unset !important; }
           .stat-grid { grid-template-columns: repeat(2, 1fr) !important; }
           .rep-table-header { display: none !important; }
           .rep-table-card { background: transparent !important; border: none !important; border-radius: 0 !important; overflow: visible !important; }
           .rep-row {
             display: flex !important; flex-direction: column !important;
-            padding: 14px 16px !important; gap: 6px !important;
+            padding: 14px 16px !important; gap: 6px !important; min-width: unset !important;
             background: #fff; border: 1px solid #E8E8E6; border-radius: 8px;
             margin: 0 0 8px; border-bottom: none !important;
           }

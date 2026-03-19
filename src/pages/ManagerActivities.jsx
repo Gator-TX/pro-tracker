@@ -124,7 +124,7 @@ export default function ManagerActivities() {
 
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 70px !important; }
-          .table-scroll { max-height: 70vh; }
+          .table-scroll { max-height: 70vh; min-width: unset !important; }
           .filter-bar { flex-direction: column !important; }
           .filter-bar .filter-select { width: 100%; }
           .act-table-header { display: none !important; }
@@ -132,6 +132,7 @@ export default function ManagerActivities() {
           .act-row {
             display: flex !important; flex-direction: column !important;
             padding: 14px 16px !important; padding-right: 44px !important; gap: 6px !important;
+            min-width: unset !important;
             background: #fff; border: 1px solid #E8E8E6 !important;
             border-bottom: 1px solid #E8E8E6 !important;
             border-radius: 8px; margin-bottom: 8px;
