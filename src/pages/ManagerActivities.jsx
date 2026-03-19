@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabase";
 import Sidebar from "../components/Sidebar";
+import TopBar from "../components/TopBar";
 
 export default function ManagerActivities() {
   const navigate = useNavigate();
@@ -122,10 +123,8 @@ export default function ManagerActivities() {
 
         {/* MAIN */}
         <div className="main-content" style={styles.main}>
-          <div style={styles.topBar}>
-            <h1 style={styles.pageTitle}>Activities</h1>
-            <p style={styles.subTitle}>{filtered.length} logs</p>
-          </div>
+          <TopBar title="Activities" profile={profile} onSignOut={handleSignOut} />
+          <p style={styles.subTitle}>{filtered.length} logs</p>
 
           {/* Filters */}
           <div style={styles.filterBar}>

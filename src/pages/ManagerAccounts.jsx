@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabase";
 import Sidebar from "../components/Sidebar";
+import TopBar from "../components/TopBar";
 
 export default function ManagerAccounts() {
   const navigate = useNavigate();
@@ -189,10 +190,8 @@ export default function ManagerAccounts() {
 
         {/* MAIN */}
         <div className="main-content" style={styles.main}>
-          <div style={styles.topBar}>
-            <h1 style={styles.pageTitle}>Accounts</h1>
-            <p style={styles.subTitle}>{filtered.length} accounts</p>
-          </div>
+          <TopBar title="Accounts" profile={profile} onSignOut={handleSignOut} />
+          <p style={styles.subTitle}>{filtered.length} accounts</p>
 
           {/* Filters */}
           <div style={styles.filterBar}>

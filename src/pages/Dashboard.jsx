@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabase";
 import Sidebar from "../components/Sidebar";
+import TopBar from "../components/TopBar";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -203,10 +204,10 @@ export default function Dashboard() {
 
         {/* MAIN */}
         <div className="main-content" style={styles.main}>
+          <TopBar title="Team Dashboard" profile={profile} onSignOut={handleSignOut} />
 
           {/* Top bar */}
           <div style={styles.topBar}>
-            <h1 style={styles.pageTitle}>Team Dashboard</h1>
             <div style={styles.topBarRight}>
               {daysLeft() !== null && (
                 <div style={styles.sprintBadge}>{daysLeft()} days left</div>
@@ -214,7 +215,6 @@ export default function Dashboard() {
               <button style={styles.exportTopBtn} onClick={() => setShowExport(p => !p)}>
                 {showExport ? "Hide Export" : "Export Report"}
               </button>
-              <span style={styles.topBarEmail}>{profile?.full_name}</span>
             </div>
           </div>
 

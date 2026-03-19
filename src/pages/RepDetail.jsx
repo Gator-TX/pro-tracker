@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../supabase";
 import Sidebar from "../components/Sidebar";
+import TopBar from "../components/TopBar";
 
 export default function RepDetail() {
   const { repId } = useParams();
@@ -164,14 +165,12 @@ export default function RepDetail() {
 
         {/* MAIN */}
         <div className="main-content" style={styles.main}>
+          <TopBar title={rep?.full_name} profile={profile} onSignOut={handleSignOut} />
 
           {/* Back link */}
           <button onClick={() => navigate("/dashboard/reps")} style={styles.backLink}>
             ← Back to dashboard
           </button>
-
-          {/* Page title */}
-          <h1 style={styles.pageTitle}>{rep?.full_name}</h1>
 
           {/* STAT CARDS */}
           <div style={styles.statGrid}>

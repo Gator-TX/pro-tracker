@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabase";
 import Sidebar from "../components/Sidebar";
+import TopBar from "../components/TopBar";
 import * as XLSX from "xlsx";
 
 export default function ManageAccounts() {
@@ -349,7 +350,7 @@ export default function ManageAccounts() {
         {/* MAIN */}
         <div className="main-content" style={styles.main}>
 
-          <h1 style={styles.pageTitle}>Manage Accounts</h1>
+          <TopBar title="Manage Accounts" profile={profile} onSignOut={handleSignOut} />
 
           {/* TABS */}
           <div style={styles.tabBar}>

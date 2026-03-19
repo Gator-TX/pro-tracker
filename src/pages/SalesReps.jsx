@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabase";
 import Sidebar from "../components/Sidebar";
+import TopBar from "../components/TopBar";
 
 export default function SalesReps() {
   const navigate = useNavigate();
@@ -102,7 +103,7 @@ export default function SalesReps() {
 
         {/* MAIN */}
         <div className="main-content" style={styles.main}>
-          <h1 style={styles.pageTitle}>Sales Reps</h1>
+          <TopBar title="Sales Reps" profile={profile} onSignOut={handleSignOut} />
 
           {/* Column headers */}
           <div style={styles.repHeader}>

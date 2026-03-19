@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabase";
 import Sidebar from "../components/Sidebar";
+import TopBar from "../components/TopBar";
 
 export default function ExportReports() {
   const navigate = useNavigate();
@@ -325,7 +326,7 @@ export default function ExportReports() {
 
         {/* MAIN */}
         <div className="main-content" style={styles.main}>
-          <h1 style={styles.pageTitle}>Export Reports</h1>
+          <TopBar title="Export Reports" profile={profile} onSignOut={handleSignOut} />
 
           <div style={styles.exportCard}>
 

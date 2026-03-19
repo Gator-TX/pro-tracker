@@ -66,10 +66,7 @@ export default function Sidebar({ role, profile, onSignOut, activePath }) {
           ))}
         </nav>
 
-        <div style={styles.sidebarFooter}>
-          <p style={styles.footerName}>{profile?.full_name}</p>
-          <button onClick={onSignOut} style={styles.signOutBtn}>Sign out</button>
-        </div>
+        <div style={styles.sidebarFooter} />
       </div>
     </>
   );
