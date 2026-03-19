@@ -26,7 +26,7 @@ export default function SalesReps() {
 
     const repsWithStats = await Promise.all((repsData || []).map(async (rep) => {
       const { data: accounts } = await supabase
-        .from("accounts").select("id, status").eq("rep_id", rep.id);
+        .from("accounts").select("id, status, end_date").eq("rep_id", rep.id);
 
       const weekAgo = new Date();
       weekAgo.setDate(weekAgo.getDate() - 7);
@@ -37,14 +37,11 @@ export default function SalesReps() {
       const { data: allActs } = await supabase
         .from("activities").select("id").eq("rep_id", rep.id);
 
-      const today = new Date().toISOString().split("T")[0];
-      const { data: sprint } = await supabase
-        .from("sprints").select("*").eq("rep_id", rep.id)
-        .lte("start_date", today).gte("end_date", today).single();
-
-      const daysLeft = sprint
-        ? Math.max(0, Math.ceil((new Date(sprint.end_date) - new Date()) / (1000 * 60 * 60 * 24)))
-        : null;
+      const now = new Date();
+      const endDates = (accounts || [])
+        .filter(a => a.end_date)
+        .map(a => Math.max(0, Math.ceil((new Date(a.end_date) - now) / (1000 * 60 * 60 * 24))));
+      const daysLeft = endDates.length > 0 ? Math.min(...endDates) : null;
 
       const wonCount = (accounts || []).filter(a => a.status === "Won").length;
       const weeklyCount = weekActs?.length || 0;

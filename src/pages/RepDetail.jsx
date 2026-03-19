@@ -10,7 +10,6 @@ export default function RepDetail() {
   const [profile, setProfile] = useState(null);
   const [rep, setRep] = useState(null);
   const [accounts, setAccounts] = useState([]);
-  const [sprint, setSprint] = useState(null);
   const [expandedAccount, setExpandedAccount] = useState(null);
   const [accountActivities, setAccountActivities] = useState({});
   const [accountContacts, setAccountContacts] = useState({});
@@ -19,7 +18,7 @@ export default function RepDetail() {
     accountsAssigned: 0,
     logsThisWeek: 0,
     wonThisSprint: 0,
-    daysLeft: 0,
+    lostThisSprint: 0,
   });
 
   const STATUS_COLORS = {
@@ -51,16 +50,9 @@ export default function RepDetail() {
 
     // Rep's accounts
     const { data: accountsData } = await supabase
-      .from("accounts").select("*").eq("rep_id", repId)
+      .from("accounts").select("*, start_date, end_date").eq("rep_id", repId)
       .order("created_at", { ascending: false });
     setAccounts(accountsData || []);
-
-    // Sprint
-    const today = new Date().toISOString().split("T")[0];
-    const { data: sprintData } = await supabase
-      .from("sprints").select("*").eq("rep_id", repId)
-      .lte("start_date", today).gte("end_date", today).single();
-    setSprint(sprintData);
 
     // Stats
     const weekAgo = new Date();
@@ -71,15 +63,13 @@ export default function RepDetail() {
       .gte("activity_date", weekAgo.toISOString().split("T")[0]);
 
     const wonAccounts = (accountsData || []).filter(a => a.status === "Won").length;
-    const daysLeft = sprintData
-      ? Math.max(0, Math.ceil((new Date(sprintData.end_date) - new Date()) / (1000 * 60 * 60 * 24)))
-      : 0;
+    const lostAccounts = (accountsData || []).filter(a => a.status === "Lost").length;
 
     setStats({
       accountsAssigned: (accountsData || []).length,
       logsThisWeek: weekActs?.length || 0,
       wonThisSprint: wonAccounts,
-      daysLeft,
+      lostThisSprint: lostAccounts,
     });
 
     setLoading(false);
@@ -111,14 +101,6 @@ export default function RepDetail() {
     }
   };
 
-  const sprintProgress = () => {
-    if (!sprint) return 0;
-    const start = new Date(sprint.start_date);
-    const end = new Date(sprint.end_date);
-    const today = new Date();
-    return Math.min(100, Math.max(0, Math.round(((today - start) / (end - start)) * 100)));
-  };
-
   const getNextScheduled = (accountId) => {
     const acts = accountActivities[accountId] || [];
     const next = acts.find(a => a.scheduled_next_date);
@@ -145,7 +127,7 @@ export default function RepDetail() {
     { label: "Accounts Assigned", value: stats.accountsAssigned },
     { label: "Logs This Week", value: stats.logsThisWeek },
     { label: "Won This Sprint", value: stats.wonThisSprint },
-    { label: "Days Left in Sprint", value: stats.daysLeft },
+    { label: "Lost This Sprint", value: stats.lostThisSprint },
   ];
 
   return (
@@ -165,7 +147,7 @@ export default function RepDetail() {
 
         .account-row-grid {
           display: grid;
-          grid-template-columns: 1.5fr 100px 110px 80px 130px;
+          grid-template-columns: 1.5fr 100px 110px 80px 80px 130px;
           gap: 12px; align-items: center;
         }
 
@@ -211,6 +193,7 @@ export default function RepDetail() {
               <span>Status</span>
               <span>Last Activity</span>
               <span>Logs</span>
+              <span>Days Left</span>
               <span>Next Scheduled</span>
             </div>
 
@@ -249,6 +232,11 @@ export default function RepDetail() {
                         {isExpanded && acts.length > 0 ? formatDate(acts[0]?.activity_date) : "—"}
                       </span>
                       <span style={styles.cellText}>{acts.length || "—"}</span>
+                      <span style={styles.cellText}>
+                        {account.end_date
+                          ? `${Math.max(0, Math.ceil((new Date(account.end_date) - new Date()) / (1000 * 60 * 60 * 24)))}d`
+                          : "—"}
+                      </span>
                       <span style={styles.cellText}>
                         {isExpanded ? (getNextScheduled(account.id) || "None") : "—"}
                       </span>
@@ -293,17 +281,6 @@ export default function RepDetail() {
                                 </div>
                               </div>
                             ))}
-                          </div>
-                        )}
-
-                        {/* Sprint progress */}
-                        {sprint && (
-                          <div style={styles.detailSection}>
-                            <p style={styles.detailLabel}>Sprint Progress</p>
-                            <div style={styles.progressTrack}>
-                              <div style={{ ...styles.progressFill, width: `${sprintProgress()}%` }} />
-                            </div>
-                            <p style={styles.progressNote}>{stats.daysLeft} days left</p>
                           </div>
                         )}
 
@@ -402,7 +379,7 @@ const styles = {
   },
   accountRowGrid: {
     display: "grid",
-    gridTemplateColumns: "1.5fr 100px 110px 80px 130px",
+    gridTemplateColumns: "1.5fr 100px 110px 80px 80px 130px",
     gap: "12px", alignItems: "center",
   },
   tableHeader: {

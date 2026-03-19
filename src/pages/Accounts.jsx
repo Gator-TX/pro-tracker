@@ -6,7 +6,6 @@ import { supabase } from "../supabase";
 export default function Accounts() {
   const navigate = useNavigate();
   const [accounts, setAccounts] = useState([]);
-  const [sprint, setSprint] = useState(null);
   const [upcomingActivities, setUpcomingActivities] = useState([]);
   const [filter, setFilter] = useState("All");
   const [loading, setLoading] = useState(true);
@@ -40,17 +39,6 @@ export default function Accounts() {
       .eq("id", user.id)
       .single();
     setProfile(profileData);
-
-    // Get current sprint
-    const today = new Date().toISOString().split("T")[0];
-    const { data: sprintData } = await supabase
-      .from("sprints")
-      .select("*")
-      .eq("rep_id", user.id)
-      .lte("start_date", today)
-      .gte("end_date", today)
-      .single();
-    setSprint(sprintData);
 
     // Get accounts for this rep
     const { data: accountsData, error: accountsError } = await supabase
@@ -98,32 +86,6 @@ export default function Accounts() {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate("/login");
-  };
-
-  // Sprint countdown
-  const daysLeft = () => {
-    if (!sprint) return null;
-    const today = new Date();
-    const end = new Date(sprint.end_date);
-    const diff = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
-    return diff > 0 ? diff : 0;
-  };
-
-  // Sprint progress % elapsed
-  const sprintProgress = () => {
-    if (!sprint) return 0;
-    const start = new Date(sprint.start_date);
-    const end = new Date(sprint.end_date);
-    const today = new Date();
-    const total = end - start;
-    const elapsed = today - start;
-    return Math.min(100, Math.max(0, Math.round((elapsed / total) * 100)));
-  };
-
-  const formatSprintRange = () => {
-    if (!sprint) return "";
-    const fmt = (d) => new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-    return `Sprint · ${fmt(sprint.start_date)} – ${fmt(sprint.end_date)}`;
   };
 
   const getLastContact = (account) => {
@@ -229,16 +191,6 @@ export default function Accounts() {
 
         <h1 style={styles.pageTitle}>My Accounts</h1>
 
-        {/* Sprint info */}
-        {sprint && (
-          <div style={styles.sprintBar}>
-            <p style={styles.sprintRange}>{formatSprintRange()}</p>
-            {daysLeft() !== null && (
-              <div style={styles.sprintBadge}>{daysLeft()} days left</div>
-            )}
-          </div>
-        )}
-
         {/* ── UPCOMING ACTIVITIES STRIP ── */}
         {upcomingActivities.length > 0 && (
           <div style={styles.upcomingWrap}>
@@ -336,17 +288,21 @@ export default function Accounts() {
                     </span>
                   </div>
 
-                  {/* Sprint progress bar */}
+                  {/* Progress bar + days left */}
                   {account.end_date && (
-                    <div style={styles.progressWrap}>
-                      <div style={styles.progressTrack}>
-                        <div style={{
-                          ...styles.progressFill,
-                          width: `${accountProgress}%`,
-                        }} />
+                    <>
+                      <div style={styles.progressWrap}>
+                        <div style={styles.progressTrack}>
+                          <div style={{
+                            ...styles.progressFill,
+                            width: `${accountProgress}%`,
+                          }} />
+                        </div>
                       </div>
-                      <span style={styles.progressLabel}>{accountDaysLeft} days left</span>
-                    </div>
+                      <p style={styles.daysLeftLabel}>
+                        <span style={styles.daysLeftNum}>{accountDaysLeft}</span> days left
+                      </p>
+                    </>
                   )}
                 </div>
               );
@@ -391,27 +347,6 @@ const styles = {
     border: "3px solid #E0E0DC",
     borderTopColor: "#367C2B",
     animation: "spin 0.8s linear infinite",
-  },
-
-  sprintBar: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "16px 20px",
-    borderBottom: "1px solid #E8E8E6",
-  },
-  sprintBadge: {
-    backgroundColor: "#FFDE00",
-    color: "#1A1A1A",
-    fontSize: "12px",
-    fontWeight: 700,
-    padding: "5px 12px",
-    borderRadius: "100px",
-    letterSpacing: "0.01em",
-  },
-  sprintRange: {
-    fontSize: "12px",
-    color: "#767676",
   },
 
   // Upcoming strip
@@ -473,13 +408,8 @@ const styles = {
   },
 
   // Progress bar
-  progressWrap: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-  },
+  progressWrap: { marginBottom: "6px" },
   progressTrack: {
-    flex: 1,
     height: "4px",
     backgroundColor: "#F0F0ED",
     borderRadius: "2px",
@@ -491,10 +421,13 @@ const styles = {
     borderRadius: "2px",
     transition: "width 0.3s ease",
   },
-  progressLabel: {
+  daysLeftLabel: {
     fontSize: "11px",
     color: "#ABABAB",
-    whiteSpace: "nowrap",
+  },
+  daysLeftNum: {
+    fontWeight: 600,
+    color: "#374151",
   },
 
   pageTitle: { fontSize: "22px", fontWeight: 600, color: "#1A1A1A", padding: "20px 20px 0" },
