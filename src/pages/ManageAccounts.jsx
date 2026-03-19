@@ -201,8 +201,11 @@ export default function ManageAccounts() {
       setSprintStart(sprintData.start_date);
       setSprintEnd(sprintData.end_date);
     } else {
-      setSprintStart("");
-      setSprintEnd("");
+      const sixtyDaysOut = new Date();
+      sixtyDaysOut.setDate(sixtyDaysOut.getDate() + 60);
+      const endDate = sixtyDaysOut.toISOString().split("T")[0];
+      setSprintStart(today);
+      setSprintEnd(endDate);
     }
   };
 
