@@ -327,6 +327,48 @@ export default function Accounts() {
             {recentActivities.length === 0 && upcomingActivities.length === 0 && (
               <p style={styles.emptyText}>No activity yet — tap an account to get started</p>
             )}
+
+            {/* My Accounts list */}
+            <div style={styles.mobileSection}>
+              <div style={styles.mobileSectionHeader}>
+                <p style={styles.mobileSectionLabel}>My Accounts ({accounts.length})</p>
+              </div>
+              {accounts.length === 0 ? (
+                <p style={styles.emptyText}>No accounts assigned yet</p>
+              ) : (
+                <div style={styles.mobileAccountList}>
+                  {accounts.map(account => {
+                    const sc = STATUS_COLORS[account.status] || STATUS_COLORS.New;
+                    const daysLeft = account.end_date
+                      ? Math.max(0, Math.ceil((new Date(account.end_date) - new Date()) / (1000 * 60 * 60 * 24)))
+                      : null;
+                    return (
+                      <div
+                        key={account.id}
+                        className="account-card"
+                        onClick={() => navigate(`/accounts/${account.id}`)}
+                      >
+                        <div style={styles.cardTop}>
+                          <p style={styles.cardCompany}>{account.name || account.company}</p>
+                          <span style={{
+                            ...styles.statusBadge,
+                            background: sc.bg, color: sc.color,
+                            border: `1px solid ${sc.border}`,
+                          }}>
+                            {account.status || "New"}
+                          </span>
+                        </div>
+                        {daysLeft !== null && (
+                          <p style={styles.daysLeftLabel}>
+                            <span style={styles.daysLeftNum}>{daysLeft}</span> days left
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* ══════════ DESKTOP LAYOUT ══════════ */}
@@ -478,6 +520,7 @@ const styles = {
   viewAllBtn: { background: "none", border: "none", fontSize: "12px", color: "#367C2B", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", textDecoration: "underline" },
   mobileCard: { backgroundColor: "#ffffff", border: "1px solid #E8E8E6", borderRadius: "10px", padding: "0 14px" },
 
+  mobileAccountList: { display: "flex", flexDirection: "column", gap: "10px", paddingBottom: "24px" },
   typeBadge: { flexShrink: 0, fontSize: "10px", fontWeight: 600, padding: "3px 8px", borderRadius: "100px", whiteSpace: "nowrap", marginTop: "2px" },
   actMiddle: { flex: 1, minWidth: 0 },
   actAccount: { fontSize: "13px", fontWeight: 600, color: "#367C2B", marginBottom: "2px" },
