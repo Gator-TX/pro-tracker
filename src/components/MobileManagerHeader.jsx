@@ -105,9 +105,6 @@ export default function MobileManagerHeader({ activePath, profile }) {
           {profile?.full_name && (
             <p style={styles.drawerName}>{profile.full_name}</p>
           )}
-          <button onClick={handleSignOut} style={styles.signOutBtn}>
-            Sign Out
-          </button>
         </div>
       </div>
     </>
@@ -202,8 +199,8 @@ const styles = {
   },
   signOutTopBtn: {
     background: "none", border: "none", padding: 0,
-    fontSize: "12px", color: "#367C2B", fontWeight: 500,
-    textDecoration: "underline", cursor: "pointer",
+    fontSize: "13px", color: "#367C2B", fontWeight: 600,
+    textDecoration: "none", cursor: "pointer",
     fontFamily: "'DM Sans', sans-serif",
   },
 };

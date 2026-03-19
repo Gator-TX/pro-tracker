@@ -104,9 +104,6 @@ export default function MobileHeader({ activePath, profile }) {
           {profile?.full_name && (
             <p style={styles.drawerName}>{profile.full_name}</p>
           )}
-          <button onClick={handleSignOut} style={styles.signOutBtn}>
-            Sign Out
-          </button>
         </div>
       </div>
     </>
