@@ -114,6 +114,8 @@ export default function ManagerActivities() {
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
+        .mobile-select-all { display: none; }
+
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 70px !important; overflow-x: hidden; }
           .filter-bar { flex-direction: column !important; }
@@ -122,17 +124,29 @@ export default function ManagerActivities() {
           .act-table-card { background: transparent !important; border: none !important; overflow: visible !important; }
           .act-row {
             display: flex !important; flex-direction: column !important;
-            padding: 14px 16px !important; gap: 6px !important;
+            padding: 14px 16px !important; padding-right: 44px !important; gap: 6px !important;
             background: #fff; border: 1px solid #E8E8E6 !important;
             border-bottom: 1px solid #E8E8E6 !important;
             border-radius: 8px; margin-bottom: 8px;
+            position: relative !important;
           }
-          .act-checkbox { display: none !important; }
+          .act-checkbox {
+            position: absolute !important;
+            top: 14px !important; right: 14px !important;
+            width: 18px !important; height: 18px !important;
+          }
           .act-type { order: 0; align-self: flex-start; }
           .act-account { font-size: 15px !important; font-weight: 600 !important; color: #1A1A1A !important; order: 1; }
           .act-rep { order: 2; font-size: 12px !important; color: #767676 !important; }
           .act-date { order: 3; font-size: 12px !important; }
           .act-notes { order: 4; }
+          .mobile-select-all {
+            display: flex !important; align-items: center; gap: 10px;
+            padding: 10px 16px; background: #fff;
+            border: 1px solid #E8E8E6; border-radius: 8px;
+            margin-bottom: 4px;
+          }
+          .mobile-delete-btn { width: 100% !important; text-align: center; }
         }
       `}</style>
 
@@ -165,10 +179,28 @@ export default function ManagerActivities() {
 
           {/* Delete button */}
           {selectedIds.length > 0 && (
-            <button onClick={handleDelete} disabled={deleting} style={styles.deleteBtn}>
+            <button onClick={handleDelete} disabled={deleting} className="mobile-delete-btn" style={styles.deleteBtn}>
               {deleting ? "Deleting…" : `Delete selected (${selectedIds.length})`}
             </button>
           )}
+
+          {/* Mobile select-all */}
+          <div className="mobile-select-all">
+            <input
+              type="checkbox"
+              checked={filtered.length > 0 && filtered.every(a => selectedIds.includes(a.id))}
+              onChange={e => setSelectedIds(e.target.checked ? filtered.map(a => a.id) : [])}
+              style={{ width: "18px", height: "18px", accentColor: "#367C2B", cursor: "pointer" }}
+            />
+            <span style={{ fontSize: "13px", fontWeight: 600, color: "#374151", fontFamily: "'DM Sans', sans-serif" }}>
+              Select all
+            </span>
+            {selectedIds.length > 0 && (
+              <span style={{ fontSize: "12px", color: "#767676", fontFamily: "'DM Sans', sans-serif" }}>
+                ({selectedIds.length} selected)
+              </span>
+            )}
+          </div>
 
           {/* Table */}
           <div className="act-table-card" style={styles.tableCard}>
