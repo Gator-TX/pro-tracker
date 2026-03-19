@@ -257,9 +257,7 @@ export default function ExportReports() {
           <title>Pro-Tracker Report</title>
           <style>
             body { font-family: Arial, sans-serif; font-size: 12px; color: #1A1A1A; padding: 32px; }
-            h1 { font-size: 22px; color: #367C2B; margin-bottom: 4px; }
             h2 { font-size: 18px; color: #367C2B; margin-bottom: 4px; }
-            .meta { color: #767676; font-size: 11px; margin-bottom: 24px; }
             .acct-count { font-size: 12px; color: #767676; margin-bottom: 12px; }
             table { width: 100%; border-collapse: collapse; margin-bottom: 32px; }
             th { background: #367C2B; color: #fff; padding: 8px 10px; text-align: left; font-size: 11px; }
@@ -269,25 +267,17 @@ export default function ExportReports() {
             .at-risk { background: #FEF2F2; color: #DC2626; }
             .on-track { background: #F0FDF4; color: #16A34A; }
             .accent { height: 3px; background: #FFDE00; margin-bottom: 16px; border-radius: 2px; width: 120px; }
-            .cover { margin-bottom: 0; }
-            .cover .meta { margin-bottom: 0; }
             .rep-section { page-break-after: always; }
             .rep-section:last-child { page-break-after: avoid; }
-            .page-header { margin-bottom: 20px; }
+            .page-header { margin-bottom: 8px; }
             .page-header-logo { font-size: 16px; font-weight: bold; color: #367C2B; margin-bottom: 6px; }
-            .page-header .accent-line { height: 3px; background: #FFDE00; border-radius: 2px; width: 120px; margin-bottom: 8px; }
+            .accent-line { height: 3px; background: #FFDE00; border-radius: 2px; width: 120px; margin-bottom: 8px; }
             .header-meta { font-size: 11px; color: #767676; display: flex; gap: 6px; align-items: center; margin-bottom: 16px; }
             .header-divider { color: #D0D0CC; }
             .page-header-rule { border: none; border-top: 1px solid #E8E8E6; margin-bottom: 20px; }
           </style>
         </head>
         <body>
-          <div class="rep-section cover">
-            <h1>Pro-Tracker Report</h1>
-            <div class="accent"></div>
-            <p class="meta">United Ag & Turf · Generated ${date}</p>
-            <p class="meta">${repGroups.length} rep${repGroups.length !== 1 ? "s" : ""} · ${data.length} account${data.length !== 1 ? "s" : ""}</p>
-          </div>
           ${repGroups.map(group => `
             <div class="rep-section">
               <div class="page-header">
