@@ -1,3 +1,11 @@
+// RLS policy needed in Supabase if delete fails:
+// CREATE POLICY "Managers can delete rep profiles"
+// ON profiles FOR DELETE TO authenticated
+// USING (
+//   (SELECT role FROM profiles WHERE id = auth.uid()) = 'manager'
+//   AND role = 'rep'
+// );
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabase";
@@ -11,6 +19,8 @@ export default function SalesReps() {
   const [reps, setReps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sortDirection, setSortDirection] = useState("asc");
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => { loadData(); }, []);
 
@@ -70,6 +80,22 @@ export default function SalesReps() {
     navigate("/login");
   };
 
+  const toggleSelect = (id) =>
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+
+  const handleDelete = async () => {
+    const count = selectedIds.length;
+    if (!window.confirm(`Delete ${count} rep${count > 1 ? "s" : ""}? This will also remove their profile. This cannot be undone.`)) return;
+    setDeleting(true);
+    for (const repId of selectedIds) {
+      await supabase.from("accounts").update({ rep_id: null }).eq("rep_id", repId);
+      await supabase.from("profiles").delete().eq("id", repId);
+    }
+    setSelectedIds([]);
+    await loadData();
+    setDeleting(false);
+  };
+
   if (loading) {
     return <div style={styles.loadingPage}><div style={styles.spinner} /></div>;
   }
@@ -88,7 +114,7 @@ export default function SalesReps() {
 
         .rep-row {
           display: grid;
-          grid-template-columns: 1.8fr 80px 110px 90px 60px 80px 100px;
+          grid-template-columns: 32px 1.8fr 80px 110px 90px 60px 80px 100px;
           gap: 12px; align-items: center;
           padding: 13px 20px;
           border-bottom: 1px solid #F0F0ED;
@@ -96,6 +122,7 @@ export default function SalesReps() {
         }
         .rep-row:hover { background: #F9F9F8; }
         .rep-row:last-child { border-bottom: none; }
+        .rep-checkbox { width: 16px; height: 16px; cursor: pointer; accent-color: #367C2B; flex-shrink: 0; }
 
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
@@ -105,9 +132,9 @@ export default function SalesReps() {
             display: flex !important;
             align-items: center !important;
             padding: 14px 16px !important;
-            gap: 0 !important;
+            gap: 12px !important;
           }
-          .rep-row-left { flex: 1; }
+          .rep-row-left { flex: 1; min-width: 0; }
           .rep-row-right { flex-shrink: 0; }
           .rep-desktop-stats { display: none !important; }
           .rep-mobile-stats { display: block !important; }
@@ -123,9 +150,21 @@ export default function SalesReps() {
           <TopBar title="Sales Reps" profile={profile} onSignOut={handleSignOut} />
           <p style={styles.subTitle}>{reps.length} rep{reps.length !== 1 ? "s" : ""}</p>
 
+          {selectedIds.length > 0 && (
+            <button onClick={handleDelete} disabled={deleting} style={styles.deleteBtn}>
+              {deleting ? "Deleting…" : `Delete selected (${selectedIds.length})`}
+            </button>
+          )}
+
           <div style={styles.tableCard}>
             {/* Desktop header */}
             <div className="rep-row rep-table-header" style={styles.tableHeader}>
+              <input
+                type="checkbox"
+                className="rep-checkbox"
+                checked={sorted.length > 0 && sorted.every(r => selectedIds.includes(r.id))}
+                onChange={e => setSelectedIds(e.target.checked ? sorted.map(r => r.id) : [])}
+              />
               <span style={{ cursor: "pointer" }} onClick={() => setSortDirection(d => d === "asc" ? "desc" : "asc")}>
                 Rep {sortDirection === "asc" ? "↑" : "↓"}
               </span>
@@ -151,11 +190,24 @@ export default function SalesReps() {
                   <div key={rep.id} className="rep-row"
                     onClick={() => navigate(`/dashboard/reps/${rep.id}`)}>
 
-                    {/* Desktop: all columns inline */}
+                    <input
+                      type="checkbox"
+                      className="rep-checkbox"
+                      checked={selectedIds.includes(rep.id)}
+                      onChange={() => toggleSelect(rep.id)}
+                      onClick={e => e.stopPropagation()}
+                    />
+
                     <div className="rep-row-left">
                       <p style={styles.repName}>{rep.full_name}</p>
                       <p style={styles.repEmail}>{rep.email || "—"}</p>
+                      <div className="rep-mobile-stats">
+                        <p style={styles.mobileStats}>
+                          {rep.accountCount} accounts · {rep.logsThisWeek} logs this week · {rep.totalLogs} total · {rep.wonCount} won{rep.daysLeft !== null ? ` · ${rep.daysLeft}d left` : ""}
+                        </p>
+                      </div>
                     </div>
+
                     <span className="rep-desktop-stats" style={styles.statVal}>{rep.accountCount}</span>
                     <span className="rep-desktop-stats" style={styles.statVal}>{rep.logsThisWeek}</span>
                     <span className="rep-desktop-stats" style={styles.statVal}>{rep.totalLogs}</span>
@@ -163,12 +215,6 @@ export default function SalesReps() {
                     <span className="rep-desktop-stats" style={styles.statVal}>{rep.daysLeft !== null ? `${rep.daysLeft}d` : "—"}</span>
                     <span className="rep-desktop-stats" style={badgeStyle}>{rep.atRisk ? "At Risk" : "On Track"}</span>
 
-                    {/* Mobile: stats below name + badge on right */}
-                    <div className="rep-mobile-stats" style={{ marginTop: "3px" }}>
-                      <p style={styles.mobileStats}>
-                        {rep.accountCount} accounts · {rep.logsThisWeek} logs this week · {rep.totalLogs} total · {rep.wonCount} won{rep.daysLeft !== null ? ` · ${rep.daysLeft}d left` : ""}
-                      </p>
-                    </div>
                     <div className="rep-row-right rep-mobile-stats">
                       <span style={badgeStyle}>{rep.atRisk ? "At Risk" : "On Track"}</span>
                     </div>
@@ -192,6 +238,7 @@ const styles = {
   subTitle: { fontSize: "13px", color: "#767676" },
   tableCard: { backgroundColor: "#ffffff", border: "1px solid #E8E8E6", borderRadius: "8px", overflow: "hidden" },
   tableHeader: { fontSize: "11px", fontWeight: 600, color: "#ABABAB", textTransform: "uppercase", letterSpacing: "0.06em" },
+  deleteBtn: { alignSelf: "flex-start", padding: "8px 16px", backgroundColor: "#DC2626", color: "#fff", border: "none", borderRadius: "6px", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" },
   repName: { fontSize: "14px", fontWeight: 600, color: "#1A1A1A" },
   repEmail: { fontSize: "12px", color: "#767676", marginTop: "2px" },
   statVal: { fontSize: "14px", color: "#374151" },
