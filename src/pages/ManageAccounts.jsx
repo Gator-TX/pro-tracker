@@ -589,6 +589,10 @@ export default function ManageAccounts() {
                     </div>
 
                     {/* Account checklist */}
+                    <div style={styles.legendRow}>
+                      <span style={styles.legendSwatch} />
+                      <span style={styles.legendText}>Already assigned to another rep</span>
+                    </div>
                     {allAccounts.some(a => a.rep_id && a.rep_id !== selectedRep.id) && (
                       <div style={styles.assignWarning}>
                         Accounts marked in yellow are currently assigned to another rep. Reassigning will remove them from that rep.
@@ -761,7 +765,13 @@ const styles = {
     fontSize: "12px", color: "#92400E", fontWeight: 500,
   },
   otherRepTag: {
-    fontSize: "12px", color: "#367C2B", fontWeight: 500,
+    fontSize: "12px", color: "#767676", fontWeight: 400,
     whiteSpace: "nowrap", flexShrink: 0,
   },
+  legendRow: { display: "flex", alignItems: "center", gap: "8px" },
+  legendSwatch: {
+    width: "14px", height: "14px", borderRadius: "3px",
+    backgroundColor: "#FFFBEB", border: "1px solid #FDE68A", flexShrink: 0,
+  },
+  legendText: { fontSize: "12px", color: "#767676" },
 };
