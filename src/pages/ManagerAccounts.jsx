@@ -157,7 +157,7 @@ export default function ManagerAccounts() {
 
         .account-row {
           display: grid;
-          grid-template-columns: 32px 2fr 120px 120px 110px 80px 100px;
+          grid-template-columns: 32px 2fr 120px 120px 110px 80px 80px 90px;
           gap: 12px; align-items: center;
           padding: 13px 20px;
           border-bottom: 1px solid #F0F0ED;
@@ -194,10 +194,10 @@ export default function ManagerAccounts() {
         .field-input:focus { border-color: #367C2B; }
 
         .table-scroll {
-          max-height: 600px; overflow-y: auto; min-width: 700px;
+          max-height: 600px; overflow-y: auto; min-width: 800px;
           scrollbar-width: thin; scrollbar-color: #E0E0DC transparent;
         }
-        .account-row { min-width: 700px; }
+        .account-row { min-width: 800px; }
 
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
@@ -268,7 +268,7 @@ export default function ManagerAccounts() {
 
           {/* Table */}
           <div className="acct-table-card" style={styles.tableCard}>
-            <div className="acct-table-header" style={{ ...styles.accountRow, ...styles.tableHeader, boxShadow: "0 2px 4px rgba(0,0,0,0.06)", position: "relative", zIndex: 1, minWidth: "700px" }}>
+            <div className="acct-table-header" style={{ ...styles.accountRow, ...styles.tableHeader, boxShadow: "0 2px 4px rgba(0,0,0,0.06)", position: "relative", zIndex: 1, minWidth: "800px" }}>
               <input
                 type="checkbox"
                 checked={filtered.length > 0 && filtered.every(a => selectedIds.includes(a.id))}
@@ -283,6 +283,7 @@ export default function ManagerAccounts() {
               <span>Last Activity</span>
               <span>Days Left</span>
               <span>Logs</span>
+              <span>Actions</span>
             </div>
 
             <div className="table-scroll">
@@ -330,6 +331,17 @@ export default function ManagerAccounts() {
                         {account.end_date ? Math.max(0, Math.ceil((new Date(account.end_date) - new Date()) / (1000 * 60 * 60 * 24))) : "—"}
                       </span>
                       <span className="acct-logs" style={styles.cellText}>{account.activities?.length || 0}</span>
+                      <span onClick={e => e.stopPropagation()}>
+                        {account.rep_id ? (
+                          <button
+                            onClick={e => { e.stopPropagation(); handleUnassign(account.id); }}
+                            style={styles.unassignLink}>
+                            Unassign
+                          </button>
+                        ) : (
+                          <span style={styles.cellText}>—</span>
+                        )}
+                      </span>
                     </div>
 
                     {/* Expanded detail */}
@@ -349,18 +361,6 @@ export default function ManagerAccounts() {
                               {account.address}
                             </a>
                           )}
-                          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "4px" }}>
-                            <span style={styles.cellText}>Rep: {getRepName(account.rep_id)}</span>
-                            {account.rep_id && (
-                              unassignMsg === account.id
-                                ? <span style={{ fontSize: "12px", color: "#16A34A", fontWeight: 500 }}>Account unassigned</span>
-                                : <button
-                                    onClick={e => { e.stopPropagation(); handleUnassign(account.id); }}
-                                    style={styles.unassignLink}>
-                                    Unassign
-                                  </button>
-                            )}
-                          </div>
                         </div>
 
                         {/* Contacts */}
@@ -479,7 +479,7 @@ const styles = {
   subTitle: { fontSize: "13px", color: "#767676" },
   filterBar: { display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" },
   tableCard: { backgroundColor: "#ffffff", border: "1px solid #E8E8E6", borderRadius: "8px", overflowX: "auto", WebkitOverflowScrolling: "touch" },
-  accountRow: { display: "grid", gridTemplateColumns: "32px 2fr 120px 120px 110px 80px 100px", gap: "12px", alignItems: "center", padding: "13px 20px", borderBottom: "1px solid #F0F0ED" },
+  accountRow: { display: "grid", gridTemplateColumns: "32px 2fr 120px 120px 110px 80px 80px 90px", gap: "12px", alignItems: "center", padding: "13px 20px", borderBottom: "1px solid #F0F0ED" },
   checkbox: { width: "16px", height: "16px", cursor: "pointer", accentColor: "#367C2B" },
   deleteBtn: { alignSelf: "flex-start", padding: "8px 16px", backgroundColor: "#DC2626", color: "#fff", border: "none", borderRadius: "6px", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" },
   tableHeader: { fontSize: "11px", fontWeight: 600, color: "#ABABAB", textTransform: "uppercase", letterSpacing: "0.06em", cursor: "default" },
