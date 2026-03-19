@@ -13,7 +13,7 @@ export default function ManagerAccounts() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterRep, setFilterRep] = useState("all");
-  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("active");
   const [selectedIds, setSelectedIds] = useState([]);
   const [deleting, setDeleting] = useState(false);
   const [expandedAccount, setExpandedAccount] = useState(null);
@@ -130,11 +130,17 @@ export default function ManagerAccounts() {
     ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" })
     : "—";
 
+  const ACTIVE_STATUSES = ["New", "Contacted", "Engaged", "Proposal"];
+
   const filtered = accounts.filter(a => {
     const matchSearch = !search ||
       (a.name || a.company || "").toLowerCase().includes(search.toLowerCase());
     const matchRep = filterRep === "all" || a.rep_id === filterRep;
-    const matchStatus = filterStatus === "all" || a.status === filterStatus;
+    const matchStatus = filterStatus === "all"
+      ? true
+      : filterStatus === "active"
+      ? ACTIVE_STATUSES.includes(a.status || "New")
+      : a.status === filterStatus;
     return matchSearch && matchRep && matchStatus;
   }).sort((a, b) => {
     const nameA = (a.name || a.company || "").toLowerCase();
@@ -252,10 +258,10 @@ export default function ManagerAccounts() {
             </select>
             <select className="filter-select" value={filterStatus}
               onChange={e => setFilterStatus(e.target.value)}>
-              <option value="all">All Statuses</option>
-              {["New", "Contacted", "Engaged", "Proposal", "Won", "Lost"].map(s => (
-                <option key={s} value={s}>{s}</option>
-              ))}
+              <option value="active">Active</option>
+              <option value="Won">Won</option>
+              <option value="Lost">Lost</option>
+              <option value="all">All</option>
             </select>
           </div>
 

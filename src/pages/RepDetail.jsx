@@ -17,6 +17,7 @@ export default function RepDetail() {
   const [accountContacts, setAccountContacts] = useState({});
   const [loading, setLoading] = useState(true);
   const [unassignMsg, setUnassignMsg] = useState(null);
+  const [showClosed, setShowClosed] = useState(false);
   const [stats, setStats] = useState({
     accountsAssigned: 0,
     logsThisWeek: 0,
@@ -134,6 +135,11 @@ export default function RepDetail() {
     );
   }
 
+  const ACTIVE_STATUSES = ["New", "Contacted", "Engaged", "Proposal"];
+  const visibleAccounts = showClosed
+    ? accounts
+    : accounts.filter(a => ACTIVE_STATUSES.includes(a.status || "New"));
+
   const STAT_CARDS = [
     { label: "Accounts Assigned", value: stats.accountsAssigned },
     { label: "Logs This Week", value: stats.logsThisWeek },
@@ -195,7 +201,17 @@ export default function RepDetail() {
 
           {/* ACCOUNTS TABLE */}
           <div style={styles.tableCard}>
-            <p style={styles.tableTitle}>Accounts</p>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px 12px", borderBottom: "1px solid #F0F0ED" }}>
+              <p style={{ fontSize: "14px", fontWeight: 600, color: "#1A1A1A" }}>
+                {showClosed ? `All Accounts (${accounts.length})` : `Active Accounts (${visibleAccounts.length})`}
+              </p>
+              <button
+                onClick={() => setShowClosed(v => !v)}
+                style={{ background: "none", border: "1.5px solid #E0E0DC", borderRadius: "100px", padding: "5px 12px", fontSize: "12px", fontWeight: 500, color: "#767676", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}
+              >
+                {showClosed ? "Active Only" : "Show Closed"}
+              </button>
+            </div>
 
             {/* Table header */}
             <div style={{ ...styles.accountRowGrid, ...styles.tableHeader, padding: "10px 20px" }}>
@@ -208,10 +224,10 @@ export default function RepDetail() {
               <span></span>
             </div>
 
-            {accounts.length === 0 ? (
-              <p style={styles.emptyText}>No accounts assigned</p>
+            {visibleAccounts.length === 0 ? (
+              <p style={styles.emptyText}>{showClosed ? "No accounts assigned" : "No active accounts"}</p>
             ) : (
-              accounts.map(account => {
+              visibleAccounts.map(account => {
                 const sc = STATUS_COLORS[account.status] || STATUS_COLORS.New;
                 const isExpanded = expandedAccount === account.id;
                 const acts = accountActivities[account.id] || [];

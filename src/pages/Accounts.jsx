@@ -10,13 +10,14 @@ export default function Accounts() {
   const [accounts, setAccounts] = useState([]);
   const [upcomingActivities, setUpcomingActivities] = useState([]);
   const [recentActivities, setRecentActivities] = useState([]);
-  const [stats, setStats] = useState({ total: 0, active: 0, won: 0, needsAttention: 0 });
+  const [stats, setStats] = useState({ total: 0, active: 0, closed: 0, needsAttention: 0 });
   const [showAllUpcoming, setShowAllUpcoming] = useState(false);
-  const [filter, setFilter] = useState("All");
+  const [filter, setFilter] = useState("Active");
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
 
-  const STATUS_FILTERS = ["All", "New", "Contacted", "Engaged", "Proposal", "Won", "Lost"];
+  const ACTIVE_STATUSES = ["New", "Contacted", "Engaged", "Proposal"];
+  const STATUS_FILTERS = ["Active", "New", "Contacted", "Engaged", "Proposal", "Closed", "All"];
 
   const STATUS_COLORS = {
     New:        { bg: "#EFF6FF", color: "#2563EB", border: "#BFDBFE" },
@@ -70,15 +71,16 @@ export default function Accounts() {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const total = (accountsData || []).length;
-    const active = (accountsData || []).filter(a => !["Won", "Lost"].includes(a.status)).length;
-    const won = (accountsData || []).filter(a => a.status === "Won").length;
+    const active = (accountsData || []).filter(a => ACTIVE_STATUSES.includes(a.status)).length;
+    const closed = (accountsData || []).filter(a => ["Won", "Lost"].includes(a.status)).length;
     const needsAttention = (accountsData || []).filter(a => {
+      if (!ACTIVE_STATUSES.includes(a.status)) return false;
       const acts = a.activities || [];
       if (acts.length === 0) return true;
       const latest = new Date(Math.max(...acts.map(x => new Date(x.activity_date))));
       return latest < sevenDaysAgo;
     }).length;
-    setStats({ total, active, won, needsAttention });
+    setStats({ total, active, closed, needsAttention });
 
     // Upcoming scheduled activities
     const upcoming = [];
@@ -151,6 +153,10 @@ export default function Accounts() {
 
   const filteredAccounts = filter === "All"
     ? accounts
+    : filter === "Active"
+    ? accounts.filter(a => ACTIVE_STATUSES.includes(a.status))
+    : filter === "Closed"
+    ? accounts.filter(a => ["Won", "Lost"].includes(a.status))
     : accounts.filter(a => a.status === filter);
 
   const visibleUpcoming = showAllUpcoming ? upcomingActivities : upcomingActivities.slice(0, 5);
@@ -245,7 +251,7 @@ export default function Accounts() {
               {[
                 { label: "Total Accounts", value: stats.total, color: "#2563EB", bg: "#EFF6FF" },
                 { label: "Active Accounts", value: stats.active, color: "#16A34A", bg: "#F0FDF4" },
-                { label: "Won This Sprint", value: stats.won, color: "#367C2B", bg: "#DCFCE7" },
+                { label: "Closed Accounts", value: stats.closed, color: "#367C2B", bg: "#DCFCE7" },
                 { label: "Needs Attention", value: stats.needsAttention, color: "#DC2626", bg: "#FEF2F2" },
               ].map(card => (
                 <div key={card.label} style={{ ...styles.statCard, backgroundColor: card.bg }}>

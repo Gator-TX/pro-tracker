@@ -85,7 +85,8 @@ export default function Dashboard() {
         .gte("created_at", fortyEightHoursAgo.toISOString())
         .limit(1);
       const repIsNew = (new Date() - new Date(rep.created_at)) < 48 * 60 * 60 * 1000;
-      const atRisk = !repIsNew && (!recentActs || recentActs.length === 0) && (accounts || []).length > 0;
+      const activeAccounts = (accounts || []).filter(a => !["Won", "Lost"].includes(a.status));
+      const atRisk = !repIsNew && (!recentActs || recentActs.length === 0) && activeAccounts.length > 0;
 
       return {
         ...rep,
