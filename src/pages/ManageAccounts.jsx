@@ -108,14 +108,28 @@ export default function ManageAccounts() {
   const handleImport = async () => {
     setImporting(true);
     let imported = 0;
+    let skipped = 0;
 
     for (const row of importRows) {
-      const companyName = row[columnMap["Company name"]] || "";
+      const companyName = (row[columnMap["Company name"]] || "").trim();
       const address = row[columnMap["Physical address"]] || "";
       const contactName = row[columnMap["Contact name"]] || "";
       const phone = row[columnMap["Contact phone"]] || "";
       const email = row[columnMap["Contact email"]] || "";
       const assignedRepName = row[columnMap["Assigned rep"]] || "";
+
+      if (!companyName) continue;
+
+      const { data: existing } = await supabase
+        .from("accounts")
+        .select("id, name")
+        .ilike("name", companyName)
+        .single();
+
+      if (existing) {
+        skipped++;
+        continue;
+      }
 
       const matchedRep = reps.find(r =>
         r.full_name?.toLowerCase() === assignedRepName.toLowerCase()
@@ -148,7 +162,7 @@ export default function ManageAccounts() {
       imported++;
     }
 
-    setImportSuccess(imported);
+    setImportSuccess({ imported, skipped });
     setImporting(false);
     setImportStep(1);
     setImportFile(null);
@@ -391,7 +405,8 @@ export default function ManageAccounts() {
             <div style={styles.card}>
               {importSuccess && (
                 <div style={styles.successBanner}>
-                  {importSuccess} accounts imported successfully
+                  {importSuccess.imported} account{importSuccess.imported !== 1 ? "s" : ""} imported
+                  {importSuccess.skipped > 0 ? ` · ${importSuccess.skipped} duplicate${importSuccess.skipped !== 1 ? "s" : ""} skipped` : ""}
                 </div>
               )}
 
