@@ -75,7 +75,17 @@ export default function Dashboard() {
         .gte("activity_date", weekAgoStr);
 
       const weeklyCount = acts?.length || 0;
-      const atRisk = weeklyCount === 0 && (accounts || []).length > 0;
+
+      const fortyEightHoursAgo = new Date();
+      fortyEightHoursAgo.setHours(fortyEightHoursAgo.getHours() - 48);
+      const { data: recentActs } = await supabase
+        .from("activities")
+        .select("id")
+        .eq("rep_id", rep.id)
+        .gte("created_at", fortyEightHoursAgo.toISOString())
+        .limit(1);
+      const repIsNew = (new Date() - new Date(rep.created_at)) < 48 * 60 * 60 * 1000;
+      const atRisk = !repIsNew && (!recentActs || recentActs.length === 0) && (accounts || []).length > 0;
 
       return {
         ...rep,
