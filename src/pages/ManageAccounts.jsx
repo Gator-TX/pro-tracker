@@ -61,7 +61,7 @@ export default function ManageAccounts() {
     setReps(repsData || []);
 
     const { data: accountsData } = await supabase
-      .from("accounts").select("id, name, company, rep_id");
+      .from("accounts").select("id, name, company, rep_id, start_date, end_date");
     const sorted = (accountsData || []).sort((a, b) =>
       (a.name || a.company || "").toLowerCase().localeCompare((b.name || b.company || "").toLowerCase())
     );
@@ -147,8 +147,6 @@ export default function ManageAccounts() {
           address,
           rep_id: matchedRep?.id || null,
           status: "New",
-          start_date: new Date().toISOString().split("T")[0],
-          end_date: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
         })
         .select().single();
 
@@ -184,8 +182,6 @@ export default function ManageAccounts() {
         address: manualForm.address,
         rep_id: manualForm.rep_id || null,
         status: "New",
-        start_date: new Date().toISOString().split("T")[0],
-        end_date: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
       })
       .select().single();
 
@@ -242,7 +238,7 @@ export default function ManageAccounts() {
   };
 
   const handleUnassignAccount = async (accountId) => {
-    await supabase.from("accounts").update({ rep_id: null }).eq("id", accountId);
+    await supabase.from("accounts").update({ rep_id: null, start_date: null, end_date: null }).eq("id", accountId);
     setAllAccounts(prev => prev.map(a => a.id === accountId ? { ...a, rep_id: null } : a));
     setRepAccounts(prev => prev.filter(id => id !== accountId));
     setUnassignMsg(accountId);
@@ -253,16 +249,35 @@ export default function ManageAccounts() {
     if (!selectedRep) return;
     setSavingAssign(true);
 
-    // Remove rep from all their current accounts
-    await supabase.from("accounts")
-      .update({ rep_id: null })
-      .eq("rep_id", selectedRep.id);
+    const today = new Date().toISOString().split("T")[0];
+    const sixtyDaysOut = new Date();
+    sixtyDaysOut.setDate(sixtyDaysOut.getDate() + 60);
+    const endDate = sixtyDaysOut.toISOString().split("T")[0];
+
+    // Accounts previously assigned to this rep that are now being unassigned
+    const previouslyAssigned = allAccounts.filter(a => a.rep_id === selectedRep.id).map(a => a.id);
+    const toUnassign = previouslyAssigned.filter(id => !repAccounts.includes(id));
+    for (const accountId of toUnassign) {
+      await supabase.from("accounts")
+        .update({ rep_id: null, start_date: null, end_date: null })
+        .eq("id", accountId);
+    }
 
     // Assign selected accounts
     for (const accountId of repAccounts) {
-      await supabase.from("accounts")
-        .update({ rep_id: selectedRep.id })
-        .eq("id", accountId);
+      const account = allAccounts.find(a => a.id === accountId);
+      const alreadyWithThisRep = account?.rep_id === selectedRep.id && account?.start_date;
+      if (alreadyWithThisRep) {
+        // Keep existing sprint dates — only ensure rep_id is set
+        await supabase.from("accounts")
+          .update({ rep_id: selectedRep.id })
+          .eq("id", accountId);
+      } else {
+        // New assignment or reassignment from another rep — start a fresh sprint
+        await supabase.from("accounts")
+          .update({ rep_id: selectedRep.id, start_date: today, end_date: endDate })
+          .eq("id", accountId);
+      }
     }
 
     // Upsert sprint

@@ -366,11 +366,11 @@ export default function Accounts() {
                             {account.status || "New"}
                           </span>
                         </div>
-                        {daysLeft !== null && (
-                          <p style={styles.daysLeftLabel}>
-                            <span style={styles.daysLeftNum}>{daysLeft}</span> days left
-                          </p>
-                        )}
+                        <p style={styles.daysLeftLabel}>
+                          {daysLeft !== null
+                            ? <><span style={styles.daysLeftNum}>{daysLeft}</span> days left</>
+                            : "—"}
+                        </p>
                       </div>
                     );
                   })}
@@ -475,17 +475,17 @@ export default function Accounts() {
                         </span>
                       </div>
                       {account.end_date && (
-                        <>
-                          <div style={styles.progressWrap}>
-                            <div style={styles.progressTrack}>
-                              <div style={{ ...styles.progressFill, width: `${accountProgress}%` }} />
-                            </div>
+                        <div style={styles.progressWrap}>
+                          <div style={styles.progressTrack}>
+                            <div style={{ ...styles.progressFill, width: `${accountProgress}%` }} />
                           </div>
-                          <p style={styles.daysLeftLabel}>
-                            <span style={styles.daysLeftNum}>{accountDaysLeft}</span> days left
-                          </p>
-                        </>
+                        </div>
                       )}
+                      <p style={styles.daysLeftLabel}>
+                        {accountDaysLeft !== null
+                          ? <><span style={styles.daysLeftNum}>{accountDaysLeft}</span> days left</>
+                          : "—"}
+                      </p>
                     </div>
                   );
                 })
