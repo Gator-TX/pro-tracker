@@ -228,6 +228,27 @@ export default function ExportReports() {
       const data = await fetchExportData();
       const date = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
+      // Group rows by rep
+      const repGroups = [];
+      for (const row of data) {
+        const last = repGroups[repGroups.length - 1];
+        if (last && last.rep === row.rep) {
+          last.rows.push(row);
+        } else {
+          repGroups.push({ rep: row.rep, rows: [row] });
+        }
+      }
+
+      const tableHeaders = `
+        <tr>
+          ${includeOptions.account_status ? "<th>Account</th><th>Status</th>" : ""}
+          ${includeOptions.contact_details ? "<th>Contact</th><th>Phone</th>" : ""}
+          ${includeOptions.activity_log ? "<th>Last Activity</th><th>Logs</th>" : ""}
+          ${includeOptions.scheduled_activities ? "<th>Next Scheduled</th>" : ""}
+          ${includeOptions.sprint_progress ? "<th>Days Left</th>" : ""}
+          ${includeOptions.at_risk ? "<th>Status</th>" : ""}
+        </tr>`;
+
       const html = `
         <!DOCTYPE html>
         <html>
@@ -236,8 +257,10 @@ export default function ExportReports() {
           <title>Pro-Tracker Report</title>
           <style>
             body { font-family: Arial, sans-serif; font-size: 12px; color: #1A1A1A; padding: 32px; }
-            h1 { font-size: 20px; color: #367C2B; margin-bottom: 4px; }
+            h1 { font-size: 22px; color: #367C2B; margin-bottom: 4px; }
+            h2 { font-size: 18px; color: #367C2B; margin-bottom: 4px; }
             .meta { color: #767676; font-size: 11px; margin-bottom: 24px; }
+            .acct-count { font-size: 12px; color: #767676; margin-bottom: 12px; }
             table { width: 100%; border-collapse: collapse; margin-bottom: 32px; }
             th { background: #367C2B; color: #fff; padding: 8px 10px; text-align: left; font-size: 11px; }
             td { padding: 7px 10px; border-bottom: 1px solid #E8E8E6; vertical-align: top; }
@@ -246,52 +269,41 @@ export default function ExportReports() {
             .at-risk { background: #FEF2F2; color: #DC2626; }
             .on-track { background: #F0FDF4; color: #16A34A; }
             .accent { height: 3px; background: #FFDE00; margin-bottom: 16px; border-radius: 2px; width: 120px; }
-            .rep-header td { background: #F0FDF4; color: #367C2B; font-weight: bold; font-size: 12px; padding: 8px 10px; border-bottom: 2px solid #BBF7D0; }
+            .cover { margin-bottom: 0; }
+            .cover .meta { margin-bottom: 0; }
+            .rep-section { page-break-after: always; }
+            .rep-section:last-child { page-break-after: avoid; }
           </style>
         </head>
         <body>
-          <h1>Pro-Tracker Report</h1>
-          <div class="accent"></div>
-          <p class="meta">United Ag & Turf · Generated ${date} · ${data.length} accounts</p>
-          <table>
-            <thead>
-              <tr>
-                ${includeOptions.account_status ? "<th>Rep</th><th>Account</th><th>Status</th>" : ""}
-                ${includeOptions.contact_details ? "<th>Contact</th><th>Phone</th>" : ""}
-                ${includeOptions.activity_log ? "<th>Last Activity</th><th>Logs</th>" : ""}
-                ${includeOptions.scheduled_activities ? "<th>Next Scheduled</th>" : ""}
-                ${includeOptions.sprint_progress ? "<th>Days Left</th>" : ""}
-                ${includeOptions.at_risk ? "<th>Status</th>" : ""}
-              </tr>
-            </thead>
-            <tbody>
-              ${(() => {
-                const colCount =
-                  (includeOptions.account_status ? 3 : 0) +
-                  (includeOptions.contact_details ? 2 : 0) +
-                  (includeOptions.activity_log ? 2 : 0) +
-                  (includeOptions.scheduled_activities ? 1 : 0) +
-                  (includeOptions.sprint_progress ? 1 : 0) +
-                  (includeOptions.at_risk ? 1 : 0);
-                let lastRep = null;
-                return data.map(row => {
-                  const repHeader = row.rep !== lastRep
-                    ? `<tr class="rep-header"><td colspan="${colCount}">${row.rep}</td></tr>`
-                    : "";
-                  lastRep = row.rep;
-                  return repHeader + `
+          <div class="rep-section cover">
+            <h1>Pro-Tracker Report</h1>
+            <div class="accent"></div>
+            <p class="meta">United Ag & Turf · Generated ${date}</p>
+            <p class="meta">${repGroups.length} rep${repGroups.length !== 1 ? "s" : ""} · ${data.length} account${data.length !== 1 ? "s" : ""}</p>
+          </div>
+          ${repGroups.map(group => `
+            <div class="rep-section">
+              <h2>${group.rep}</h2>
+              <div class="accent"></div>
+              <p class="acct-count">${group.rows.length} account${group.rows.length !== 1 ? "s" : ""}</p>
+              <table>
+                <thead>${tableHeaders}</thead>
+                <tbody>
+                  ${group.rows.map(row => `
                     <tr>
-                      ${includeOptions.account_status ? `<td>${row.rep}</td><td>${row.account}</td><td>${row.status}</td>` : ""}
+                      ${includeOptions.account_status ? `<td>${row.account}</td><td>${row.status}</td>` : ""}
                       ${includeOptions.contact_details ? `<td>${row.contactName}</td><td>${row.contactPhone}</td>` : ""}
                       ${includeOptions.activity_log ? `<td>${row.lastActivity}</td><td>${row.activityCount}</td>` : ""}
                       ${includeOptions.scheduled_activities ? `<td>${row.nextScheduled}</td>` : ""}
                       ${includeOptions.sprint_progress ? `<td>${row.sprintDaysLeft}</td>` : ""}
                       ${includeOptions.at_risk ? `<td><span class="badge ${row.atRisk === 'At Risk' ? 'at-risk' : 'on-track'}">${row.atRisk}</span></td>` : ""}
-                    </tr>`;
-                }).join("");
-              })()}
-            </tbody>
-          </table>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            </div>
+          `).join("")}
         </body>
         </html>
       `;
