@@ -118,9 +118,12 @@ export default function ExportReports() {
     (allSprints || []).forEach(s => { sprintByRep[s.rep_id] = s; });
 
     const actsByAccount = {};
+    const actsByRep = {};
     (allActivities || []).forEach(a => {
       if (!actsByAccount[a.account_id]) actsByAccount[a.account_id] = [];
       actsByAccount[a.account_id].push(a);
+      if (!actsByRep[a.rep_id]) actsByRep[a.rep_id] = [];
+      actsByRep[a.rep_id].push(a);
     });
 
     const contactsByAccount = {};
@@ -128,9 +131,6 @@ export default function ExportReports() {
       if (!contactsByAccount[c.account_id]) contactsByAccount[c.account_id] = [];
       contactsByAccount[c.account_id].push(c);
     });
-
-    const weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
 
     const results = [];
     for (const account of (allAccounts || [])) {
@@ -145,8 +145,13 @@ export default function ExportReports() {
         ? Math.max(0, Math.ceil((new Date(sprint.end_date) - new Date()) / (1000 * 60 * 60 * 24)))
         : null;
 
-      const recentActs = activities.filter(a => new Date(a.activity_date) >= weekAgo);
-      const atRisk = recentActs.length === 0;
+      const repIsNew = (new Date() - new Date(rep.created_at)) < 48 * 60 * 60 * 1000;
+      const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
+      const recentActs = (actsByRep[rep.id] || []).filter(a =>
+        new Date(a.activity_date) >= fortyEightHoursAgo
+      );
+      const repAccounts = (allAccounts || []).filter(a => a.rep_id === rep.id);
+      const atRisk = !repIsNew && recentActs.length === 0 && repAccounts.length > 0;
 
       const primaryContact = contacts.find(c => c.is_primary) || contacts[0];
       const lastAct = activities[0];
