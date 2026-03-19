@@ -61,8 +61,10 @@ export default function ManageAccounts() {
 
     const { data: accountsData } = await supabase
       .from("accounts").select("id, name, company, rep_id");
-    (accountsData || []).sort((a, b) => (a.name || a.company || "").localeCompare(b.name || b.company || ""));
-    setAllAccounts(accountsData || []);
+    const sorted = (accountsData || []).sort((a, b) =>
+      (a.name || a.company || "").toLowerCase().localeCompare((b.name || b.company || "").toLowerCase())
+    );
+    setAllAccounts(sorted);
 
     setLoading(false);
   };
@@ -602,7 +604,9 @@ export default function ManageAccounts() {
                       {allAccounts.length === 0 ? (
                         <p style={styles.emptyText}>No accounts in system yet</p>
                       ) : (
-                        allAccounts.map(account => {
+                        [...allAccounts].sort((a, b) =>
+                          (a.name || a.company || "").toLowerCase().localeCompare((b.name || b.company || "").toLowerCase())
+                        ).map(account => {
                           const assignedToOther = account.rep_id && account.rep_id !== selectedRep.id;
                           const otherRepName = assignedToOther
                             ? reps.find(r => r.id === account.rep_id)?.full_name
