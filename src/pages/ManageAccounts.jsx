@@ -127,6 +127,8 @@ export default function ManageAccounts() {
           address,
           rep_id: matchedRep?.id || null,
           status: "New",
+          start_date: new Date().toISOString().split("T")[0],
+          end_date: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
         })
         .select().single();
 
@@ -162,6 +164,8 @@ export default function ManageAccounts() {
         address: manualForm.address,
         rep_id: manualForm.rep_id || null,
         status: "New",
+        start_date: new Date().toISOString().split("T")[0],
+        end_date: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
       })
       .select().single();
 

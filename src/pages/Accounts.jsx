@@ -55,7 +55,7 @@ export default function Accounts() {
     // Get accounts for this rep
     const { data: accountsData, error: accountsError } = await supabase
       .from("accounts")
-      .select("*, activities(activity_date, activity_type, scheduled_next_date, scheduled_next_type, scheduled_next_time)")
+      .select("*, start_date, end_date, activities(activity_date, activity_type, scheduled_next_date, scheduled_next_type, scheduled_next_time)")
       .eq("rep_id", user.id)
       .order("created_at", { ascending: false });
     console.log("user.id:", user.id);
@@ -299,7 +299,16 @@ export default function Accounts() {
             filteredAccounts.map(account => {
               const statusStyle = STATUS_COLORS[account.status] || STATUS_COLORS.New;
               const lastContact = getLastContact(account);
-              const progress = sprintProgress();
+
+              const accountDaysLeft = account.end_date
+                ? Math.max(0, Math.ceil((new Date(account.end_date) - new Date()) / (1000 * 60 * 60 * 24)))
+                : null;
+              const accountProgress = (account.start_date && account.end_date)
+                ? Math.min(100, Math.max(0, Math.round(
+                    ((new Date() - new Date(account.start_date)) /
+                    (new Date(account.end_date) - new Date(account.start_date))) * 100
+                  )))
+                : 0;
 
               return (
                 <div
@@ -328,15 +337,17 @@ export default function Accounts() {
                   </div>
 
                   {/* Sprint progress bar */}
-                  <div style={styles.progressWrap}>
-                    <div style={styles.progressTrack}>
-                      <div style={{
-                        ...styles.progressFill,
-                        width: `${progress}%`,
-                      }} />
+                  {account.end_date && (
+                    <div style={styles.progressWrap}>
+                      <div style={styles.progressTrack}>
+                        <div style={{
+                          ...styles.progressFill,
+                          width: `${accountProgress}%`,
+                        }} />
+                      </div>
+                      <span style={styles.progressLabel}>{accountDaysLeft} days left</span>
                     </div>
-                    <span style={styles.progressLabel}>{daysLeft()} days left</span>
-                  </div>
+                  )}
                 </div>
               );
             })

@@ -12,7 +12,6 @@ export default function AccountDetail() {
   const [account, setAccount] = useState(null);
   const [contacts, setContacts] = useState([]);
   const [activities, setActivities] = useState([]);
-  const [sprint, setSprint] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Edit company info
@@ -51,7 +50,7 @@ export default function AccountDetail() {
     // Account
     const { data: acc } = await supabase
       .from("accounts")
-      .select("*")
+      .select("*, start_date, end_date")
       .eq("id", id)
       .single();
     setAccount(acc);
@@ -72,17 +71,6 @@ export default function AccountDetail() {
       .eq("account_id", id)
       .order("activity_date", { ascending: false });
     setActivities(acts || []);
-
-    // Sprint
-    const today = new Date().toISOString().split("T")[0];
-    const { data: sprintData } = await supabase
-      .from("sprints")
-      .select("*")
-      .eq("rep_id", user.id)
-      .lte("start_date", today)
-      .gte("end_date", today)
-      .single();
-    setSprint(sprintData);
 
     setLoading(false);
   };
@@ -140,16 +128,16 @@ export default function AccountDetail() {
 
   // ── Sprint progress ──
   const sprintProgress = () => {
-    if (!sprint) return 0;
-    const start = new Date(sprint.start_date);
-    const end = new Date(sprint.end_date);
+    if (!account?.start_date || !account?.end_date) return 0;
+    const start = new Date(account.start_date);
+    const end = new Date(account.end_date);
     const today = new Date();
     return Math.min(100, Math.max(0, Math.round(((today - start) / (end - start)) * 100)));
   };
 
   const daysLeft = () => {
-    if (!sprint) return null;
-    const diff = Math.ceil((new Date(sprint.end_date) - new Date()) / (1000 * 60 * 60 * 24));
+    if (!account?.end_date) return null;
+    const diff = Math.ceil((new Date(account.end_date) - new Date()) / (1000 * 60 * 60 * 24));
     return diff > 0 ? diff : 0;
   };
 
@@ -427,7 +415,7 @@ export default function AccountDetail() {
           )}
 
           {/* ── SPRINT PROGRESS ── */}
-          {sprint && (
+          {account?.end_date && (
             <div style={styles.card}>
               <div style={styles.cardHeader}>
                 <p style={styles.cardLabel}>Sprint Progress</p>
