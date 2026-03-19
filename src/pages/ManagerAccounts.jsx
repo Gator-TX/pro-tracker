@@ -19,6 +19,7 @@ export default function ManagerAccounts() {
   const [accountDetails, setAccountDetails] = useState({});
   const [sprintEdits, setSprintEdits] = useState({});
   const [sprintSaved, setSprintSaved] = useState({});
+  const [sortDirection, setSortDirection] = useState("asc");
 
   const STATUS_COLORS = {
     New:       { bg: "#EFF6FF", color: "#2563EB", border: "#BFDBFE" },
@@ -126,6 +127,10 @@ export default function ManagerAccounts() {
     const matchRep = filterRep === "all" || a.rep_id === filterRep;
     const matchStatus = filterStatus === "all" || a.status === filterStatus;
     return matchSearch && matchRep && matchStatus;
+  }).sort((a, b) => {
+    const nameA = (a.name || a.company || "").toLowerCase();
+    const nameB = (b.name || b.company || "").toLowerCase();
+    return sortDirection === "asc" ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
   });
 
   if (loading) {
@@ -233,7 +238,9 @@ export default function ManagerAccounts() {
                 onChange={e => setSelectedIds(e.target.checked ? filtered.map(a => a.id) : [])}
                 style={styles.checkbox}
               />
-              <span>Account</span>
+              <span style={{ cursor: "pointer" }} onClick={() => setSortDirection(d => d === "asc" ? "desc" : "asc")}>
+                Account {sortDirection === "asc" ? "↑" : "↓"}
+              </span>
               <span>Status</span>
               <span>Assigned Rep</span>
               <span>Last Activity</span>

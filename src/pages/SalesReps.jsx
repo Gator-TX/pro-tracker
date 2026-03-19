@@ -9,6 +9,7 @@ export default function SalesReps() {
   const [profile, setProfile] = useState(null);
   const [reps, setReps] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [sortDirection, setSortDirection] = useState("asc");
 
   useEffect(() => { loadData(); }, []);
 
@@ -107,7 +108,9 @@ export default function SalesReps() {
 
           {/* Column headers */}
           <div style={styles.repHeader}>
-            <span>Rep</span>
+            <span style={{ cursor: "pointer" }} onClick={() => setSortDirection(d => d === "asc" ? "desc" : "asc")}>
+              Rep {sortDirection === "asc" ? "↑" : "↓"}
+            </span>
             <span>Accounts</span>
             <span>Logs This Week</span>
             <span>Total Logs</span>
@@ -121,7 +124,10 @@ export default function SalesReps() {
             {reps.length === 0 ? (
               <p style={styles.emptyText}>No reps found</p>
             ) : (
-              reps.map(rep => (
+              [...reps].sort((a, b) => sortDirection === "asc"
+                ? a.full_name.localeCompare(b.full_name)
+                : b.full_name.localeCompare(a.full_name)
+              ).map(rep => (
                 <div key={rep.id} className="rep-card"
                   onClick={() => navigate(`/dashboard/reps/${rep.id}`)}>
                   <div>

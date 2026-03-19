@@ -17,6 +17,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [showExport, setShowExport] = useState(false);
   const [sprint, setSprint] = useState(null);
+  const [sortDirection, setSortDirection] = useState("asc");
 
   // Export panel state
   const [exportRange, setExportRange] = useState("sprint");
@@ -298,7 +299,9 @@ export default function Dashboard() {
             <p style={styles.tableTitle}>Rep Activity</p>
 
             <div style={{ ...styles.repRowStyle, ...styles.tableHeader }}>
-              <span>Rep</span>
+              <span style={{ cursor: "pointer" }} onClick={() => setSortDirection(d => d === "asc" ? "desc" : "asc")}>
+                Rep {sortDirection === "asc" ? "↑" : "↓"}
+              </span>
               <span>Accounts</span>
               <span>Logs This Week</span>
               <span>Status</span>
@@ -307,7 +310,10 @@ export default function Dashboard() {
             {reps.length === 0 ? (
               <p style={styles.emptyText}>No reps found</p>
             ) : (
-              reps.map(rep => (
+              [...reps].sort((a, b) => sortDirection === "asc"
+                ? a.full_name.localeCompare(b.full_name)
+                : b.full_name.localeCompare(a.full_name)
+              ).map(rep => (
                 <div key={rep.id} className="rep-row"
                   onClick={() => navigate(`/dashboard/reps/${rep.id}`)}>
                   <span style={styles.repName}>{rep.full_name}</span>
