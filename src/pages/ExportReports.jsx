@@ -88,65 +88,85 @@ export default function ExportReports() {
 
   const fetchExportData = async () => {
     const dateRange = getDateRange();
-    const results = [];
+    const today = new Date().toISOString().split("T")[0];
 
-    for (const repId of selectedReps) {
-      const rep = reps.find(r => r.id === repId);
+    // Query 1: accounts for selected reps
+    const { data: allAccounts } = await supabase
+      .from("accounts").select("*").in("rep_id", selectedReps);
+
+    const accountIds = (allAccounts || []).map(a => a.id);
+
+    // Queries 2-4 in parallel using account ids and rep ids
+    let actsQuery = supabase.from("activities").select("*")
+      .in("account_id", accountIds).order("activity_date", { ascending: false });
+    if (dateRange?.start) actsQuery = actsQuery.gte("activity_date", dateRange.start);
+    if (dateRange?.end) actsQuery = actsQuery.lte("activity_date", dateRange.end);
+
+    const [
+      { data: allActivities },
+      { data: allContacts },
+      { data: allSprints },
+    ] = await Promise.all([
+      actsQuery,
+      supabase.from("contacts").select("*").in("account_id", accountIds),
+      supabase.from("sprints").select("*").in("rep_id", selectedReps)
+        .lte("start_date", today).gte("end_date", today),
+    ]);
+
+    // Index by id for fast lookup
+    const sprintByRep = {};
+    (allSprints || []).forEach(s => { sprintByRep[s.rep_id] = s; });
+
+    const actsByAccount = {};
+    (allActivities || []).forEach(a => {
+      if (!actsByAccount[a.account_id]) actsByAccount[a.account_id] = [];
+      actsByAccount[a.account_id].push(a);
+    });
+
+    const contactsByAccount = {};
+    (allContacts || []).forEach(c => {
+      if (!contactsByAccount[c.account_id]) contactsByAccount[c.account_id] = [];
+      contactsByAccount[c.account_id].push(c);
+    });
+
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+
+    const results = [];
+    for (const account of (allAccounts || [])) {
+      const rep = reps.find(r => r.id === account.rep_id);
       if (!rep) continue;
 
-      // Accounts
-      const { data: accounts } = await supabase
-        .from("accounts").select("*").eq("rep_id", repId);
+      const activities = actsByAccount[account.id] || [];
+      const contacts = contactsByAccount[account.id] || [];
+      const sprint = sprintByRep[account.rep_id] || null;
 
-      for (const account of (accounts || [])) {
-        // Activities
-        let actsQuery = supabase.from("activities").select("*")
-          .eq("account_id", account.id).order("activity_date", { ascending: false });
-        if (dateRange?.start) actsQuery = actsQuery.gte("activity_date", dateRange.start);
-        if (dateRange?.end) actsQuery = actsQuery.lte("activity_date", dateRange.end);
-        const { data: activities } = await actsQuery;
+      const daysLeft = sprint
+        ? Math.max(0, Math.ceil((new Date(sprint.end_date) - new Date()) / (1000 * 60 * 60 * 24)))
+        : null;
 
-        // Contacts
-        const { data: contacts } = await supabase
-          .from("contacts").select("*").eq("account_id", account.id);
+      const recentActs = activities.filter(a => new Date(a.activity_date) >= weekAgo);
+      const atRisk = recentActs.length === 0;
 
-        // Sprint
-        const today = new Date().toISOString().split("T")[0];
-        const { data: sprint } = await supabase
-          .from("sprints").select("*").eq("rep_id", repId)
-          .lte("start_date", today).gte("end_date", today).single();
+      const primaryContact = contacts.find(c => c.is_primary) || contacts[0];
+      const lastAct = activities[0];
+      const nextAct = activities.find(a => a.scheduled_next_date);
 
-        const daysLeft = sprint
-          ? Math.max(0, Math.ceil((new Date(sprint.end_date) - new Date()) / (1000 * 60 * 60 * 24)))
-          : null;
-
-        const weekAgo = new Date();
-        weekAgo.setDate(weekAgo.getDate() - 7);
-        const recentActs = (activities || []).filter(a =>
-          new Date(a.activity_date) >= weekAgo
-        );
-        const atRisk = recentActs.length === 0 && (activities || []).length >= 0;
-
-        const primaryContact = (contacts || []).find(c => c.is_primary) || (contacts || [])[0];
-        const lastAct = (activities || [])[0];
-        const nextAct = (activities || []).find(a => a.scheduled_next_date);
-
-        results.push({
-          rep: rep.full_name,
-          account: account.name || account.company,
-          address: account.address || "",
-          status: account.status || "New",
-          contactName: primaryContact ? `${primaryContact.first_name} ${primaryContact.last_name}` : "",
-          contactPhone: primaryContact?.phone || "",
-          contactEmail: primaryContact?.email || "",
-          lastActivity: lastAct ? `${lastAct.activity_type} on ${lastAct.activity_date}` : "None",
-          lastNotes: lastAct?.notes || "",
-          activityCount: (activities || []).length,
-          nextScheduled: nextAct ? `${nextAct.scheduled_next_type} on ${nextAct.scheduled_next_date}` : "None",
-          sprintDaysLeft: daysLeft !== null ? `${daysLeft} days` : "No sprint",
-          atRisk: atRisk ? "At Risk" : "On Track",
-        });
-      }
+      results.push({
+        rep: rep.full_name,
+        account: account.name || account.company,
+        address: account.address || "",
+        status: account.status || "New",
+        contactName: primaryContact ? `${primaryContact.first_name} ${primaryContact.last_name}` : "",
+        contactPhone: primaryContact?.phone || "",
+        contactEmail: primaryContact?.email || "",
+        lastActivity: lastAct ? `${lastAct.activity_type} on ${lastAct.activity_date}` : "None",
+        lastNotes: lastAct?.notes || "",
+        activityCount: activities.length,
+        nextScheduled: nextAct ? `${nextAct.scheduled_next_type} on ${nextAct.scheduled_next_date}` : "None",
+        sprintDaysLeft: daysLeft !== null ? `${daysLeft} days` : "No sprint",
+        atRisk: atRisk ? "At Risk" : "On Track",
+      });
     }
 
     return results;
