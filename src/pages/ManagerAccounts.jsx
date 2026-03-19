@@ -14,6 +14,9 @@ export default function ManagerAccounts() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [selectedIds, setSelectedIds] = useState([]);
   const [deleting, setDeleting] = useState(false);
+  const [expandedAccount, setExpandedAccount] = useState(null);
+  const [accountActivities, setAccountActivities] = useState({});
+  const [accountContacts, setAccountContacts] = useState({});
 
   const STATUS_COLORS = {
     New:       { bg: "#EFF6FF", color: "#2563EB", border: "#BFDBFE" },
@@ -42,7 +45,7 @@ export default function ManagerAccounts() {
 
     const { data: accountsData } = await supabase
       .from("accounts")
-      .select("*, activities(activity_date)")
+      .select("*, start_date, end_date, activities(activity_date)")
       .order("created_at", { ascending: false });
     setAccounts(accountsData || []);
 
@@ -80,6 +83,27 @@ export default function ManagerAccounts() {
   const toggleSelect = (id) => {
     setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   };
+
+  const toggleExpand = async (accountId) => {
+    if (expandedAccount === accountId) { setExpandedAccount(null); return; }
+    setExpandedAccount(accountId);
+    if (!accountActivities[accountId]) {
+      const { data: acts } = await supabase
+        .from("activities").select("*").eq("account_id", accountId)
+        .order("activity_date", { ascending: false });
+      setAccountActivities(prev => ({ ...prev, [accountId]: acts || [] }));
+    }
+    if (!accountContacts[accountId]) {
+      const { data: cons } = await supabase
+        .from("contacts").select("*").eq("account_id", accountId)
+        .order("is_primary", { ascending: false });
+      setAccountContacts(prev => ({ ...prev, [accountId]: cons || [] }));
+    }
+  };
+
+  const formatDate = (d) => d
+    ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+    : "—";
 
   const filtered = accounts.filter(a => {
     const matchSearch = !search ||
@@ -199,26 +223,122 @@ export default function ManagerAccounts() {
             ) : (
               filtered.map(account => {
                 const sc = STATUS_COLORS[account.status] || STATUS_COLORS.New;
+                const isExpanded = expandedAccount === account.id;
+                const acts = accountActivities[account.id] || [];
+                const cons = accountContacts[account.id] || [];
+
+                const daysLeft = account.end_date
+                  ? Math.max(0, Math.ceil((new Date(account.end_date) - new Date()) / (1000 * 60 * 60 * 24)))
+                  : null;
+                const progress = (account.start_date && account.end_date)
+                  ? Math.min(100, Math.max(0, Math.round(
+                      ((new Date() - new Date(account.start_date)) /
+                      (new Date(account.end_date) - new Date(account.start_date))) * 100
+                    )))
+                  : 0;
+
                 return (
-                  <div key={account.id} className="account-row"
-                    onClick={() => navigate(`/dashboard/accounts/${account.id}`)}>
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.includes(account.id)}
-                      onChange={e => { e.stopPropagation(); toggleSelect(account.id); }}
-                      onClick={e => e.stopPropagation()}
-                      style={styles.checkbox}
-                    />
-                    <span style={styles.accountName}>{account.name || account.company}</span>
-                    <span style={{
-                      ...styles.statusBadge,
-                      background: sc.bg, color: sc.color, border: `1px solid ${sc.border}`,
-                    }}>
-                      {account.status || "New"}
-                    </span>
-                    <span style={styles.cellText}>{getRepName(account.rep_id)}</span>
-                    <span style={styles.cellText}>{getLastActivity(account) || "—"}</span>
-                    <span style={styles.cellText}>{account.activities?.length || 0}</span>
+                  <div key={account.id} style={{ borderBottom: "1px solid #F0F0ED" }}>
+                    {/* Main row */}
+                    <div className="account-row" style={{ borderBottom: "none" }}
+                      onClick={() => toggleExpand(account.id)}>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(account.id)}
+                        onChange={e => { e.stopPropagation(); toggleSelect(account.id); }}
+                        onClick={e => e.stopPropagation()}
+                        style={styles.checkbox}
+                      />
+                      <span style={styles.accountName}>{account.name || account.company}</span>
+                      <span style={{
+                        ...styles.statusBadge,
+                        background: sc.bg, color: sc.color, border: `1px solid ${sc.border}`,
+                      }}>
+                        {account.status || "New"}
+                      </span>
+                      <span style={styles.cellText}>{getRepName(account.rep_id)}</span>
+                      <span style={styles.cellText}>{getLastActivity(account) || "—"}</span>
+                      <span style={styles.cellText}>{account.activities?.length || 0}</span>
+                    </div>
+
+                    {/* Expanded detail */}
+                    {isExpanded && (
+                      <div style={styles.expandedDetail}>
+
+                        {/* Company */}
+                        <div style={styles.detailSection}>
+                          <p style={styles.detailLabel}>Company</p>
+                          <p style={styles.detailValue}>{account.name || account.company}</p>
+                          {account.address && (
+                            <a
+                              href={`https://maps.google.com/?q=${encodeURIComponent(account.address)}`}
+                              target="_blank" rel="noreferrer"
+                              style={styles.addressLink}
+                            >
+                              {account.address}
+                            </a>
+                          )}
+                        </div>
+
+                        {/* Contacts */}
+                        {cons.length > 0 && (
+                          <div style={styles.detailSection}>
+                            <p style={styles.detailLabel}>Contacts</p>
+                            {cons.map(c => (
+                              <div key={c.id} style={styles.contactRow}>
+                                <span style={styles.contactName}>
+                                  {c.first_name} {c.last_name}
+                                  {c.title ? ` · ${c.title}` : ""}
+                                </span>
+                                <div style={styles.contactLinks}>
+                                  {c.phone && <a href={`tel:${c.phone}`} style={styles.contactLink}>{c.phone}</a>}
+                                  {c.email && <a href={`mailto:${c.email}`} style={styles.contactLink}>{c.email}</a>}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Sprint progress */}
+                        {account.end_date && (
+                          <div style={styles.detailSection}>
+                            <p style={styles.detailLabel}>Sprint Progress</p>
+                            <div style={styles.progressTrack}>
+                              <div style={{ ...styles.progressFill, width: `${progress}%` }} />
+                            </div>
+                            <p style={styles.progressNote}>{daysLeft} days left</p>
+                          </div>
+                        )}
+
+                        {/* Activity log */}
+                        <div style={styles.detailSection}>
+                          <p style={styles.detailLabel}>Activity Log</p>
+                          {acts.length === 0 ? (
+                            <p style={styles.emptySmall}>No activity logged</p>
+                          ) : (
+                            <div style={styles.timeline}>
+                              {acts.map((act, i) => (
+                                <div key={act.id} style={styles.timelineItem}>
+                                  <div style={styles.timelineDotWrap}>
+                                    <div style={styles.timelineDot} />
+                                    {i < acts.length - 1 && <div style={styles.timelineLine} />}
+                                  </div>
+                                  <div style={styles.timelineContent}>
+                                    <div style={styles.timelineHeader}>
+                                      <span style={styles.actType}>{act.activity_type}</span>
+                                      <span style={styles.actDate}>{formatDate(act.activity_date)}</span>
+                                    </div>
+                                    {act.outcome && <p style={styles.actOutcome}>{act.outcome}</p>}
+                                    {act.notes && <p style={styles.actNotes}>{act.notes}</p>}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                      </div>
+                    )}
                   </div>
                 );
               })
@@ -248,4 +368,30 @@ const styles = {
   statusBadge: { fontSize: "11px", fontWeight: 600, padding: "4px 10px", borderRadius: "100px", whiteSpace: "nowrap", textAlign: "center", display: "inline-block" },
   cellText: { fontSize: "13px", color: "#374151" },
   emptyText: { fontSize: "14px", color: "#ABABAB", padding: "24px 20px" },
+
+  // Expanded detail
+  expandedDetail: { backgroundColor: "#F9F9F8", borderTop: "1px solid #F0F0ED", padding: "16px 20px", display: "flex", flexDirection: "column", gap: "16px" },
+  detailSection: { display: "flex", flexDirection: "column", gap: "6px" },
+  detailLabel: { fontSize: "11px", fontWeight: 600, color: "#ABABAB", textTransform: "uppercase", letterSpacing: "0.06em" },
+  detailValue: { fontSize: "14px", color: "#1A1A1A", fontWeight: 500 },
+  addressLink: { fontSize: "13px", color: "#367C2B", fontWeight: 500 },
+  contactRow: { display: "flex", flexDirection: "column", gap: "4px", paddingBottom: "8px" },
+  contactName: { fontSize: "13px", fontWeight: 500, color: "#1A1A1A" },
+  contactLinks: { display: "flex", gap: "16px" },
+  contactLink: { fontSize: "12px", color: "#367C2B" },
+  progressTrack: { height: "5px", backgroundColor: "#F0F0ED", borderRadius: "3px", overflow: "hidden" },
+  progressFill: { height: "100%", backgroundColor: "#367C2B", borderRadius: "3px" },
+  progressNote: { fontSize: "12px", color: "#ABABAB" },
+  timeline: { display: "flex", flexDirection: "column" },
+  timelineItem: { display: "flex", gap: "10px", paddingBottom: "12px" },
+  timelineDotWrap: { display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 },
+  timelineDot: { width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#367C2B", marginTop: "4px" },
+  timelineLine: { flex: 1, width: "1px", backgroundColor: "#E8E8E6", marginTop: "4px" },
+  timelineContent: { flex: 1 },
+  timelineHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2px" },
+  actType: { fontSize: "13px", fontWeight: 600, color: "#1A1A1A" },
+  actDate: { fontSize: "11px", color: "#ABABAB" },
+  actOutcome: { fontSize: "12px", color: "#374151" },
+  actNotes: { fontSize: "12px", color: "#767676" },
+  emptySmall: { fontSize: "13px", color: "#ABABAB" },
 };
