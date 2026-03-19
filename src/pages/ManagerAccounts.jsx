@@ -21,6 +21,7 @@ export default function ManagerAccounts() {
   const [sprintEdits, setSprintEdits] = useState({});
   const [sprintSaved, setSprintSaved] = useState({});
   const [sortDirection, setSortDirection] = useState("asc");
+  const [unassignMsg, setUnassignMsg] = useState(null);
 
   const STATUS_COLORS = {
     New:       { bg: "#EFF6FF", color: "#2563EB", border: "#BFDBFE" },
@@ -104,6 +105,13 @@ export default function ManagerAccounts() {
     if (acct && !sprintEdits[accountId]) {
       setSprintEdits(prev => ({ ...prev, [accountId]: { start_date: acct.start_date || "", end_date: acct.end_date || "" } }));
     }
+  };
+
+  const handleUnassign = async (accountId) => {
+    await supabase.from("accounts").update({ rep_id: null }).eq("id", accountId);
+    setAccounts(prev => prev.map(a => a.id === accountId ? { ...a, rep_id: null } : a));
+    setUnassignMsg(accountId);
+    setTimeout(() => setUnassignMsg(null), 3000);
   };
 
   const saveDates = async (accountId) => {
@@ -341,6 +349,18 @@ export default function ManagerAccounts() {
                               {account.address}
                             </a>
                           )}
+                          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "4px" }}>
+                            <span style={styles.cellText}>Rep: {getRepName(account.rep_id)}</span>
+                            {account.rep_id && (
+                              unassignMsg === account.id
+                                ? <span style={{ fontSize: "12px", color: "#16A34A", fontWeight: 500 }}>Account unassigned</span>
+                                : <button
+                                    onClick={e => { e.stopPropagation(); handleUnassign(account.id); }}
+                                    style={styles.unassignLink}>
+                                    Unassign
+                                  </button>
+                            )}
+                          </div>
                         </div>
 
                         {/* Contacts */}
@@ -500,4 +520,5 @@ const styles = {
   sprintSaveWrap: { display: "flex", alignItems: "center", gap: "10px" },
   saveDatesBtn: { padding: "7px 14px", backgroundColor: "#367C2B", color: "#fff", border: "none", borderRadius: "6px", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" },
   savedMsg: { fontSize: "12px", color: "#16A34A", fontWeight: 500 },
+  unassignLink: { background: "none", border: "none", fontSize: "12px", color: "#DC2626", cursor: "pointer", textDecoration: "underline", fontFamily: "'DM Sans', sans-serif", padding: 0 },
 };
