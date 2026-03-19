@@ -79,7 +79,7 @@ serve(async () => {
           subData.subscription,
           JSON.stringify({
             title: "Accounts Need Attention",
-            body: `${atRiskAccounts.length} account${atRiskAccounts.length > 1 ? "s" : ""} haven't had activity in 7 days: ${atRiskAccounts.slice(0, 2).join(", ")}`,
+            body: `${atRiskAccounts.length} ${atRiskAccounts.length === 1 ? "account hasn't" : "accounts haven't"} had activity in 7 days: ${atRiskAccounts.slice(0, 2).join(", ")}`,
             url: "/accounts"
           })
         );
