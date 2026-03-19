@@ -85,12 +85,16 @@ export default function Dashboard() {
         .gte("created_at", fortyEightHoursAgo.toISOString())
         .limit(1);
       const repIsNew = (new Date() - new Date(rep.created_at)) < 48 * 60 * 60 * 1000;
-      const activeAccounts = (accounts || []).filter(a => !["Won", "Lost"].includes(a.status));
+      const activeAccounts = (accounts || []).filter(a => ["New", "Contacted", "Engaged", "Proposal"].includes(a.status));
+      const wonAccounts = (accounts || []).filter(a => a.status === "Won");
+      const lostAccounts = (accounts || []).filter(a => a.status === "Lost");
       const atRisk = !repIsNew && (!recentActs || recentActs.length === 0) && activeAccounts.length > 0;
 
       return {
         ...rep,
-        accountCount: (accounts || []).length,
+        activeCount: activeAccounts.length,
+        wonCount: wonAccounts.length,
+        lostCount: lostAccounts.length,
         logsThisWeek: weeklyCount,
         atRisk,
       };
@@ -168,7 +172,7 @@ export default function Dashboard() {
 
         .rep-row {
           display: grid;
-          grid-template-columns: 1fr 80px 120px 100px;
+          grid-template-columns: 1fr 70px 70px 70px 120px 100px;
           gap: 12px; align-items: center;
           padding: 13px 20px;
           border-bottom: 1px solid #F0F0ED;
@@ -225,7 +229,9 @@ export default function Dashboard() {
             margin: 0 0 8px; border-bottom: none !important;
           }
           .rep-col-name { font-size: 15px !important; font-weight: 600 !important; margin-bottom: 2px !important; }
-          .rep-col-accounts::before { content: "ACCOUNTS  "; font-size: 11px; color: #ABABAB; font-weight: 600; }
+          .rep-col-active::before { content: "ACTIVE  "; font-size: 11px; color: #ABABAB; font-weight: 600; }
+          .rep-col-won::before { content: "WON  "; font-size: 11px; color: #ABABAB; font-weight: 600; }
+          .rep-col-lost::before { content: "LOST  "; font-size: 11px; color: #ABABAB; font-weight: 600; }
           .rep-col-logs::before { content: "LOGS THIS WEEK  "; font-size: 11px; color: #ABABAB; font-weight: 600; }
           .rep-col-status { align-self: flex-start; }
           .export-btn-row { flex-direction: column !important; }
@@ -337,7 +343,9 @@ export default function Dashboard() {
               <span style={{ cursor: "pointer" }} onClick={() => setSortDirection(d => d === "asc" ? "desc" : "asc")}>
                 Rep {sortDirection === "asc" ? "↑" : "↓"}
               </span>
-              <span>Accounts</span>
+              <span>Active</span>
+              <span>Won</span>
+              <span>Lost</span>
               <span>Logs This Week</span>
               <span>Status</span>
             </div>
@@ -353,7 +361,9 @@ export default function Dashboard() {
                   <div key={rep.id} className="rep-row"
                     onClick={() => navigate(`/dashboard/reps/${rep.id}`)}>
                     <span className="rep-col-name" style={styles.repName}>{rep.full_name}</span>
-                    <span className="rep-col-accounts" style={styles.repStat}>{rep.accountCount}</span>
+                    <span className="rep-col-active" style={styles.repStat}>{rep.activeCount}</span>
+                    <span className="rep-col-won" style={styles.repStat}>{rep.wonCount}</span>
+                    <span className="rep-col-lost" style={styles.repStat}>{rep.lostCount}</span>
                     <span className="rep-col-logs" style={styles.repStat}>{rep.logsThisWeek}</span>
                     <span className="rep-col-status" style={{
                       ...styles.statusBadge,
@@ -451,7 +461,7 @@ const styles = {
   },
   repRowStyle: {
     display: "grid",
-    gridTemplateColumns: "1fr 80px 120px 100px",
+    gridTemplateColumns: "1fr 70px 70px 70px 120px 100px",
     gap: "12px", alignItems: "center",
     padding: "13px 20px",
     borderBottom: "1px solid #F0F0ED",
