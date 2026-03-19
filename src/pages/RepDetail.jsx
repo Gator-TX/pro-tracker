@@ -166,7 +166,7 @@ export default function RepDetail() {
         <div className="main-content" style={styles.main}>
 
           {/* Back link */}
-          <button onClick={() => navigate("/dashboard")} style={styles.backLink}>
+          <button onClick={() => navigate("/dashboard/reps")} style={styles.backLink}>
             ← Back to dashboard
           </button>
 
