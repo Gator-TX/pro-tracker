@@ -160,7 +160,7 @@ export default function RepDetail() {
 
       <div style={styles.layout}>
 
-        <Sidebar role="manager" profile={profile} onSignOut={handleSignOut} activePath="/dashboard" />
+        <Sidebar role="manager" profile={profile} onSignOut={handleSignOut} activePath="/dashboard/reps" />
 
         {/* MAIN */}
         <div className="main-content" style={styles.main}>
