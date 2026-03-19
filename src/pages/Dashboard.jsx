@@ -74,7 +74,11 @@ export default function Dashboard() {
         .eq("rep_id", rep.id)
         .gte("activity_date", weekAgoStr);
 
+      const { data: allActs } = await supabase
+        .from("activities").select("id").eq("rep_id", rep.id);
+
       const weeklyCount = acts?.length || 0;
+      const totalLogs = allActs?.length || 0;
 
       const fortyEightHoursAgo = new Date();
       fortyEightHoursAgo.setHours(fortyEightHoursAgo.getHours() - 48);
@@ -96,6 +100,7 @@ export default function Dashboard() {
         wonCount: wonAccounts.length,
         lostCount: lostAccounts.length,
         logsThisWeek: weeklyCount,
+        totalLogs,
         atRisk,
       };
     }));
@@ -172,7 +177,7 @@ export default function Dashboard() {
 
         .rep-row {
           display: grid;
-          grid-template-columns: 1fr 70px 70px 70px 120px 100px;
+          grid-template-columns: 1fr 70px 70px 70px 110px 90px 100px;
           gap: 12px; align-items: center;
           padding: 13px 20px;
           border-bottom: 1px solid #F0F0ED;
@@ -232,6 +237,8 @@ export default function Dashboard() {
           .rep-col-active::before { content: "ACTIVE  "; font-size: 11px; color: #ABABAB; font-weight: 600; }
           .rep-col-won::before { content: "WON  "; font-size: 11px; color: #ABABAB; font-weight: 600; }
           .rep-col-lost::before { content: "LOST  "; font-size: 11px; color: #ABABAB; font-weight: 600; }
+          .rep-col-logs::before { content: "LOGS/WK  "; font-size: 11px; color: #ABABAB; font-weight: 600; }
+          .rep-col-total::before { content: "TOTAL  "; font-size: 11px; color: #ABABAB; font-weight: 600; }
           .rep-col-logs::before { content: "LOGS THIS WEEK  "; font-size: 11px; color: #ABABAB; font-weight: 600; }
           .rep-col-status { align-self: flex-start; }
           .export-btn-row { flex-direction: column !important; }
@@ -347,6 +354,7 @@ export default function Dashboard() {
               <span>Won</span>
               <span>Lost</span>
               <span>Logs This Week</span>
+              <span>Total Logs</span>
               <span>Status</span>
             </div>
 
@@ -365,6 +373,7 @@ export default function Dashboard() {
                     <span className="rep-col-won" style={styles.repStat}>{rep.wonCount}</span>
                     <span className="rep-col-lost" style={styles.repStat}>{rep.lostCount}</span>
                     <span className="rep-col-logs" style={styles.repStat}>{rep.logsThisWeek}</span>
+                    <span className="rep-col-total" style={styles.repStat}>{rep.totalLogs}</span>
                     <span className="rep-col-status" style={{
                       ...styles.statusBadge,
                       background: rep.atRisk ? "#FEF2F2" : "#F0FDF4",
@@ -461,7 +470,7 @@ const styles = {
   },
   repRowStyle: {
     display: "grid",
-    gridTemplateColumns: "1fr 70px 70px 70px 120px 100px",
+    gridTemplateColumns: "1fr 70px 70px 70px 110px 90px 100px",
     gap: "12px", alignItems: "center",
     padding: "13px 20px",
     borderBottom: "1px solid #F0F0ED",

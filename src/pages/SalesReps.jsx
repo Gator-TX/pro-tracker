@@ -39,7 +39,7 @@ export default function SalesReps() {
 
     const repsWithStats = await Promise.all((repsData || []).map(async (rep) => {
       const { data: accounts } = await supabase
-        .from("accounts").select("id, status, end_date").eq("rep_id", rep.id);
+        .from("accounts").select("id, status").eq("rep_id", rep.id);
 
       const weekAgo = new Date();
       weekAgo.setDate(weekAgo.getDate() - 7);
@@ -50,13 +50,9 @@ export default function SalesReps() {
       const { data: allActs } = await supabase
         .from("activities").select("id").eq("rep_id", rep.id);
 
-      const now = new Date();
-      const endDates = (accounts || [])
-        .filter(a => a.end_date)
-        .map(a => Math.max(0, Math.ceil((new Date(a.end_date) - now) / (1000 * 60 * 60 * 24))));
-      const daysLeft = endDates.length > 0 ? Math.min(...endDates) : null;
-
+      const activeCount = (accounts || []).filter(a => ["New", "Contacted", "Engaged", "Proposal"].includes(a.status)).length;
       const wonCount = (accounts || []).filter(a => a.status === "Won").length;
+      const lostCount = (accounts || []).filter(a => a.status === "Lost").length;
       const weeklyCount = weekActs?.length || 0;
 
       const fortyEightHoursAgo = new Date();
@@ -68,15 +64,15 @@ export default function SalesReps() {
         .gte("created_at", fortyEightHoursAgo.toISOString())
         .limit(1);
       const repIsNew = (new Date() - new Date(rep.created_at)) < 48 * 60 * 60 * 1000;
-      const atRisk = !repIsNew && (!recentActs || recentActs.length === 0) && (accounts || []).length > 0;
+      const atRisk = !repIsNew && (!recentActs || recentActs.length === 0) && activeCount > 0;
 
       return {
         ...rep,
-        accountCount: (accounts || []).length,
+        activeCount,
+        wonCount,
+        lostCount,
         logsThisWeek: weeklyCount,
         totalLogs: allActs?.length || 0,
-        wonCount,
-        daysLeft,
         atRisk,
       };
     }));
@@ -124,7 +120,7 @@ export default function SalesReps() {
 
         .rep-row {
           display: grid;
-          grid-template-columns: 32px 1.8fr 80px 110px 90px 60px 80px 100px;
+          grid-template-columns: 32px 1.8fr 70px 70px 70px 110px 90px 100px;
           gap: 12px; align-items: center;
           padding: 13px 20px;
           border-bottom: 1px solid #F0F0ED;
@@ -135,10 +131,10 @@ export default function SalesReps() {
         .rep-checkbox { width: 16px; height: 16px; cursor: pointer; accent-color: #367C2B; flex-shrink: 0; }
 
         .table-scroll {
-          max-height: 600px; overflow-y: auto; min-width: 700px;
+          max-height: 600px; overflow-y: auto; min-width: 720px;
           scrollbar-width: thin; scrollbar-color: #E0E0DC transparent;
         }
-        .rep-row { min-width: 700px; }
+        .rep-row { min-width: 720px; }
 
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
@@ -186,11 +182,11 @@ export default function SalesReps() {
               <span style={{ cursor: "pointer" }} onClick={() => setSortDirection(d => d === "asc" ? "desc" : "asc")}>
                 Rep {sortDirection === "asc" ? "↑" : "↓"}
               </span>
-              <span>Accounts</span>
+              <span>Active</span>
+              <span>Won</span>
+              <span>Lost</span>
               <span>Logs This Week</span>
               <span>Total Logs</span>
-              <span>Won</span>
-              <span>Days Left</span>
               <span>Status</span>
             </div>
 
@@ -222,16 +218,16 @@ export default function SalesReps() {
                       <p style={styles.repEmail}>{rep.email || "—"}</p>
                       <div className="rep-mobile-stats">
                         <p style={styles.mobileStats}>
-                          {rep.accountCount} accounts · {rep.logsThisWeek} logs this week · {rep.totalLogs} total · {rep.wonCount} won{rep.daysLeft !== null ? ` · ${rep.daysLeft}d left` : ""}
+                          Active: {rep.activeCount} · Won: {rep.wonCount} · Lost: {rep.lostCount} · {rep.logsThisWeek} this week · {rep.totalLogs} total
                         </p>
                       </div>
                     </div>
 
-                    <span className="rep-desktop-stats" style={styles.statVal}>{rep.accountCount}</span>
+                    <span className="rep-desktop-stats" style={styles.statVal}>{rep.activeCount}</span>
+                    <span className="rep-desktop-stats" style={styles.statVal}>{rep.wonCount}</span>
+                    <span className="rep-desktop-stats" style={styles.statVal}>{rep.lostCount}</span>
                     <span className="rep-desktop-stats" style={styles.statVal}>{rep.logsThisWeek}</span>
                     <span className="rep-desktop-stats" style={styles.statVal}>{rep.totalLogs}</span>
-                    <span className="rep-desktop-stats" style={styles.statVal}>{rep.wonCount}</span>
-                    <span className="rep-desktop-stats" style={styles.statVal}>{rep.daysLeft !== null ? `${rep.daysLeft}d` : "—"}</span>
                     <span className="rep-desktop-stats" style={badgeStyle}>{rep.atRisk ? "At Risk" : "On Track"}</span>
 
                     <div className="rep-row-right rep-mobile-stats">
