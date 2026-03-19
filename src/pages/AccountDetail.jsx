@@ -16,6 +16,11 @@ export default function AccountDetail() {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Notes
+  const [editingNotes, setEditingNotes] = useState(false);
+  const [notesValue, setNotesValue] = useState("");
+  const [notesSaved, setNotesSaved] = useState(false);
+
   // Edit company info
   const [editingCompany, setEditingCompany] = useState(false);
   const [companyForm, setCompanyForm] = useState({ name: "", address: "" });
@@ -56,6 +61,7 @@ export default function AccountDetail() {
       .eq("id", id)
       .single();
     setAccount(acc);
+    setNotesValue(acc?.notes || "");
     setCompanyForm({ name: acc?.name || "", address: acc?.address || "" });
 
     // Contacts
@@ -86,6 +92,15 @@ export default function AccountDetail() {
   const updateStatus = async (status) => {
     await supabase.from("accounts").update({ status }).eq("id", id);
     setAccount(prev => ({ ...prev, status }));
+  };
+
+  // ── Save notes ──
+  const saveNotes = async () => {
+    await supabase.from("accounts").update({ notes: notesValue }).eq("id", id);
+    setAccount(prev => ({ ...prev, notes: notesValue }));
+    setEditingNotes(false);
+    setNotesSaved(true);
+    setTimeout(() => setNotesSaved(false), 2000);
   };
 
   // ── Save company info ──
@@ -288,6 +303,40 @@ export default function AccountDetail() {
                 ) : (
                   <p style={styles.infoMuted}>No address added</p>
                 )}
+              </div>
+            )}
+          </div>
+
+          {/* ── NOTES ── */}
+          <div style={styles.card}>
+            <div style={styles.cardHeader}>
+              <p style={styles.cardLabel}>Notes</p>
+              {!editingNotes && (
+                <button className="green-link" onClick={() => setEditingNotes(true)}>Edit</button>
+              )}
+            </div>
+            {editingNotes ? (
+              <div style={styles.formStack}>
+                <textarea
+                  className="field-input"
+                  rows={4}
+                  style={{ resize: "vertical" }}
+                  value={notesValue}
+                  onChange={e => setNotesValue(e.target.value)}
+                  placeholder="Add notes about this account..."
+                />
+                <div style={styles.rowBtns}>
+                  <button className="btn-primary" style={{ flex: 1 }} onClick={saveNotes}>Save</button>
+                  <button className="btn-secondary" style={{ flex: 1 }} onClick={() => { setEditingNotes(false); setNotesValue(account?.notes || ""); }}>Cancel</button>
+                </div>
+              </div>
+            ) : (
+              <div>
+                {account?.notes
+                  ? <p style={{ fontSize: "14px", color: "#374151", whiteSpace: "pre-wrap", lineHeight: 1.6 }}>{account.notes}</p>
+                  : <p style={styles.infoMuted}>Add notes about this account...</p>
+                }
+                {notesSaved && <p style={{ fontSize: "12px", color: "#16A34A", marginTop: "6px" }}>Notes saved</p>}
               </div>
             )}
           </div>

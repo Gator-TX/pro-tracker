@@ -333,6 +333,15 @@ export default function RepDetail() {
                           )}
                         </div>
 
+                        {/* Notes */}
+                        <div style={styles.detailSection}>
+                          <p style={styles.detailLabel}>Notes</p>
+                          {account.notes
+                            ? <p style={{ fontSize: "13px", color: "#374151", whiteSpace: "pre-wrap", lineHeight: 1.6 }}>{account.notes}</p>
+                            : <p style={styles.emptySmall}>No notes added</p>
+                          }
+                        </div>
+
                       </div>
                     )}
                   </div>
