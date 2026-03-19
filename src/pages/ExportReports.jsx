@@ -169,6 +169,12 @@ export default function ExportReports() {
       });
     }
 
+    results.sort((a, b) => {
+      const repCompare = a.rep.toLowerCase().localeCompare(b.rep.toLowerCase());
+      if (repCompare !== 0) return repCompare;
+      return a.account.toLowerCase().localeCompare(b.account.toLowerCase());
+    });
+
     return results;
   };
 
@@ -240,6 +246,7 @@ export default function ExportReports() {
             .at-risk { background: #FEF2F2; color: #DC2626; }
             .on-track { background: #F0FDF4; color: #16A34A; }
             .accent { height: 3px; background: #FFDE00; margin-bottom: 16px; border-radius: 2px; width: 120px; }
+            .rep-header td { background: #F0FDF4; color: #367C2B; font-weight: bold; font-size: 12px; padding: 8px 10px; border-bottom: 2px solid #BBF7D0; }
           </style>
         </head>
         <body>
@@ -258,16 +265,31 @@ export default function ExportReports() {
               </tr>
             </thead>
             <tbody>
-              ${data.map(row => `
-                <tr>
-                  ${includeOptions.account_status ? `<td>${row.rep}</td><td>${row.account}</td><td>${row.status}</td>` : ""}
-                  ${includeOptions.contact_details ? `<td>${row.contactName}</td><td>${row.contactPhone}</td>` : ""}
-                  ${includeOptions.activity_log ? `<td>${row.lastActivity}</td><td>${row.activityCount}</td>` : ""}
-                  ${includeOptions.scheduled_activities ? `<td>${row.nextScheduled}</td>` : ""}
-                  ${includeOptions.sprint_progress ? `<td>${row.sprintDaysLeft}</td>` : ""}
-                  ${includeOptions.at_risk ? `<td><span class="badge ${row.atRisk === 'At Risk' ? 'at-risk' : 'on-track'}">${row.atRisk}</span></td>` : ""}
-                </tr>
-              `).join("")}
+              ${(() => {
+                const colCount =
+                  (includeOptions.account_status ? 3 : 0) +
+                  (includeOptions.contact_details ? 2 : 0) +
+                  (includeOptions.activity_log ? 2 : 0) +
+                  (includeOptions.scheduled_activities ? 1 : 0) +
+                  (includeOptions.sprint_progress ? 1 : 0) +
+                  (includeOptions.at_risk ? 1 : 0);
+                let lastRep = null;
+                return data.map(row => {
+                  const repHeader = row.rep !== lastRep
+                    ? `<tr class="rep-header"><td colspan="${colCount}">${row.rep}</td></tr>`
+                    : "";
+                  lastRep = row.rep;
+                  return repHeader + `
+                    <tr>
+                      ${includeOptions.account_status ? `<td>${row.rep}</td><td>${row.account}</td><td>${row.status}</td>` : ""}
+                      ${includeOptions.contact_details ? `<td>${row.contactName}</td><td>${row.contactPhone}</td>` : ""}
+                      ${includeOptions.activity_log ? `<td>${row.lastActivity}</td><td>${row.activityCount}</td>` : ""}
+                      ${includeOptions.scheduled_activities ? `<td>${row.nextScheduled}</td>` : ""}
+                      ${includeOptions.sprint_progress ? `<td>${row.sprintDaysLeft}</td>` : ""}
+                      ${includeOptions.at_risk ? `<td><span class="badge ${row.atRisk === 'At Risk' ? 'at-risk' : 'on-track'}">${row.atRisk}</span></td>` : ""}
+                    </tr>`;
+                }).join("");
+              })()}
             </tbody>
           </table>
         </body>
