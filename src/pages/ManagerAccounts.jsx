@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabase";
 import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
+import MobileManagerHeader from "../components/MobileManagerHeader";
 
 export default function ManagerAccounts() {
   const navigate = useNavigate();
@@ -186,11 +187,12 @@ export default function ManagerAccounts() {
 
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
-          .main-content { margin-left: 0 !important; }
+          .main-content { margin-left: 0 !important; padding-top: 70px !important; overflow-x: hidden; }
         }
       `}</style>
 
       <div style={styles.layout}>
+        <MobileManagerHeader activePath="/dashboard/accounts" profile={profile} />
         <Sidebar role="manager" profile={profile} onSignOut={handleSignOut} activePath="/dashboard/accounts" />
 
         {/* MAIN */}
