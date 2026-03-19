@@ -194,14 +194,20 @@ export default function RepSettings() {
                   <p style={styles.notifLabel}>Push Notifications</p>
                   <p style={styles.notifHint}>Enable push notifications to receive activity reminders</p>
                 </div>
-                {pushEnabled ? (
-                  <span style={styles.notifEnabled}>✓ Enabled</span>
-                ) : (
-                  <button className="btn-primary" disabled={pushLoading} onClick={handleEnablePush}
-                    style={{ padding: "8px 16px", fontSize: "13px", whiteSpace: "nowrap" }}>
-                    {pushLoading ? "Enabling…" : "Enable Notifications"}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "6px" }}>
+                  {pushEnabled ? (
+                    <span style={styles.notifEnabled}>✓ Enabled</span>
+                  ) : (
+                    <button className="btn-primary" disabled={pushLoading} onClick={handleEnablePush}
+                      style={{ padding: "8px 16px", fontSize: "13px", whiteSpace: "nowrap" }}>
+                      {pushLoading ? "Enabling…" : "Enable Notifications"}
+                    </button>
+                  )}
+                  <button onClick={() => { localStorage.removeItem("push_enabled"); window.location.reload(); }}
+                    style={{ background: "none", border: "none", cursor: "pointer", fontSize: "11px", color: "#9CA3AF", textDecoration: "underline", fontFamily: "'DM Sans', sans-serif", padding: 0 }}>
+                    Reset
                   </button>
-                )}
+                </div>
               </div>
             </div>
           </div>
