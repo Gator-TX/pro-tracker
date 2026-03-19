@@ -15,8 +15,7 @@ export default function ManagerAccounts() {
   const [selectedIds, setSelectedIds] = useState([]);
   const [deleting, setDeleting] = useState(false);
   const [expandedAccount, setExpandedAccount] = useState(null);
-  const [accountActivities, setAccountActivities] = useState({});
-  const [accountContacts, setAccountContacts] = useState({});
+  const [accountDetails, setAccountDetails] = useState({});
 
   const STATUS_COLORS = {
     New:       { bg: "#EFF6FF", color: "#2563EB", border: "#BFDBFE" },
@@ -84,20 +83,17 @@ export default function ManagerAccounts() {
     setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   };
 
-  const toggleExpand = async (accountId) => {
+  const toggleAccount = async (accountId) => {
     if (expandedAccount === accountId) { setExpandedAccount(null); return; }
     setExpandedAccount(accountId);
-    if (!accountActivities[accountId]) {
-      const { data: acts } = await supabase
-        .from("activities").select("*").eq("account_id", accountId)
-        .order("activity_date", { ascending: false });
-      setAccountActivities(prev => ({ ...prev, [accountId]: acts || [] }));
-    }
-    if (!accountContacts[accountId]) {
-      const { data: cons } = await supabase
-        .from("contacts").select("*").eq("account_id", accountId)
-        .order("is_primary", { ascending: false });
-      setAccountContacts(prev => ({ ...prev, [accountId]: cons || [] }));
+    if (!accountDetails[accountId]) {
+      const [{ data: acts }, { data: cons }] = await Promise.all([
+        supabase.from("activities").select("*").eq("account_id", accountId)
+          .order("activity_date", { ascending: false }),
+        supabase.from("contacts").select("*").eq("account_id", accountId)
+          .order("is_primary", { ascending: false }),
+      ]);
+      setAccountDetails(prev => ({ ...prev, [accountId]: { acts: acts || [], cons: cons || [] } }));
     }
   };
 
@@ -224,8 +220,8 @@ export default function ManagerAccounts() {
               filtered.map(account => {
                 const sc = STATUS_COLORS[account.status] || STATUS_COLORS.New;
                 const isExpanded = expandedAccount === account.id;
-                const acts = accountActivities[account.id] || [];
-                const cons = accountContacts[account.id] || [];
+                const acts = accountDetails[account.id]?.acts || [];
+                const cons = accountDetails[account.id]?.cons || [];
 
                 const daysLeft = account.end_date
                   ? Math.max(0, Math.ceil((new Date(account.end_date) - new Date()) / (1000 * 60 * 60 * 24)))
@@ -241,7 +237,7 @@ export default function ManagerAccounts() {
                   <div key={account.id} style={{ borderBottom: "1px solid #F0F0ED" }}>
                     {/* Main row */}
                     <div className="account-row" style={{ borderBottom: "none" }}
-                      onClick={() => toggleExpand(account.id)}>
+                      onClick={() => toggleAccount(account.id)}>
                       <input
                         type="checkbox"
                         checked={selectedIds.includes(account.id)}
