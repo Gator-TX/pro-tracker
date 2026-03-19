@@ -17,9 +17,9 @@ export default function RepDetail() {
   const [accountContacts, setAccountContacts] = useState({});
   const [loading, setLoading] = useState(true);
   const [unassignMsg, setUnassignMsg] = useState(null);
-  const [showClosed, setShowClosed] = useState(false);
+  const [accountFilter, setAccountFilter] = useState("active");
   const [stats, setStats] = useState({
-    accountsAssigned: 0,
+    activeAccounts: 0,
     logsThisWeek: 0,
     wonThisSprint: 0,
     lostThisSprint: 0,
@@ -58,6 +58,21 @@ export default function RepDetail() {
       .order("created_at", { ascending: false });
     setAccounts(accountsData || []);
 
+    // Bulk-fetch all activities for this rep's accounts upfront
+    const accountIds = (accountsData || []).map(a => a.id);
+    if (accountIds.length > 0) {
+      const { data: allActs } = await supabase
+        .from("activities").select("*")
+        .in("account_id", accountIds)
+        .order("activity_date", { ascending: false });
+      const actsByAccount = {};
+      (allActs || []).forEach(act => {
+        if (!actsByAccount[act.account_id]) actsByAccount[act.account_id] = [];
+        actsByAccount[act.account_id].push(act);
+      });
+      setAccountActivities(actsByAccount);
+    }
+
     // Stats
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
@@ -66,11 +81,13 @@ export default function RepDetail() {
       .eq("rep_id", repId)
       .gte("activity_date", weekAgo.toISOString().split("T")[0]);
 
+    const ACTIVE_STATUSES_LOAD = ["New", "Contacted", "Engaged", "Proposal"];
+    const activeCount = (accountsData || []).filter(a => ACTIVE_STATUSES_LOAD.includes(a.status || "New")).length;
     const wonAccounts = (accountsData || []).filter(a => a.status === "Won").length;
     const lostAccounts = (accountsData || []).filter(a => a.status === "Lost").length;
 
     setStats({
-      accountsAssigned: (accountsData || []).length,
+      activeAccounts: activeCount,
       logsThisWeek: weekActs?.length || 0,
       wonThisSprint: wonAccounts,
       lostThisSprint: lostAccounts,
@@ -112,6 +129,8 @@ export default function RepDetail() {
     return `${next.scheduled_next_type} · ${new Date(next.scheduled_next_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
   };
 
+  const ACTIVE_STATUSES = ["New", "Contacted", "Engaged", "Proposal"];
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate("/login");
@@ -119,8 +138,11 @@ export default function RepDetail() {
 
   const handleUnassign = async (accountId) => {
     await supabase.from("accounts").update({ rep_id: null }).eq("id", accountId);
+    const removedAccount = accounts.find(a => a.id === accountId);
     setAccounts(prev => prev.filter(a => a.id !== accountId));
-    setStats(prev => ({ ...prev, accountsAssigned: prev.accountsAssigned - 1 }));
+    if (removedAccount && ACTIVE_STATUSES.includes(removedAccount.status || "New")) {
+      setStats(prev => ({ ...prev, activeAccounts: prev.activeAccounts - 1 }));
+    }
     setUnassignMsg(accountId);
     setTimeout(() => setUnassignMsg(null), 3000);
   };
@@ -135,13 +157,12 @@ export default function RepDetail() {
     );
   }
 
-  const ACTIVE_STATUSES = ["New", "Contacted", "Engaged", "Proposal"];
-  const visibleAccounts = showClosed
-    ? accounts
-    : accounts.filter(a => ACTIVE_STATUSES.includes(a.status || "New"));
+  const visibleAccounts = accountFilter === "active"
+    ? accounts.filter(a => ACTIVE_STATUSES.includes(a.status || "New"))
+    : accounts.filter(a => a.status === accountFilter);
 
   const STAT_CARDS = [
-    { label: "Accounts Assigned", value: stats.accountsAssigned },
+    { label: "Active Accounts", value: stats.activeAccounts },
     { label: "Logs This Week", value: stats.logsThisWeek },
     { label: "Won This Sprint", value: stats.wonThisSprint },
     { label: "Lost This Sprint", value: stats.lostThisSprint },
@@ -201,16 +222,24 @@ export default function RepDetail() {
 
           {/* ACCOUNTS TABLE */}
           <div style={styles.tableCard}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px 12px", borderBottom: "1px solid #F0F0ED" }}>
-              <p style={{ fontSize: "14px", fontWeight: 600, color: "#1A1A1A" }}>
-                {showClosed ? `All Accounts (${accounts.length})` : `Active Accounts (${visibleAccounts.length})`}
-              </p>
-              <button
-                onClick={() => setShowClosed(v => !v)}
-                style={{ background: "none", border: "1.5px solid #E0E0DC", borderRadius: "100px", padding: "5px 12px", fontSize: "12px", fontWeight: 500, color: "#767676", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}
-              >
-                {showClosed ? "Active Only" : "Show Closed"}
-              </button>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "14px 20px", borderBottom: "1px solid #F0F0ED", flexWrap: "wrap" }}>
+              <p style={{ fontSize: "14px", fontWeight: 600, color: "#1A1A1A", marginRight: "8px" }}>Accounts</p>
+              {[
+                { key: "active", label: `Active: ${stats.activeAccounts}`, bg: accountFilter === "active" ? "#367C2B" : "#fff", color: accountFilter === "active" ? "#fff" : "#367C2B", border: "#367C2B" },
+                { key: "Won", label: `Won: ${stats.wonThisSprint}`, bg: accountFilter === "Won" ? "#367C2B" : "#F0FDF4", color: accountFilter === "Won" ? "#fff" : "#16A34A", border: "#BBF7D0" },
+                { key: "Lost", label: `Lost: ${stats.lostThisSprint}`, bg: accountFilter === "Lost" ? "#DC2626" : "#FEF2F2", color: accountFilter === "Lost" ? "#fff" : "#DC2626", border: "#FECACA" },
+              ].map(pill => (
+                <button key={pill.key} onClick={() => setAccountFilter(pill.key)} style={{
+                  background: pill.bg, color: pill.color,
+                  border: `1.5px solid ${pill.border}`,
+                  borderRadius: "100px", padding: "4px 12px",
+                  fontSize: "12px", fontWeight: 600,
+                  cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
+                  transition: "all 0.15s",
+                }}>
+                  {pill.label}
+                </button>
+              ))}
             </div>
 
             {/* Table header */}
@@ -225,7 +254,7 @@ export default function RepDetail() {
             </div>
 
             {visibleAccounts.length === 0 ? (
-              <p style={styles.emptyText}>{showClosed ? "No accounts assigned" : "No active accounts"}</p>
+              <p style={styles.emptyText}>{accountFilter === "active" ? "No active accounts" : `No ${accountFilter} accounts`}</p>
             ) : (
               visibleAccounts.map(account => {
                 const sc = STATUS_COLORS[account.status] || STATUS_COLORS.New;
@@ -256,7 +285,7 @@ export default function RepDetail() {
                         {account.status || "New"}
                       </span>
                       <span style={styles.cellText}>
-                        {isExpanded && acts.length > 0 ? formatDate(acts[0]?.activity_date) : "—"}
+                        {acts.length > 0 ? formatDate(acts[0]?.activity_date) : "—"}
                       </span>
                       <span style={styles.cellText}>{acts.length || "—"}</span>
                       <span style={styles.cellText}>
@@ -265,7 +294,7 @@ export default function RepDetail() {
                           : "—"}
                       </span>
                       <span style={styles.cellText}>
-                        {isExpanded ? (getNextScheduled(account.id) || "None") : "—"}
+                        {getNextScheduled(account.id) || "—"}
                       </span>
                       <span>
                         {unassignMsg === account.id ? (
