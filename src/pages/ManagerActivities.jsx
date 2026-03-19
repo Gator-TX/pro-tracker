@@ -12,6 +12,8 @@ export default function ManagerActivities() {
   const [loading, setLoading] = useState(true);
   const [filterRep, setFilterRep] = useState("all");
   const [filterType, setFilterType] = useState("all");
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => { loadData(); }, []);
 
@@ -53,6 +55,18 @@ export default function ManagerActivities() {
     return acc?.name || acc?.company || "—";
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm(`Delete ${selectedIds.length} activit${selectedIds.length > 1 ? "ies" : "y"}? This cannot be undone.`)) return;
+    setDeleting(true);
+    await supabase.from("activities").delete().in("id", selectedIds);
+    setSelectedIds([]);
+    await loadData();
+    setDeleting(false);
+  };
+
+  const toggleSelect = (id) =>
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+
   const formatDate = (d) => d
     ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
     : "—";
@@ -76,7 +90,7 @@ export default function ManagerActivities() {
 
         .act-row {
           display: grid;
-          grid-template-columns: 130px 1.2fr 1fr 100px 1.5fr;
+          grid-template-columns: 32px 130px 1.2fr 1fr 100px 1.5fr;
           gap: 12px; align-items: start;
           padding: 13px 20px;
           border-bottom: 1px solid #F0F0ED;
@@ -131,9 +145,22 @@ export default function ManagerActivities() {
             </select>
           </div>
 
+          {/* Delete button */}
+          {selectedIds.length > 0 && (
+            <button onClick={handleDelete} disabled={deleting} style={styles.deleteBtn}>
+              {deleting ? "Deleting…" : `Delete selected (${selectedIds.length})`}
+            </button>
+          )}
+
           {/* Table */}
           <div style={styles.tableCard}>
             <div style={{ ...styles.actRowStyle, ...styles.tableHeader }}>
+              <input
+                type="checkbox"
+                checked={filtered.length > 0 && filtered.every(a => selectedIds.includes(a.id))}
+                onChange={e => setSelectedIds(e.target.checked ? filtered.map(a => a.id) : [])}
+                style={styles.checkbox}
+              />
               <span>Date</span>
               <span>Account</span>
               <span>Rep</span>
@@ -153,6 +180,12 @@ export default function ManagerActivities() {
                 const tc = typeColors[act.activity_type] || typeColors.Call;
                 return (
                   <div key={act.id} className="act-row">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(act.id)}
+                      onChange={() => toggleSelect(act.id)}
+                      style={styles.checkbox}
+                    />
                     <span style={styles.dateText}>{formatDate(act.activity_date)}</span>
                     <span style={styles.accountText}>{getAccountName(act.account_id)}</span>
                     <span style={styles.cellText}>{getRepName(act.rep_id)}</span>
@@ -186,7 +219,9 @@ const styles = {
   subTitle: { fontSize: "13px", color: "#767676" },
   filterBar: { display: "flex", gap: "10px", flexWrap: "wrap" },
   tableCard: { backgroundColor: "#ffffff", border: "1px solid #E8E8E6", borderRadius: "8px", overflow: "hidden" },
-  actRowStyle: { display: "grid", gridTemplateColumns: "130px 1.2fr 1fr 100px 1.5fr", gap: "12px", alignItems: "start", padding: "13px 20px", borderBottom: "1px solid #F0F0ED" },
+  actRowStyle: { display: "grid", gridTemplateColumns: "32px 130px 1.2fr 1fr 100px 1.5fr", gap: "12px", alignItems: "start", padding: "13px 20px", borderBottom: "1px solid #F0F0ED" },
+  checkbox: { width: "16px", height: "16px", cursor: "pointer", accentColor: "#367C2B", marginTop: "2px" },
+  deleteBtn: { alignSelf: "flex-start", padding: "8px 16px", backgroundColor: "#DC2626", color: "#fff", border: "none", borderRadius: "6px", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" },
   tableHeader: { fontSize: "11px", fontWeight: 600, color: "#ABABAB", textTransform: "uppercase", letterSpacing: "0.06em" },
   dateText: { fontSize: "13px", color: "#767676" },
   accountText: { fontSize: "14px", fontWeight: 500, color: "#1A1A1A" },
