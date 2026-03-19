@@ -273,6 +273,12 @@ export default function ExportReports() {
             .cover .meta { margin-bottom: 0; }
             .rep-section { page-break-after: always; }
             .rep-section:last-child { page-break-after: avoid; }
+            .page-header { margin-bottom: 20px; }
+            .page-header-logo { font-size: 16px; font-weight: bold; color: #367C2B; margin-bottom: 6px; }
+            .page-header .accent-line { height: 3px; background: #FFDE00; border-radius: 2px; width: 120px; margin-bottom: 8px; }
+            .header-meta { font-size: 11px; color: #767676; display: flex; gap: 6px; align-items: center; margin-bottom: 16px; }
+            .header-divider { color: #D0D0CC; }
+            .page-header-rule { border: none; border-top: 1px solid #E8E8E6; margin-bottom: 20px; }
           </style>
         </head>
         <body>
@@ -284,6 +290,18 @@ export default function ExportReports() {
           </div>
           ${repGroups.map(group => `
             <div class="rep-section">
+              <div class="page-header">
+                <div class="page-header-logo">PRO-TRACKER</div>
+                <div class="accent-line"></div>
+                <div class="header-meta">
+                  <span class="report-title">Pro-Tracker Report</span>
+                  <span class="header-divider">·</span>
+                  <span>United Ag &amp; Turf</span>
+                  <span class="header-divider">·</span>
+                  <span>Generated ${date}</span>
+                </div>
+              </div>
+              <hr class="page-header-rule">
               <h2>${group.rep}</h2>
               <div class="accent"></div>
               <p class="acct-count">${group.rows.length} account${group.rows.length !== 1 ? "s" : ""}</p>
