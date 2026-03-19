@@ -16,6 +16,7 @@ export default function RepDetail() {
   const [accountActivities, setAccountActivities] = useState({});
   const [accountContacts, setAccountContacts] = useState({});
   const [loading, setLoading] = useState(true);
+  const [unassignMsg, setUnassignMsg] = useState(null);
   const [stats, setStats] = useState({
     accountsAssigned: 0,
     logsThisWeek: 0,
@@ -115,6 +116,14 @@ export default function RepDetail() {
     navigate("/login");
   };
 
+  const handleUnassign = async (accountId) => {
+    await supabase.from("accounts").update({ rep_id: null }).eq("id", accountId);
+    setAccounts(prev => prev.filter(a => a.id !== accountId));
+    setStats(prev => ({ ...prev, accountsAssigned: prev.accountsAssigned - 1 }));
+    setUnassignMsg(accountId);
+    setTimeout(() => setUnassignMsg(null), 3000);
+  };
+
   const formatDate = (d) => d
     ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" })
     : "—";
@@ -149,7 +158,7 @@ export default function RepDetail() {
 
         .account-row-grid {
           display: grid;
-          grid-template-columns: 1.5fr 100px 110px 80px 80px 130px;
+          grid-template-columns: 1.5fr 100px 110px 80px 80px 130px 80px;
           gap: 12px; align-items: center;
         }
 
@@ -196,6 +205,7 @@ export default function RepDetail() {
               <span>Logs</span>
               <span>Days Left</span>
               <span>Next Scheduled</span>
+              <span></span>
             </div>
 
             {accounts.length === 0 ? (
@@ -240,6 +250,17 @@ export default function RepDetail() {
                       </span>
                       <span style={styles.cellText}>
                         {isExpanded ? (getNextScheduled(account.id) || "None") : "—"}
+                      </span>
+                      <span>
+                        {unassignMsg === account.id ? (
+                          <span style={styles.unassignConfirm}>Unassigned</span>
+                        ) : (
+                          <button
+                            onClick={e => { e.stopPropagation(); handleUnassign(account.id); }}
+                            style={styles.unassignLink}>
+                            Unassign
+                          </button>
+                        )}
                       </span>
                     </div>
 
@@ -380,9 +401,15 @@ const styles = {
   },
   accountRowGrid: {
     display: "grid",
-    gridTemplateColumns: "1.5fr 100px 110px 80px 80px 130px",
+    gridTemplateColumns: "1.5fr 100px 110px 80px 80px 130px 80px",
     gap: "12px", alignItems: "center",
   },
+  unassignLink: {
+    background: "none", border: "none", padding: 0,
+    fontSize: "12px", color: "#DC2626", cursor: "pointer",
+    fontFamily: "'DM Sans', sans-serif", textDecoration: "none", fontWeight: 500,
+  },
+  unassignConfirm: { fontSize: "12px", color: "#16A34A", fontWeight: 500 },
   tableHeader: {
     fontSize: "11px", fontWeight: 600, color: "#ABABAB",
     textTransform: "uppercase", letterSpacing: "0.06em",

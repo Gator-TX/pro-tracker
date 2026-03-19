@@ -565,9 +565,6 @@ export default function ManageAccounts() {
                   <>
                     <div style={styles.assignHeader}>
                       <p style={styles.sectionLabel}>{selectedRep.full_name}'s Accounts</p>
-                      <span style={styles.counterBadge}>
-                        {repAccounts.length}/10 assigned
-                      </span>
                     </div>
 
                     {assignSuccess && (
@@ -588,6 +585,16 @@ export default function ManageAccounts() {
                           value={sprintEnd}
                           onChange={e => setSprintEnd(e.target.value)} />
                       </div>
+                    </div>
+
+                    {/* Save button above checklist */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <button className="btn-primary assign-save-btn"
+                        disabled={savingAssign}
+                        onClick={saveAssignments}>
+                        {savingAssign ? "Saving…" : "Save Assignments"}
+                      </button>
+                      <span style={styles.counterBadge}>{repAccounts.length}/10 assigned</span>
                     </div>
 
                     {/* Account checklist */}
@@ -627,11 +634,6 @@ export default function ManageAccounts() {
                       )}
                     </div>
 
-                    <button className="btn-primary assign-save-btn"
-                      disabled={savingAssign}
-                      onClick={saveAssignments}>
-                      {savingAssign ? "Saving…" : "Save Assignments"}
-                    </button>
                   </>
                 )}
               </div>
