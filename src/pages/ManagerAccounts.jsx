@@ -201,7 +201,7 @@ export default function ManagerAccounts() {
                 const sc = STATUS_COLORS[account.status] || STATUS_COLORS.New;
                 return (
                   <div key={account.id} className="account-row"
-                    onClick={() => navigate(`/dashboard/reps/${account.rep_id}`)}>
+                    onClick={() => navigate(`/dashboard/accounts/${account.id}`)}>
                     <input
                       type="checkbox"
                       checked={selectedIds.includes(account.id)}

@@ -26,6 +26,7 @@ function App() {
         <Route path="/dashboard/reps/:repId" element={<RepDetail />} />
         <Route path="/manage" element={<ManageAccounts />} />
         <Route path="/dashboard/accounts" element={<ManagerAccounts />} />
+        <Route path="/dashboard/accounts/:id" element={<AccountDetail />} />
         <Route path="/dashboard/activities" element={<ManagerActivities />} />
         <Route path="/dashboard/reps" element={<SalesReps />} />
         <Route path="/dashboard/settings" element={<Settings />} />
