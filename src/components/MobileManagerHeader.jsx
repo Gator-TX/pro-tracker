@@ -56,7 +56,14 @@ export default function MobileManagerHeader({ activePath, profile }) {
 
         <img src={logo} alt="UAT Pro" style={styles.headerLogo} />
 
-        <div style={{ width: "40px" }} />
+        <div style={styles.headerRight}>
+          {profile?.full_name && (
+            <span style={styles.headerName}>{profile.full_name}</span>
+          )}
+          <button onClick={handleSignOut} style={styles.signOutTopBtn}>
+            Sign out
+          </button>
+        </div>
       </div>
 
       {/* Overlay */}
@@ -181,6 +188,21 @@ const styles = {
   signOutBtn: {
     background: "none", border: "none", padding: 0,
     fontSize: "13px", color: "#767676",
+    textDecoration: "underline", cursor: "pointer",
+    fontFamily: "'DM Sans', sans-serif",
+  },
+  headerRight: {
+    display: "flex", flexDirection: "column",
+    alignItems: "flex-end", gap: "1px",
+  },
+  headerName: {
+    fontSize: "13px", fontWeight: 600, color: "#1A1A1A",
+    fontFamily: "'DM Sans', sans-serif", whiteSpace: "nowrap",
+    maxWidth: "100px", overflow: "hidden", textOverflow: "ellipsis",
+  },
+  signOutTopBtn: {
+    background: "none", border: "none", padding: 0,
+    fontSize: "12px", color: "#367C2B", fontWeight: 500,
     textDecoration: "underline", cursor: "pointer",
     fontFamily: "'DM Sans', sans-serif",
   },
