@@ -22,3 +22,10 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Local tooling
+.claude/
+
+# Saved HTML exports
+src/assets/*.html
+src/assets/*_files/
