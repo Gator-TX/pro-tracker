@@ -116,6 +116,23 @@ export default function ManagerActivities() {
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 70px !important; overflow-x: hidden; }
+          .filter-bar { flex-direction: column !important; }
+          .filter-bar .filter-select { width: 100%; }
+          .act-table-header { display: none !important; }
+          .act-table-card { background: transparent !important; border: none !important; overflow: visible !important; }
+          .act-row {
+            display: flex !important; flex-direction: column !important;
+            padding: 14px 16px !important; gap: 6px !important;
+            background: #fff; border: 1px solid #E8E8E6 !important;
+            border-bottom: 1px solid #E8E8E6 !important;
+            border-radius: 8px; margin-bottom: 8px;
+          }
+          .act-checkbox { display: none !important; }
+          .act-type { order: 0; align-self: flex-start; }
+          .act-account { font-size: 15px !important; font-weight: 600 !important; color: #1A1A1A !important; order: 1; }
+          .act-rep { order: 2; font-size: 12px !important; color: #767676 !important; }
+          .act-date { order: 3; font-size: 12px !important; }
+          .act-notes { order: 4; }
         }
       `}</style>
 
@@ -129,7 +146,7 @@ export default function ManagerActivities() {
           <p style={styles.subTitle}>{filtered.length} logs</p>
 
           {/* Filters */}
-          <div style={styles.filterBar}>
+          <div className="filter-bar" style={styles.filterBar}>
             <select className="filter-select" value={filterRep}
               onChange={e => setFilterRep(e.target.value)}>
               <option value="all">All Reps</option>
@@ -154,8 +171,8 @@ export default function ManagerActivities() {
           )}
 
           {/* Table */}
-          <div style={styles.tableCard}>
-            <div style={{ ...styles.actRowStyle, ...styles.tableHeader }}>
+          <div className="act-table-card" style={styles.tableCard}>
+            <div className="act-table-header" style={{ ...styles.actRowStyle, ...styles.tableHeader }}>
               <input
                 type="checkbox"
                 checked={filtered.length > 0 && filtered.every(a => selectedIds.includes(a.id))}
@@ -183,19 +200,20 @@ export default function ManagerActivities() {
                   <div key={act.id} className="act-row">
                     <input
                       type="checkbox"
+                      className="act-checkbox"
                       checked={selectedIds.includes(act.id)}
                       onChange={() => toggleSelect(act.id)}
                       style={styles.checkbox}
                     />
-                    <span style={styles.dateText}>{formatDate(act.activity_date)}</span>
-                    <span style={styles.accountText}>{getAccountName(act.account_id)}</span>
-                    <span style={styles.cellText}>{getRepName(act.rep_id)}</span>
-                    <span>
+                    <span className="act-date" style={styles.dateText}>{formatDate(act.activity_date)}</span>
+                    <span className="act-account" style={styles.accountText}>{getAccountName(act.account_id)}</span>
+                    <span className="act-rep" style={styles.cellText}>{getRepName(act.rep_id)}</span>
+                    <span className="act-type">
                       <span className="type-badge" style={{ background: tc.bg, color: tc.color }}>
                         {act.activity_type}
                       </span>
                     </span>
-                    <div>
+                    <div className="act-notes">
                       {act.outcome && <p style={styles.outcomeText}>{act.outcome}</p>}
                       {act.notes && <p style={styles.notesText}>{act.notes}</p>}
                     </div>

@@ -197,6 +197,21 @@ export default function Dashboard() {
 
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 70px !important; overflow-x: hidden; }
+          .stat-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .rep-table-header { display: none !important; }
+          .rep-table-card { background: transparent !important; border: none !important; border-radius: 0 !important; overflow: visible !important; }
+          .rep-row {
+            display: flex !important; flex-direction: column !important;
+            padding: 14px 16px !important; gap: 6px !important;
+            background: #fff; border: 1px solid #E8E8E6; border-radius: 8px;
+            margin: 0 0 8px; border-bottom: none !important;
+          }
+          .rep-col-name { font-size: 15px !important; font-weight: 600 !important; margin-bottom: 2px !important; }
+          .rep-col-accounts::before { content: "ACCOUNTS  "; font-size: 11px; color: #ABABAB; font-weight: 600; }
+          .rep-col-logs::before { content: "LOGS THIS WEEK  "; font-size: 11px; color: #ABABAB; font-weight: 600; }
+          .rep-col-status { align-self: flex-start; }
+          .export-btn-row { flex-direction: column !important; }
+          .export-btn { flex: none !important; }
         }
       `}</style>
 
@@ -274,7 +289,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div style={styles.exportBtnRow}>
+              <div className="export-btn-row" style={styles.exportBtnRow}>
                 <button className="export-btn" style={{ background: "#367C2B", color: "#fff" }}>
                   📊 Export as Excel (.xlsx)
                 </button>
@@ -286,7 +301,7 @@ export default function Dashboard() {
           )}
 
           {/* STAT CARDS */}
-          <div style={styles.statGrid}>
+          <div className="stat-grid" style={styles.statGrid}>
             {STAT_CARDS.map(card => (
               <div key={card.label} style={styles.statCard}>
                 <p style={styles.statValue}>{card.value}</p>
@@ -297,10 +312,10 @@ export default function Dashboard() {
           </div>
 
           {/* REP TABLE */}
-          <div style={styles.tableCard}>
+          <div className="rep-table-card" style={styles.tableCard}>
             <p style={styles.tableTitle}>Rep Activity</p>
 
-            <div style={{ ...styles.repRowStyle, ...styles.tableHeader }}>
+            <div className="rep-table-header" style={{ ...styles.repRowStyle, ...styles.tableHeader }}>
               <span style={{ cursor: "pointer" }} onClick={() => setSortDirection(d => d === "asc" ? "desc" : "asc")}>
                 Rep {sortDirection === "asc" ? "↑" : "↓"}
               </span>
@@ -318,10 +333,10 @@ export default function Dashboard() {
               ).map(rep => (
                 <div key={rep.id} className="rep-row"
                   onClick={() => navigate(`/dashboard/reps/${rep.id}`)}>
-                  <span style={styles.repName}>{rep.full_name}</span>
-                  <span style={styles.repStat}>{rep.accountCount}</span>
-                  <span style={styles.repStat}>{rep.logsThisWeek}</span>
-                  <span style={{
+                  <span className="rep-col-name" style={styles.repName}>{rep.full_name}</span>
+                  <span className="rep-col-accounts" style={styles.repStat}>{rep.accountCount}</span>
+                  <span className="rep-col-logs" style={styles.repStat}>{rep.logsThisWeek}</span>
+                  <span className="rep-col-status" style={{
                     ...styles.statusBadge,
                     background: rep.atRisk ? "#FEF2F2" : "#F0FDF4",
                     color: rep.atRisk ? "#DC2626" : "#16A34A",

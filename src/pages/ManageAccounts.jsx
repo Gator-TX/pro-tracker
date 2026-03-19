@@ -341,6 +341,23 @@ export default function ManageAccounts() {
 
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 70px !important; overflow-x: hidden; }
+          .assign-layout { display: flex !important; flex-direction: column !important; min-height: unset !important; }
+          .rep-list {
+            border-right: none !important; border-bottom: 1px solid #E8E8E6;
+            flex-direction: row !important; flex-wrap: nowrap !important;
+            overflow-x: auto !important; gap: 8px !important;
+            padding: 12px !important; -webkit-overflow-scrolling: touch;
+          }
+          .rep-list-label { display: none !important; }
+          .rep-select-row {
+            white-space: nowrap !important; flex-shrink: 0 !important;
+            border-radius: 100px !important; border: 1.5px solid #E0E0DC !important;
+            padding: 8px 16px !important; font-size: 13px !important;
+          }
+          .rep-select-row.selected { background: #367C2B !important; color: #fff !important; border-color: #367C2B !important; }
+          .assign-right { padding: 16px !important; }
+          .sprint-row { flex-direction: column !important; }
+          .assign-save-btn { width: 100% !important; }
         }
       `}</style>
 
@@ -508,11 +525,11 @@ export default function ManageAccounts() {
 
           {/* ── TAB 3: ASSIGN ── */}
           {activeTab === "assign" && (
-            <div style={styles.assignLayout}>
+            <div className="assign-layout" style={styles.assignLayout}>
 
               {/* Rep list */}
-              <div style={styles.repList}>
-                <p style={styles.sectionLabel}>Select a Rep</p>
+              <div className="rep-list" style={styles.repList}>
+                <p className="rep-list-label" style={styles.sectionLabel}>Select a Rep</p>
                 {reps.map(rep => (
                   <div key={rep.id}
                     className={`rep-select-row${selectedRep?.id === rep.id ? " selected" : ""}`}
@@ -523,7 +540,7 @@ export default function ManageAccounts() {
               </div>
 
               {/* Account assignments */}
-              <div style={styles.assignRight}>
+              <div className="assign-right" style={styles.assignRight}>
                 {!selectedRep ? (
                   <p style={styles.emptyText}>Select a rep to manage their assignments</p>
                 ) : (
@@ -540,7 +557,7 @@ export default function ManageAccounts() {
                     )}
 
                     {/* Sprint dates */}
-                    <div style={styles.sprintRow}>
+                    <div className="sprint-row" style={styles.sprintRow}>
                       <div style={styles.field}>
                         <label style={styles.fieldLabel}>Sprint Start</label>
                         <input className="field-input" type="date"
@@ -571,7 +588,7 @@ export default function ManageAccounts() {
                       )}
                     </div>
 
-                    <button className="btn-primary"
+                    <button className="btn-primary assign-save-btn"
                       disabled={savingAssign}
                       onClick={saveAssignments}>
                       {savingAssign ? "Saving…" : "Save Assignments"}
