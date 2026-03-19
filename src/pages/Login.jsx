@@ -111,6 +111,8 @@ export default function Login() {
             <div style={styles.field}>
               <label style={styles.label}>Email</label>
               <input
+                id="email"
+                name="email"
                 className="login-input"
                 type="email"
                 required
@@ -124,6 +126,8 @@ export default function Login() {
             <div style={styles.field}>
               <label style={styles.label}>Password</label>
               <input
+                id="password"
+                name="password"
                 className="login-input"
                 type="password"
                 required

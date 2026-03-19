@@ -98,12 +98,12 @@ export default function Settings() {
             <div style={styles.card}>
               <div style={styles.field}>
                 <label style={styles.fieldLabel}>Full Name</label>
-                <input className="field-input" value={fullName}
+                <input id="full_name" name="full_name" className="field-input" value={fullName}
                   onChange={e => setFullName(e.target.value)} />
               </div>
               <div style={styles.field}>
                 <label style={styles.fieldLabel}>Role</label>
-                <input className="field-input" value="Manager" disabled
+                <input id="role" name="role" className="field-input" value="Manager" disabled
                   style={{ backgroundColor: "#F9F9F8", color: "#767676" }} />
               </div>
             </div>
@@ -115,7 +115,7 @@ export default function Settings() {
             <div style={styles.card}>
               <div style={styles.field}>
                 <label style={styles.fieldLabel}>Sprint Length (days)</label>
-                <input className="field-input" type="number"
+                <input id="sprint_length" name="sprint_length" className="field-input" type="number"
                   value={sprintLength}
                   onChange={e => setSprintLength(e.target.value)}
                   style={{ maxWidth: "160px" }} />
@@ -123,7 +123,7 @@ export default function Settings() {
               </div>
               <div style={styles.field}>
                 <label style={styles.fieldLabel}>Accounts Per Rep</label>
-                <input className="field-input" type="number"
+                <input id="accounts_per_rep" name="accounts_per_rep" className="field-input" type="number"
                   value={accountsPerRep}
                   onChange={e => setAccountsPerRep(e.target.value)}
                   style={{ maxWidth: "160px" }} />

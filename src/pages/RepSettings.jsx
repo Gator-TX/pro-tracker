@@ -92,12 +92,12 @@ export default function RepSettings() {
             <div style={styles.card}>
               <div style={styles.field}>
                 <label style={styles.fieldLabel}>Full Name</label>
-                <input className="field-input" value={fullName}
+                <input id="full_name" name="full_name" className="field-input" value={fullName}
                   onChange={e => setFullName(e.target.value)} />
               </div>
               <div style={styles.field}>
                 <label style={styles.fieldLabel}>Role</label>
-                <input className="field-input" value="Sales Rep" disabled
+                <input id="role" name="role" className="field-input" value="Sales Rep" disabled
                   style={{ backgroundColor: "#F9F9F8", color: "#767676" }} />
               </div>
             </div>
