@@ -573,18 +573,33 @@ export default function ManageAccounts() {
                     </div>
 
                     {/* Account checklist */}
+                    {allAccounts.some(a => a.rep_id && a.rep_id !== selectedRep.id) && (
+                      <div style={styles.assignWarning}>
+                        Accounts marked in yellow are currently assigned to another rep. Reassigning will remove them from that rep.
+                      </div>
+                    )}
                     <div style={styles.accountChecklist}>
                       {allAccounts.length === 0 ? (
                         <p style={styles.emptyText}>No accounts in system yet</p>
                       ) : (
-                        allAccounts.map(account => (
-                          <label key={account.id} className="account-check-row">
-                            <input type="checkbox"
-                              checked={repAccounts.includes(account.id)}
-                              onChange={() => toggleAccountAssign(account.id)} />
-                            <span>{account.name || account.company}</span>
-                          </label>
-                        ))
+                        allAccounts.map(account => {
+                          const assignedToOther = account.rep_id && account.rep_id !== selectedRep.id;
+                          const otherRepName = assignedToOther
+                            ? reps.find(r => r.id === account.rep_id)?.full_name
+                            : null;
+                          return (
+                            <label key={account.id} className="account-check-row"
+                              style={assignedToOther ? { backgroundColor: "#FFFBEB" } : {}}>
+                              <input type="checkbox"
+                                checked={repAccounts.includes(account.id)}
+                                onChange={() => toggleAccountAssign(account.id)} />
+                              <span style={{ flex: 1 }}>{account.name || account.company}</span>
+                              {otherRepName && (
+                                <span style={styles.otherRepTag}>→ {otherRepName}</span>
+                              )}
+                            </label>
+                          );
+                        })
                       )}
                     </div>
 
@@ -724,4 +739,13 @@ const styles = {
     padding: "4px 14px", maxHeight: "320px", overflowY: "auto",
   },
   emptyText: { fontSize: "14px", color: "#ABABAB", padding: "20px 0" },
+  assignWarning: {
+    backgroundColor: "#FFFBEB", border: "1px solid #FDE68A",
+    borderRadius: "6px", padding: "10px 14px",
+    fontSize: "12px", color: "#92400E", fontWeight: 500,
+  },
+  otherRepTag: {
+    fontSize: "12px", color: "#367C2B", fontWeight: 500,
+    whiteSpace: "nowrap", flexShrink: 0,
+  },
 };
