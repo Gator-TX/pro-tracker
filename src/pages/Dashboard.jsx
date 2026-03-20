@@ -96,6 +96,7 @@ export default function Dashboard() {
 
       return {
         ...rep,
+        accountCount: (accounts || []).length || 0,
         activeCount: activeAccounts.length,
         wonCount: wonAccounts.length,
         lostCount: lostAccounts.length,
@@ -108,7 +109,7 @@ export default function Dashboard() {
     setReps(repsWithData);
     setSelectedReps(repsWithData.map(r => r.id));
 
-    const totalAccounts = repsWithData.reduce((sum, r) => sum + r.accountCount, 0);
+    const totalAccounts = repsWithData.reduce((sum, r) => sum + (r.accountCount || 0), 0);
     const totalWeekly = repsWithData.reduce((sum, r) => sum + r.logsThisWeek, 0);
     const atRiskCount = repsWithData.filter(r => r.atRisk).length;
 
