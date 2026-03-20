@@ -4,6 +4,7 @@ import { supabase } from "../supabase";
 import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
 import MobileManagerHeader from "../components/MobileManagerHeader";
+import ManagerBottomNav from "../components/ManagerBottomNav";
 import { subscribeToPush } from "../utils/pushNotifications";
 
 export default function Settings() {
@@ -131,6 +132,7 @@ export default function Settings() {
 
       <div style={styles.layout}>
         <MobileManagerHeader activePath="/dashboard/settings" profile={profile} />
+        <ManagerBottomNav activePath="/dashboard/settings" />
         <Sidebar role="manager" profile={profile} onSignOut={handleSignOut} activePath="/dashboard/settings" />
 
         {/* MAIN */}

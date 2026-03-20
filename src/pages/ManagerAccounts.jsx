@@ -4,6 +4,7 @@ import { supabase } from "../supabase";
 import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
 import MobileManagerHeader from "../components/MobileManagerHeader";
+import ManagerBottomNav from "../components/ManagerBottomNav";
 
 export default function ManagerAccounts() {
   const navigate = useNavigate();
@@ -234,6 +235,7 @@ export default function ManagerAccounts() {
 
       <div style={styles.layout}>
         <MobileManagerHeader activePath="/dashboard/accounts" profile={profile} />
+        <ManagerBottomNav activePath="/dashboard/accounts" />
         <Sidebar role="manager" profile={profile} onSignOut={handleSignOut} activePath="/dashboard/accounts" />
 
         {/* MAIN */}

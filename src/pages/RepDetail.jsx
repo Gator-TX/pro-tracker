@@ -4,6 +4,7 @@ import { supabase } from "../supabase";
 import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
 import MobileManagerHeader from "../components/MobileManagerHeader";
+import ManagerBottomNav from "../components/ManagerBottomNav";
 
 export default function RepDetail() {
   const { repId } = useParams();
@@ -199,6 +200,7 @@ export default function RepDetail() {
       <div style={styles.layout}>
 
         <MobileManagerHeader activePath="/dashboard/reps" profile={profile} />
+        <ManagerBottomNav activePath="/dashboard/reps" />
         <Sidebar role="manager" profile={profile} onSignOut={handleSignOut} activePath="/dashboard/reps" />
 
         {/* MAIN */}

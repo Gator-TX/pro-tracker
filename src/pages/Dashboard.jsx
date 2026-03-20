@@ -4,6 +4,7 @@ import { supabase } from "../supabase";
 import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
 import MobileManagerHeader from "../components/MobileManagerHeader";
+import ManagerBottomNav from "../components/ManagerBottomNav";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -19,8 +20,6 @@ export default function Dashboard() {
   const [showExport, setShowExport] = useState(false);
   const [sprint, setSprint] = useState(null);
   const [sortDirection, setSortDirection] = useState("asc");
-  const [showBottomSheet, setShowBottomSheet] = useState(false);
-
   // Export panel state
   const [exportRange, setExportRange] = useState("sprint");
   const [customStart, setCustomStart] = useState("");
@@ -167,13 +166,6 @@ export default function Dashboard() {
     : b.full_name.localeCompare(a.full_name)
   );
 
-  const BOTTOM_SHEET_ITEMS = [
-    { label: "Activities", path: "/dashboard/activities" },
-    { label: "Manage Accounts", path: "/manage" },
-    { label: "Export Reports", path: "/dashboard/export" },
-    { label: "Settings", path: "/dashboard/settings" },
-  ];
-
   if (loading) {
     return (
       <div style={styles.loadingPage}>
@@ -236,21 +228,12 @@ export default function Dashboard() {
         /* Kanban — hidden on desktop */
         .rep-kanban { display: none; }
 
-        /* Bottom nav — hidden on desktop */
-        .bottom-nav { display: none; }
-        .bottom-sheet-overlay { display: none; }
-
         @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes slideUp {
-          from { transform: translateY(100%); }
-          to { transform: translateY(0); }
-        }
 
         @media (max-width: 768px) {
           .main-content {
             margin-left: 0 !important;
             padding-top: 70px !important;
-            padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
           }
           .table-scroll { max-height: 70vh; min-width: unset !important; }
           .stat-grid { grid-template-columns: repeat(2, 1fr) !important; }
@@ -315,80 +298,6 @@ export default function Dashboard() {
             letter-spacing: 0.06em;
           }
           .kanban-stat-value { font-size: 14px; font-weight: 500; }
-
-          /* Bottom nav */
-          .bottom-nav {
-            display: flex !important;
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            height: calc(72px + env(safe-area-inset-bottom));
-            padding-bottom: env(safe-area-inset-bottom);
-            background: #ffffff;
-            border-top: 1px solid #E8E8E6;
-            z-index: 150;
-            align-items: stretch;
-          }
-          .bottom-nav-item {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 3px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-family: 'DM Sans', sans-serif;
-            padding: 8px 0 0;
-            transition: color 0.15s;
-          }
-          .bottom-nav-label {
-            font-size: 11px;
-            font-weight: 500;
-          }
-
-          /* Bottom sheet overlay */
-          .bottom-sheet-overlay {
-            display: block !important;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.4);
-            z-index: 200;
-          }
-          .bottom-sheet {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            background: #fff;
-            border-radius: 16px 16px 0 0;
-            z-index: 250;
-            padding: 0 0 calc(16px + env(safe-area-inset-bottom));
-            animation: slideUp 0.25s ease;
-          }
-          .bottom-sheet-handle {
-            width: 36px; height: 4px;
-            background: #E0E0DC; border-radius: 2px;
-            margin: 12px auto 16px;
-          }
-          .bottom-sheet-item {
-            display: block; width: 100%;
-            padding: 14px 20px;
-            text-align: left;
-            background: none; border: none;
-            font-size: 15px; font-weight: 500; color: #374151;
-            font-family: 'DM Sans', sans-serif;
-            cursor: pointer;
-            border-bottom: 1px solid #F0F0ED;
-          }
-          .bottom-sheet-item:last-child { border-bottom: none; }
-          .bottom-sheet-signout {
-            display: block; width: 100%;
-            padding: 14px 20px;
-            text-align: left;
-            background: none; border: none;
-            font-size: 15px; font-weight: 500; color: #DC2626;
-            font-family: 'DM Sans', sans-serif;
-            cursor: pointer;
-          }
         }
       `}</style>
 
@@ -582,89 +491,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* MOBILE BOTTOM NAV */}
-      <nav className="bottom-nav">
-        {[
-          {
-            label: "Home", path: "/dashboard",
-            icon: (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                <polyline points="9 22 9 12 15 12 15 22"/>
-              </svg>
-            ),
-          },
-          {
-            label: "Accounts", path: "/dashboard/accounts",
-            icon: (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="7" width="20" height="14" rx="2"/>
-                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-              </svg>
-            ),
-          },
-          {
-            label: "Reps", path: "/dashboard/reps",
-            icon: (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-              </svg>
-            ),
-          },
-          {
-            label: "Menu", path: null,
-            icon: (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="3" y1="6" x2="21" y2="6"/>
-                <line x1="3" y1="12" x2="21" y2="12"/>
-                <line x1="3" y1="18" x2="21" y2="18"/>
-              </svg>
-            ),
-          },
-        ].map(item => {
-          const isActive = item.path === "/dashboard";
-          const color = isActive ? "#367C2B" : "#767676";
-          return (
-            <button
-              key={item.label}
-              className="bottom-nav-item"
-              style={{ color }}
-              onClick={() => {
-                if (item.path) navigate(item.path);
-                else setShowBottomSheet(true);
-              }}
-            >
-              {item.icon}
-              <span className="bottom-nav-label">{item.label}</span>
-            </button>
-          );
-        })}
-      </nav>
-
-      {/* BOTTOM SHEET */}
-      {showBottomSheet && (
-        <>
-          <div className="bottom-sheet-overlay" onClick={() => setShowBottomSheet(false)} />
-          <div className="bottom-sheet">
-            <div className="bottom-sheet-handle" />
-            {BOTTOM_SHEET_ITEMS.map(item => (
-              <button
-                key={item.path}
-                className="bottom-sheet-item"
-                onClick={() => { navigate(item.path); setShowBottomSheet(false); }}
-              >
-                {item.label}
-              </button>
-            ))}
-            <button className="bottom-sheet-signout" onClick={handleSignOut}>
-              Sign Out
-            </button>
-          </div>
-        </>
-      )}
+      <ManagerBottomNav activePath="/dashboard" />
     </>
   );
 }

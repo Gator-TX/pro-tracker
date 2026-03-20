@@ -4,6 +4,7 @@ import { supabase } from "../supabase";
 import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
 import MobileManagerHeader from "../components/MobileManagerHeader";
+import ManagerBottomNav from "../components/ManagerBottomNav";
 import * as XLSX from "xlsx";
 
 export default function ManageAccounts() {
@@ -405,6 +406,7 @@ export default function ManageAccounts() {
       <div style={styles.layout}>
 
         <MobileManagerHeader activePath="/manage" profile={profile} />
+        <ManagerBottomNav activePath="/manage" />
         <Sidebar role="manager" profile={profile} onSignOut={handleSignOut} activePath="/manage" />
 
         {/* MAIN */}

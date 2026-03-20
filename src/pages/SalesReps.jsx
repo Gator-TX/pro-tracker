@@ -12,6 +12,7 @@ import { supabase } from "../supabase";
 import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
 import MobileManagerHeader from "../components/MobileManagerHeader";
+import ManagerBottomNav from "../components/ManagerBottomNav";
 
 export default function SalesReps() {
   const navigate = useNavigate();
@@ -158,6 +159,7 @@ export default function SalesReps() {
 
       <div style={styles.layout}>
         <MobileManagerHeader activePath="/dashboard/reps" profile={profile} />
+        <ManagerBottomNav activePath="/dashboard/reps" />
         <Sidebar role="manager" profile={profile} onSignOut={handleSignOut} activePath="/dashboard/reps" />
 
         <div className="main-content" style={styles.main}>
