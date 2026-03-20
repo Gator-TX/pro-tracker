@@ -127,7 +127,7 @@ export default function ManagerActivities() {
         .act-row { min-width: 650px; }
 
         @media (max-width: 768px) {
-          .main-content { margin-left: 0 !important; padding-top: 70px !important; }
+          .main-content { margin-left: 0 !important; padding-top: 86px !important; }
           .desktop-only { display: none !important; }
           .filter-bar { flex-direction: column !important; }
           .filter-bar .filter-select { width: 100%; }

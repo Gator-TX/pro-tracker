@@ -182,7 +182,7 @@ export default function Accounts() {
         @media (max-width: 768px) {
           .mobile-only { display: block; }
           .desktop-only { display: none; }
-          .main-content { margin-left: 0 !important; padding-top: 70px !important; }
+          .main-content { margin-left: 0 !important; padding-top: 86px !important; }
         }
 
         .filter-pill {

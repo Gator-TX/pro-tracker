@@ -239,7 +239,7 @@ export default function Dashboard() {
         @media (max-width: 768px) {
           .main-content {
             margin-left: 0 !important;
-            padding-top: 70px !important;
+            padding-top: 86px !important;
           }
           .table-scroll { max-height: 70vh; min-width: unset !important; }
           .stat-grid { grid-template-columns: repeat(2, 1fr) !important; }
