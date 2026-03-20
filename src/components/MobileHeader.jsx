@@ -19,7 +19,30 @@ export default function MobileHeader({ activePath, profile }) {
 
   return (
     <>
-      <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, height: "70px", backgroundColor: "#ffffff", borderBottom: "1px solid #E8E8E6", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px" }}>
+      <style>{`
+        .mobile-header { display: none; }
+        .mobile-header-spacer { display: none; }
+        @media (max-width: 768px) {
+          .mobile-header-spacer { display: block; height: 90px; }
+          .mobile-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 70px;
+            background: #ffffff;
+            border-bottom: 1px solid #E8E8E6;
+            padding: 0 16px;
+            z-index: 100;
+          }
+        }
+      `}</style>
+
+      <div className="mobile-header-spacer" />
+
+      {/* Fixed top bar — mobile only */}
+      <div className="mobile-header">
         {/* Hamburger */}
         <button
           onClick={() => setMenuOpen(true)}
@@ -37,7 +60,6 @@ export default function MobileHeader({ activePath, profile }) {
           Sign out
         </button>
       </div>
-      <div style={{ height: "86px", display: "block", width: "100%" }} />
 
       {/* Overlay */}
       {menuOpen && (

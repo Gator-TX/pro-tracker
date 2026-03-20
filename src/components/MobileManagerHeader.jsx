@@ -24,7 +24,30 @@ export default function MobileManagerHeader({ activePath, profile }) {
 
   return (
     <>
-      <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, height: "70px", backgroundColor: "#ffffff", borderBottom: "1px solid #E8E8E6", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px" }}>
+      <style>{`
+        .mgr-mobile-header { display: none; }
+        .mgr-mobile-header-spacer { display: none; }
+        @media (max-width: 768px) {
+          .mgr-mobile-header-spacer { display: block; height: 90px; }
+          .mgr-mobile-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 70px;
+            background: #ffffff;
+            border-bottom: 1px solid #E8E8E6;
+            padding: 0 16px;
+            z-index: 100;
+          }
+        }
+      `}</style>
+
+      <div className="mgr-mobile-header-spacer" />
+
+      {/* Fixed top bar — mobile only */}
+      <div className="mgr-mobile-header">
         <button
           onClick={() => setMenuOpen(true)}
           style={styles.hamburger}
@@ -44,7 +67,6 @@ export default function MobileManagerHeader({ activePath, profile }) {
           </button>
         </div>
       </div>
-      <div style={{ height: "86px", display: "block", width: "100%" }} />
 
       {/* Overlay */}
       {menuOpen && (
