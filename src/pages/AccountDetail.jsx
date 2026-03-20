@@ -233,6 +233,7 @@ export default function AccountDetail() {
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 86px !important; }
           .desktop-header { display: none !important; }
+          .detail-cards { gap: 8px !important; }
         }
       `}</style>
 
@@ -263,7 +264,7 @@ export default function AccountDetail() {
           <h1 style={styles.pageTitle}>{account?.name || account?.company}</h1>
         </div>
 
-        <div style={styles.content}>
+        <div className="detail-cards" style={styles.content}>
 
           {/* ── COMPANY INFO CARD ── */}
           <div style={styles.card}>

@@ -213,7 +213,7 @@ export default function ManagerAccounts() {
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 86px !important; }
           .desktop-only { display: none !important; }
-          .mobile-only { display: flex !important; flex-direction: column; gap: 0; }
+          .mobile-only { display: flex !important; flex-direction: column; gap: 8px; }
           .acct-mobile-card {
             background: #fff;
             border: 1px solid #E8E8E6;

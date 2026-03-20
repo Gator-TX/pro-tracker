@@ -260,6 +260,7 @@ export default function Dashboard() {
             border: 1px solid #E8E8E6;
             border-radius: 8px;
             padding: 14px 16px;
+            margin-bottom: 8px;
             cursor: pointer;
             display: flex;
             flex-direction: column;

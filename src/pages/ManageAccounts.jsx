@@ -382,7 +382,7 @@ export default function ManageAccounts() {
         @keyframes spin { to { transform: rotate(360deg); } }
 
         @media (max-width: 768px) {
-          .main-content { margin-left: 0 !important; padding-top: 86px !important; overflow-x: hidden; }
+          .main-content { margin-left: 0 !important; padding-top: 86px !important; overflow-x: hidden; gap: 8px !important; }
           .assign-layout { display: flex !important; flex-direction: column !important; min-height: unset !important; }
           .rep-list {
             border-right: none !important; border-bottom: 1px solid #E8E8E6;

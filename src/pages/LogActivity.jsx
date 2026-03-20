@@ -184,6 +184,7 @@ export default function LogActivity() {
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 86px !important; }
+          .log-cards { gap: 8px !important; }
         }
       `}</style>
 
@@ -209,7 +210,7 @@ export default function LogActivity() {
           </p>
         </div>
 
-        <div style={styles.content}>
+        <div className="log-cards" style={styles.content}>
 
           {/* ── ACTIVITY TYPE ── */}
           <div style={styles.card}>

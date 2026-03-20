@@ -183,6 +183,7 @@ export default function Accounts() {
           .mobile-only { display: block; }
           .desktop-only { display: none; }
           .main-content { margin-left: 0 !important; padding-top: 86px !important; }
+          .account-card { margin-bottom: 8px; }
         }
 
         .filter-pill {
@@ -530,7 +531,7 @@ const styles = {
   viewAllBtn: { background: "none", border: "none", fontSize: "12px", color: "#367C2B", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", textDecoration: "underline" },
   mobileCard: { backgroundColor: "#ffffff", border: "1px solid #E8E8E6", borderRadius: "10px", padding: "0 14px" },
 
-  mobileAccountList: { display: "flex", flexDirection: "column", gap: "10px", paddingBottom: "24px" },
+  mobileAccountList: { display: "flex", flexDirection: "column", gap: "8px", paddingBottom: "24px" },
   typeBadge: { flexShrink: 0, fontSize: "10px", fontWeight: 600, padding: "3px 8px", borderRadius: "100px", whiteSpace: "nowrap", marginTop: "2px" },
   actMiddle: { flex: 1, minWidth: 0 },
   actAccount: { fontSize: "13px", fontWeight: 600, color: "#367C2B", marginBottom: "2px" },
