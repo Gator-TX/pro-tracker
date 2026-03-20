@@ -25,10 +25,10 @@ export default function MobileManagerHeader({ activePath, profile }) {
   return (
     <>
       <style>{`
-        .mgr-mobile-header {
-          display: none;
-        }
+        .mgr-mobile-header { display: none; }
+        .mgr-mobile-header-spacer { display: none; }
         @media (max-width: 768px) {
+          .mgr-mobile-header-spacer { display: block; height: 80px; }
           .mgr-mobile-header {
             display: flex;
             align-items: center;
@@ -43,6 +43,8 @@ export default function MobileManagerHeader({ activePath, profile }) {
           }
         }
       `}</style>
+
+      <div className="mgr-mobile-header-spacer" />
 
       {/* Fixed top bar — mobile only */}
       <div className="mgr-mobile-header">
