@@ -116,6 +116,7 @@ export default function ManagerActivities() {
 
         @keyframes spin { to { transform: rotate(360deg); } }
         .mobile-select-all { display: none; }
+        .act-mobile-list { display: none; }
 
         .table-scroll {
           max-height: 600px; overflow-y: auto; min-width: 650px;
@@ -125,30 +126,33 @@ export default function ManagerActivities() {
 
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 70px !important; }
-          .table-scroll { max-height: 70vh; min-width: unset !important; }
           .filter-bar { flex-direction: column !important; }
           .filter-bar .filter-select { width: 100%; }
-          .act-table-header { display: none !important; }
-          .act-table-card { background: transparent !important; border: none !important; overflow: visible !important; }
-          .act-row {
-            display: flex !important; flex-direction: column !important;
-            padding: 14px 16px !important; padding-right: 44px !important; gap: 6px !important;
-            min-width: unset !important;
-            background: #fff; border: 1px solid #E8E8E6 !important;
-            border-bottom: 1px solid #E8E8E6 !important;
-            border-radius: 8px; margin-bottom: 8px;
-            position: relative !important;
+          .act-table-card { display: none !important; }
+          .act-mobile-list { display: flex !important; flex-direction: column; }
+          .act-mobile-card {
+            background: #fff;
+            border: 1px solid #E8E8E6;
+            border-radius: 8px;
+            padding: 14px 16px;
+            padding-right: 44px;
+            margin-bottom: 8px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
           }
-          .act-checkbox {
-            position: absolute !important;
-            top: 14px !important; right: 14px !important;
-            width: 18px !important; height: 18px !important;
+          .act-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+          .act-card-account { font-size: 15px; font-weight: 600; color: #1A1A1A; }
+          .act-card-date { font-size: 12px; color: #767676; }
+          .act-card-rep { font-size: 12px; color: #767676; }
+          .act-card-checkbox {
+            position: absolute;
+            top: 14px; right: 14px;
+            width: 18px; height: 18px;
+            cursor: pointer;
+            accent-color: #367C2B;
           }
-          .act-type { order: 0; align-self: flex-start; }
-          .act-account { font-size: 15px !important; font-weight: 600 !important; color: #1A1A1A !important; order: 1; }
-          .act-rep { order: 2; font-size: 12px !important; color: #767676 !important; }
-          .act-date { order: 3; font-size: 12px !important; }
-          .act-notes { order: 4; }
           .mobile-select-all {
             display: flex !important; align-items: center; gap: 10px;
             padding: 10px 16px; background: #fff;
@@ -266,6 +270,47 @@ export default function ManagerActivities() {
             )}
             </div>
           </div>
+
+          {/* MOBILE: Activity Cards */}
+          <div className="act-mobile-list">
+            {filtered.length === 0 ? (
+              <p style={styles.emptyText}>No activities found</p>
+            ) : (
+              filtered.map(act => {
+                const typeColors = {
+                  Call:    { bg: "#EFF6FF", color: "#2563EB" },
+                  Meeting: { bg: "#F0FDF4", color: "#16A34A" },
+                  Email:   { bg: "#FAF5FF", color: "#7C3AED" },
+                };
+                const tc = typeColors[act.activity_type] || typeColors.Call;
+                return (
+                  <div key={`m-${act.id}`} className="act-mobile-card">
+                    <input
+                      type="checkbox"
+                      className="act-card-checkbox"
+                      checked={selectedIds.includes(act.id)}
+                      onChange={() => toggleSelect(act.id)}
+                    />
+                    <div className="act-card-top">
+                      <span className="type-badge" style={{ background: tc.bg, color: tc.color }}>
+                        {act.activity_type}
+                      </span>
+                      <span className="act-card-date">{formatDate(act.activity_date)}</span>
+                    </div>
+                    <span className="act-card-account">{getAccountName(act.account_id)}</span>
+                    <span className="act-card-rep">{getRepName(act.rep_id)}</span>
+                    {(act.outcome || act.notes) && (
+                      <div>
+                        {act.outcome && <p style={styles.outcomeText}>{act.outcome}</p>}
+                        {act.notes && <p style={styles.notesText}>{act.notes}</p>}
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+
         </div>
       </div>
     </>

@@ -137,24 +137,32 @@ export default function SalesReps() {
         }
         .rep-row { min-width: 720px; }
 
+        .rep-mobile-kanban { display: none; }
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 70px !important; }
-          .table-scroll { max-height: 70vh; min-width: unset !important; }
-          .rep-table-header { display: none !important; }
-          .rep-row {
-            display: flex !important;
-            align-items: center !important;
-            padding: 14px 16px !important;
-            gap: 12px !important;
-            min-width: unset !important;
+          .rep-table-card { display: none !important; }
+          .rep-mobile-kanban { display: flex !important; flex-direction: column; gap: 8px; }
+          .rep-kanban-card {
+            background: #fff;
+            border: 1px solid #E8E8E6;
+            border-radius: 8px;
+            padding: 14px 16px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: background 0.15s;
           }
-          .rep-row-left { flex: 1; min-width: 0; }
-          .rep-row-right { flex-shrink: 0; }
-          .rep-desktop-stats { display: none !important; }
-          .rep-mobile-stats { display: block !important; }
+          .rep-kanban-card:active { background: #F9F9F8; }
+          .rep-kanban-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+          .rep-kanban-name { font-size: 15px; font-weight: 600; color: #1A1A1A; }
+          .rep-kanban-badge { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 100px; white-space: nowrap; }
+          .rep-kanban-stats { display: flex; gap: 20px; }
+          .rep-kanban-stat { display: flex; flex-direction: column; gap: 2px; }
+          .rep-kanban-stat-label { font-size: 9px; font-weight: 600; color: #ABABAB; text-transform: uppercase; letter-spacing: 0.06em; }
+          .rep-kanban-stat-value { font-size: 14px; font-weight: 500; }
         }
-        .rep-mobile-stats { display: none; }
       `}</style>
 
       <div style={styles.layout}>
@@ -172,7 +180,7 @@ export default function SalesReps() {
             </button>
           )}
 
-          <div style={styles.tableCard}>
+          <div className="rep-table-card" style={styles.tableCard}>
             {/* Desktop header */}
             <div className="rep-row rep-table-header" style={{ ...styles.tableHeader, boxShadow: "0 2px 4px rgba(0,0,0,0.06)", position: "relative", zIndex: 1, minWidth: "700px" }}>
               <input
@@ -242,6 +250,51 @@ export default function SalesReps() {
             )}
             </div>
           </div>
+          {/* MOBILE: Rep Kanban Cards */}
+          <div className="rep-mobile-kanban">
+            {sorted.length === 0 ? (
+              <p style={styles.emptyText}>No reps found</p>
+            ) : (
+              sorted.map(rep => (
+                <div
+                  key={`m-${rep.id}`}
+                  className="rep-kanban-card"
+                  style={{ borderLeft: `3px solid ${rep.atRisk ? "#DC2626" : "#367C2B"}` }}
+                  onClick={() => navigate(`/dashboard/reps/${rep.id}`)}
+                >
+                  <div className="rep-kanban-top">
+                    <span className="rep-kanban-name">{rep.full_name}</span>
+                    <span className="rep-kanban-badge" style={{
+                      background: rep.atRisk ? "#FEF2F2" : "#F0FDF4",
+                      color: rep.atRisk ? "#DC2626" : "#16A34A",
+                      border: `1px solid ${rep.atRisk ? "#FECACA" : "#BBF7D0"}`,
+                    }}>
+                      {rep.atRisk ? "At Risk" : "On Track"}
+                    </span>
+                  </div>
+                  <div className="rep-kanban-stats">
+                    <div className="rep-kanban-stat">
+                      <span className="rep-kanban-stat-label">Active</span>
+                      <span className="rep-kanban-stat-value">{rep.activeCount}</span>
+                    </div>
+                    <div className="rep-kanban-stat">
+                      <span className="rep-kanban-stat-label">Won</span>
+                      <span className="rep-kanban-stat-value" style={{ color: "#16A34A" }}>{rep.wonCount}</span>
+                    </div>
+                    <div className="rep-kanban-stat">
+                      <span className="rep-kanban-stat-label">Lost</span>
+                      <span className="rep-kanban-stat-value" style={{ color: "#DC2626" }}>{rep.lostCount}</span>
+                    </div>
+                    <div className="rep-kanban-stat">
+                      <span className="rep-kanban-stat-label">Logs/Wk</span>
+                      <span className="rep-kanban-stat-value">{rep.logsThisWeek}</span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
         </div>
       </div>
     </>

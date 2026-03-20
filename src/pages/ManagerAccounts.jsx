@@ -205,31 +205,35 @@ export default function ManagerAccounts() {
           scrollbar-width: thin; scrollbar-color: #E0E0DC transparent;
         }
         .account-row { min-width: 800px; }
+        .acct-mobile-list { display: none; }
 
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 70px !important; }
-          .table-scroll { max-height: 70vh; min-width: unset !important; overflow-x: visible !important; }
-          .acct-table-header { display: none !important; }
-          .acct-table-card { background: transparent !important; border: none !important; overflow: visible !important; }
-          .account-row {
-            display: flex !important; flex-wrap: wrap !important; align-items: center !important;
-            min-width: unset !important;
-            padding: 14px 16px !important; padding-right: 44px !important; gap: 4px 8px !important;
-            background: #fff; border: 1px solid #E8E8E6 !important; border-bottom: 1px solid #E8E8E6 !important;
-            border-radius: 8px !important; margin-bottom: 8px; position: relative !important;
+          .acct-table-card { display: none !important; }
+          .acct-mobile-list {
+            display: flex !important;
+            flex-direction: column;
           }
-          .account-row input[type="checkbox"] {
-            position: absolute !important; top: 14px !important; right: 14px !important;
-            width: 18px !important; height: 18px !important;
+          .acct-mobile-card {
+            background: #fff;
+            border: 1px solid #E8E8E6;
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: background 0.15s;
           }
-          .acct-name { flex: 1 1 100% !important; font-size: 15px !important; font-weight: 600 !important; color: #1A1A1A !important; margin-bottom: 4px !important; }
-          .acct-status { font-size: 11px !important; }
-          .acct-rep, .acct-last, .acct-days, .acct-logs { font-size: 12px !important; color: #767676 !important; }
-          .acct-rep::before { content: "Rep: "; font-weight: 600; color: #ABABAB; font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; }
-          .acct-last::before { content: " · "; color: #D0D0CC; }
-          .acct-days::before { content: " · "; color: #D0D0CC; }
-          .acct-logs::before { content: " · "; color: #D0D0CC; }
+          .acct-mobile-card:active { background: #F9F9F8; }
+          .acct-card-name { font-size: 15px; font-weight: 600; color: #1A1A1A; }
+          .acct-card-row2 { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+          .acct-card-rep { font-size: 12px; color: #767676; }
+          .acct-card-row3 { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+          .acct-card-meta { font-size: 12px; color: #ABABAB; }
+          .acct-card-expanded { border-top: 1px solid #F0F0ED; padding-top: 12px; margin-top: 0; display: flex; flex-direction: column; gap: 14px; }
         }
       `}</style>
 
@@ -480,6 +484,112 @@ export default function ManagerAccounts() {
             )}
             </div>
           </div>
+
+          {/* MOBILE: Account Cards */}
+          <div className="acct-mobile-list">
+            {filtered.length === 0 ? (
+              <p style={styles.emptyText}>No accounts found</p>
+            ) : (
+              filtered.map(account => {
+                const sc = STATUS_COLORS[account.status] || STATUS_COLORS.New;
+                const isExpanded = expandedAccount === account.id;
+                const acts = accountDetails[account.id]?.acts || [];
+                const cons = accountDetails[account.id]?.cons || [];
+                const daysLeft = account.end_date
+                  ? Math.max(0, Math.ceil((new Date(account.end_date) - new Date()) / (1000 * 60 * 60 * 24)))
+                  : null;
+                const progress = (account.start_date && account.end_date)
+                  ? Math.min(100, Math.max(0, Math.round(
+                      ((new Date() - new Date(account.start_date)) /
+                      (new Date(account.end_date) - new Date(account.start_date))) * 100
+                    )))
+                  : 0;
+                return (
+                  <div key={`m-${account.id}`} className="acct-mobile-card" onClick={() => toggleAccount(account.id)}>
+                    <span className="acct-card-name">{account.name || account.company}</span>
+                    <div className="acct-card-row2">
+                      <span style={{ ...styles.statusBadge, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
+                        {account.status || "New"}
+                      </span>
+                      <span className="acct-card-rep">{getRepName(account.rep_id)}</span>
+                    </div>
+                    <div className="acct-card-row3">
+                      <span className="acct-card-meta">{daysLeft !== null ? `${daysLeft}d left` : "—"}</span>
+                      <span className="acct-card-meta">{account.activities?.length || 0} logs</span>
+                      {account.rep_id && (
+                        unassignMsg === account.id
+                          ? <span style={{ fontSize: "12px", color: "#16A34A" }}>Unassigned</span>
+                          : <button onClick={e => { e.stopPropagation(); handleUnassign(account.id); }} style={styles.unassignLink}>Unassign</button>
+                      )}
+                    </div>
+                    {isExpanded && (
+                      <div className="acct-card-expanded">
+                        {account.address && (
+                          <div style={styles.detailSection}>
+                            <p style={styles.detailLabel}>Address</p>
+                            <a href={`https://maps.google.com/?q=${encodeURIComponent(account.address)}`}
+                              target="_blank" rel="noreferrer" style={styles.addressLink}
+                              onClick={e => e.stopPropagation()}>{account.address}</a>
+                          </div>
+                        )}
+                        {cons.length > 0 && (
+                          <div style={styles.detailSection}>
+                            <p style={styles.detailLabel}>Contacts</p>
+                            {cons.map(c => (
+                              <div key={c.id} style={styles.contactRow}>
+                                <span style={styles.contactName}>{c.first_name} {c.last_name}{c.title ? ` · ${c.title}` : ""}</span>
+                                <div style={styles.contactLinks}>
+                                  {c.phone && <a href={`tel:${c.phone}`} style={styles.contactLink} onClick={e => e.stopPropagation()}>{c.phone}</a>}
+                                  {c.email && <a href={`mailto:${c.email}`} style={styles.contactLink} onClick={e => e.stopPropagation()}>{c.email}</a>}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {account.end_date && (
+                          <div style={styles.detailSection}>
+                            <p style={styles.detailLabel}>Sprint Progress</p>
+                            <div style={styles.progressTrack}><div style={{ ...styles.progressFill, width: `${progress}%` }} /></div>
+                            <p style={styles.progressNote}>{daysLeft} days left</p>
+                          </div>
+                        )}
+                        <div style={styles.detailSection}>
+                          <p style={styles.detailLabel}>Activity Log</p>
+                          {acts.length === 0 ? <p style={styles.emptySmall}>No activity logged</p> : (
+                            <div style={styles.timeline}>
+                              {acts.map((act, i) => (
+                                <div key={act.id} style={styles.timelineItem}>
+                                  <div style={styles.timelineDotWrap}>
+                                    <div style={styles.timelineDot} />
+                                    {i < acts.length - 1 && <div style={styles.timelineLine} />}
+                                  </div>
+                                  <div style={styles.timelineContent}>
+                                    <div style={styles.timelineHeader}>
+                                      <span style={styles.actType}>{act.activity_type}</span>
+                                      <span style={styles.actDate}>{formatDate(act.activity_date)}</span>
+                                    </div>
+                                    {act.outcome && <p style={styles.actOutcome}>{act.outcome}</p>}
+                                    {act.notes && <p style={styles.actNotes}>{act.notes}</p>}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        {account.notes && (
+                          <div style={styles.detailSection}>
+                            <p style={styles.detailLabel}>Notes</p>
+                            <p style={{ fontSize: "13px", color: "#374151", whiteSpace: "pre-wrap", lineHeight: 1.6 }}>{account.notes}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+
         </div>
       </div>
     </>
