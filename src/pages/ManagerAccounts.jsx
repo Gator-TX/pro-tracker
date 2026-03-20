@@ -213,7 +213,8 @@ export default function ManagerAccounts() {
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 86px !important; }
           .desktop-only { display: none !important; }
-          .mobile-only { display: flex !important; flex-direction: column; gap: 8px; }
+          .mobile-only { display: flex !important; flex-direction: column; gap: 8px; margin-top: 8px; }
+          .acct-filter-bar { gap: 8px !important; }
           .acct-mobile-card {
             background: #fff;
             border: 1px solid #E8E8E6;
@@ -250,7 +251,7 @@ export default function ManagerAccounts() {
           <p className="desktop-only" style={styles.subTitle}>{filtered.length} accounts</p>
 
           {/* Filters */}
-          <div style={styles.filterBar}>
+          <div className="acct-filter-bar" style={styles.filterBar}>
             <input
               className="search-input"
               placeholder="Search accounts..."
