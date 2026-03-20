@@ -204,11 +204,11 @@ const styles = {
     gap: "10px",
   },
   logo: {
-    width: "200px",
+    width: "250px",
     objectFit: "contain",
   },
   logoAccent: {
-    width: "200px",
+    width: "250px",
     height: "3px",
     backgroundColor: "#FFDE00",
     borderRadius: "2px",
