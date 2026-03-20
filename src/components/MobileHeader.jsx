@@ -23,7 +23,7 @@ export default function MobileHeader({ activePath, profile }) {
         .mobile-header { display: none; }
         .mobile-header-spacer { display: none; }
         @media (max-width: 768px) {
-          .mobile-header-spacer { display: block; height: 90px; }
+          .mobile-header-spacer { display: block; height: 80px; }
           .mobile-header {
             display: flex;
             align-items: center;
