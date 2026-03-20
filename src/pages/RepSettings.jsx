@@ -126,6 +126,7 @@ export default function RepSettings() {
 
       <div style={styles.layout}>
         <MobileHeader activePath="/rep/settings" profile={profile} />
+        <div className="mobile-header-spacer" />
         <Sidebar role="rep" profile={profile} onSignOut={handleSignOut} activePath="/rep/settings" />
 
         <div className="main-content" style={styles.main}>

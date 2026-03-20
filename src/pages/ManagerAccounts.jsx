@@ -235,6 +235,7 @@ export default function ManagerAccounts() {
 
       <div style={styles.layout}>
         <MobileManagerHeader activePath="/dashboard/accounts" profile={profile} />
+        <div className="mobile-header-spacer" />
         <ManagerBottomNav activePath="/dashboard/accounts" />
         <Sidebar role="manager" profile={profile} onSignOut={handleSignOut} activePath="/dashboard/accounts" />
 

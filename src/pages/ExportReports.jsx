@@ -392,6 +392,7 @@ export default function ExportReports() {
 
       <div style={styles.layout}>
         <MobileManagerHeader activePath="/dashboard/export" profile={profile} />
+        <div className="mobile-header-spacer" />
         <ManagerBottomNav activePath="/dashboard/export" />
         <Sidebar role="manager" profile={profile} onSignOut={handleSignOut} activePath="/dashboard/export" />
 

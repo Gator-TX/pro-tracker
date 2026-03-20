@@ -44,7 +44,6 @@ export default function MobileManagerHeader({ activePath, profile }) {
           </button>
         </div>
       </div>
-      <div style={{ height: "86px", display: "block", width: "100%" }} />
 
       {/* Overlay */}
       {menuOpen && (

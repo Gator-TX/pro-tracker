@@ -304,6 +304,7 @@ export default function Dashboard() {
       <div style={styles.layout}>
 
         <MobileManagerHeader activePath="/dashboard" profile={profile} />
+        <div className="mobile-header-spacer" />
         <Sidebar role="manager" profile={profile} onSignOut={handleSignOut} activePath="/dashboard" />
 
         {/* MAIN */}

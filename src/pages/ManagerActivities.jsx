@@ -161,6 +161,7 @@ export default function ManagerActivities() {
 
       <div style={styles.layout}>
         <MobileManagerHeader activePath="/dashboard/activities" profile={profile} />
+        <div className="mobile-header-spacer" />
         <ManagerBottomNav activePath="/dashboard/activities" />
         <Sidebar role="manager" profile={profile} onSignOut={handleSignOut} activePath="/dashboard/activities" />
 

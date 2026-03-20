@@ -37,7 +37,6 @@ export default function MobileHeader({ activePath, profile }) {
           Sign out
         </button>
       </div>
-      <div style={{ height: "86px", display: "block", width: "100%" }} />
 
       {/* Overlay */}
       {menuOpen && (

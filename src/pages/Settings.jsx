@@ -132,6 +132,7 @@ export default function Settings() {
 
       <div style={styles.layout}>
         <MobileManagerHeader activePath="/dashboard/settings" profile={profile} />
+        <div className="mobile-header-spacer" />
         <ManagerBottomNav activePath="/dashboard/settings" />
         <Sidebar role="manager" profile={profile} onSignOut={handleSignOut} activePath="/dashboard/settings" />
 
