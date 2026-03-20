@@ -229,6 +229,11 @@ export default function Dashboard() {
         /* Kanban — hidden on desktop */
         .rep-kanban { display: none; }
 
+        .dashboard-desktop-only { display: none !important; }
+        @media (min-width: 769px) {
+          .dashboard-desktop-only { display: flex !important; }
+        }
+
         @keyframes spin { to { transform: rotate(360deg); } }
 
         @media (max-width: 768px) {
@@ -314,7 +319,7 @@ export default function Dashboard() {
 
           {/* Top bar */}
           <div style={styles.topBar}>
-            <div style={styles.topBarRight}>
+            <div className="dashboard-desktop-only" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               {daysLeft() !== null && (
                 <div style={styles.sprintBadge}>{daysLeft()} days left</div>
               )}
