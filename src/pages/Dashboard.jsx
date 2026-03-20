@@ -240,9 +240,12 @@ export default function Dashboard() {
           .main-content {
             margin-left: 0 !important;
             padding-top: 86px !important;
+            padding-left: 16px !important;
+            padding-right: 16px !important;
+            padding-bottom: 8px !important;
           }
           .table-scroll { max-height: 70vh; min-width: unset !important; }
-          .stat-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .stat-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
           .export-btn-row { flex-direction: column !important; }
           .export-btn { flex: none !important; }
 
@@ -254,6 +257,7 @@ export default function Dashboard() {
             display: flex !important;
             flex-direction: column;
             gap: 8px;
+            margin-top: 8px;
           }
           .kanban-card {
             background: #fff;
