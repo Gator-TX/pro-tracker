@@ -13,6 +13,7 @@ import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
 import MobileManagerHeader from "../components/MobileManagerHeader";
 import ManagerBottomNav from "../components/ManagerBottomNav";
+import PullToRefresh from "../components/PullToRefresh";
 
 export default function SalesReps() {
   const navigate = useNavigate();
@@ -171,6 +172,7 @@ export default function SalesReps() {
         <Sidebar role="manager" profile={profile} onSignOut={handleSignOut} activePath="/dashboard/reps" />
 
         <div className="main-content" style={styles.main}>
+          <PullToRefresh onRefresh={loadData}>
           <TopBar title="Sales Reps" profile={profile} onSignOut={handleSignOut} />
           <p style={styles.subTitle}>{reps.length} rep{reps.length !== 1 ? "s" : ""}</p>
 
@@ -295,6 +297,7 @@ export default function SalesReps() {
             )}
           </div>
 
+                  </PullToRefresh>
         </div>
       </div>
     </>

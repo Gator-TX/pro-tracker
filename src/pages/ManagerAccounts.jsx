@@ -5,6 +5,7 @@ import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
 import MobileManagerHeader from "../components/MobileManagerHeader";
 import ManagerBottomNav from "../components/ManagerBottomNav";
+import PullToRefresh from "../components/PullToRefresh";
 
 export default function ManagerAccounts() {
   const navigate = useNavigate();
@@ -244,6 +245,7 @@ export default function ManagerAccounts() {
 
         {/* MAIN */}
         <div className="main-content" style={styles.main}>
+          <PullToRefresh onRefresh={loadData}>
           <TopBar title="Accounts" profile={profile} onSignOut={handleSignOut} />
           <p style={styles.subTitle}>{filtered.length} accounts</p>
 
@@ -605,6 +607,7 @@ export default function ManagerAccounts() {
             )}
           </div>
 
+                  </PullToRefresh>
         </div>
       </div>
     </>

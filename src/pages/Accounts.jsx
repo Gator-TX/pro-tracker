@@ -4,6 +4,7 @@ import MobileHeader from "../components/MobileHeader";
 import RepTopBar from "../components/RepTopBar";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabase";
+import PullToRefresh from "../components/PullToRefresh";
 
 export default function Accounts() {
   const navigate = useNavigate();
@@ -235,6 +236,7 @@ export default function Accounts() {
         <MobileHeader activePath="/accounts" profile={profile} />
         <Sidebar role="rep" profile={profile} onSignOut={handleSignOut} activePath="/accounts" />
         <div className="main-content" style={styles.page}>
+          <PullToRefresh onRefresh={loadData}>
           <RepTopBar title="My Accounts" profile={profile} onSignOut={handleSignOut} />
 
           {/* ══════════ MOBILE LAYOUT ══════════ */}
@@ -493,6 +495,7 @@ export default function Accounts() {
             </div>
           </div>
 
+                  </PullToRefresh>
         </div>
       </div>
     </>

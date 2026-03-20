@@ -5,6 +5,7 @@ import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
 import MobileManagerHeader from "../components/MobileManagerHeader";
 import ManagerBottomNav from "../components/ManagerBottomNav";
+import PullToRefresh from "../components/PullToRefresh";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -308,6 +309,7 @@ export default function Dashboard() {
 
         {/* MAIN */}
         <div className="main-content" style={styles.main}>
+          <PullToRefresh onRefresh={loadData}>
           <TopBar title="Team Dashboard" profile={profile} onSignOut={handleSignOut} />
 
           {/* Top bar */}
@@ -488,6 +490,7 @@ export default function Dashboard() {
             )}
           </div>
 
+                  </PullToRefresh>
         </div>
       </div>
 
