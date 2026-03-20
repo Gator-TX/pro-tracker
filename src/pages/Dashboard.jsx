@@ -19,6 +19,7 @@ export default function Dashboard() {
   const [showExport, setShowExport] = useState(false);
   const [sprint, setSprint] = useState(null);
   const [sortDirection, setSortDirection] = useState("asc");
+  const [showBottomSheet, setShowBottomSheet] = useState(false);
 
   // Export panel state
   const [exportRange, setExportRange] = useState("sprint");
@@ -161,6 +162,18 @@ export default function Dashboard() {
     { label: "At Risk", value: stats.atRisk, color: "#DC2626" },
   ];
 
+  const sortedReps = [...reps].sort((a, b) => sortDirection === "asc"
+    ? a.full_name.localeCompare(b.full_name)
+    : b.full_name.localeCompare(a.full_name)
+  );
+
+  const BOTTOM_SHEET_ITEMS = [
+    { label: "Activities", path: "/dashboard/activities" },
+    { label: "Manage Accounts", path: "/manage" },
+    { label: "Export Reports", path: "/dashboard/export" },
+    { label: "Settings", path: "/dashboard/settings" },
+  ];
+
   if (loading) {
     return (
       <div style={styles.loadingPage}>
@@ -220,30 +233,162 @@ export default function Dashboard() {
         }
         .rep-row { min-width: 600px; }
 
+        /* Kanban — hidden on desktop */
+        .rep-kanban { display: none; }
+
+        /* Bottom nav — hidden on desktop */
+        .bottom-nav { display: none; }
+        .bottom-sheet-overlay { display: none; }
+
         @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes slideUp {
+          from { transform: translateY(100%); }
+          to { transform: translateY(0); }
+        }
 
         @media (max-width: 768px) {
-          .main-content { margin-left: 0 !important; padding-top: 70px !important; }
+          .main-content {
+            margin-left: 0 !important;
+            padding-top: 70px !important;
+            padding-bottom: calc(68px + env(safe-area-inset-bottom)) !important;
+          }
           .table-scroll { max-height: 70vh; min-width: unset !important; }
           .stat-grid { grid-template-columns: repeat(2, 1fr) !important; }
-          .rep-table-header { display: none !important; }
-          .rep-table-card { background: transparent !important; border: none !important; border-radius: 0 !important; overflow: visible !important; }
-          .rep-row {
-            display: flex !important; flex-direction: column !important;
-            padding: 14px 16px !important; gap: 6px !important; min-width: unset !important;
-            background: #fff; border: 1px solid #E8E8E6; border-radius: 8px;
-            margin: 0 0 8px; border-bottom: none !important;
-          }
-          .rep-col-name { font-size: 15px !important; font-weight: 600 !important; margin-bottom: 2px !important; }
-          .rep-col-active::before { content: "ACTIVE  "; font-size: 11px; color: #ABABAB; font-weight: 600; }
-          .rep-col-won::before { content: "WON  "; font-size: 11px; color: #ABABAB; font-weight: 600; }
-          .rep-col-lost::before { content: "LOST  "; font-size: 11px; color: #ABABAB; font-weight: 600; }
-          .rep-col-logs::before { content: "LOGS/WK  "; font-size: 11px; color: #ABABAB; font-weight: 600; }
-          .rep-col-total::before { content: "TOTAL  "; font-size: 11px; color: #ABABAB; font-weight: 600; }
-          .rep-col-logs::before { content: "LOGS THIS WEEK  "; font-size: 11px; color: #ABABAB; font-weight: 600; }
-          .rep-col-status { align-self: flex-start; }
           .export-btn-row { flex-direction: column !important; }
           .export-btn { flex: none !important; }
+
+          /* Hide desktop table on mobile */
+          .rep-table-card { display: none !important; }
+
+          /* Kanban grid — 2 columns */
+          .rep-kanban {
+            display: grid !important;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+          }
+          .kanban-card {
+            background: #fff;
+            border: 1px solid #E8E8E6;
+            border-radius: 8px;
+            padding: 14px 12px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            transition: background 0.15s;
+          }
+          .kanban-card:active { background: #F9F9F8; }
+          .kanban-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1A1A1A;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          .kanban-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 10px;
+            font-size: 12px;
+            color: #374151;
+          }
+          .kanban-stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+          }
+          .kanban-stat-label {
+            font-size: 9px;
+            font-weight: 600;
+            color: #ABABAB;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+          }
+          .kanban-stat-value { font-size: 13px; font-weight: 500; }
+          .kanban-badge {
+            margin-top: 6px;
+            align-self: flex-start;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 100px;
+          }
+
+          /* Bottom nav */
+          .bottom-nav {
+            display: flex !important;
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: calc(60px + env(safe-area-inset-bottom));
+            padding-bottom: env(safe-area-inset-bottom);
+            background: #ffffff;
+            border-top: 1px solid #E8E8E6;
+            z-index: 150;
+            align-items: stretch;
+          }
+          .bottom-nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            padding: 8px 0 0;
+            transition: color 0.15s;
+          }
+          .bottom-nav-label {
+            font-size: 10px;
+            font-weight: 500;
+          }
+
+          /* Bottom sheet overlay */
+          .bottom-sheet-overlay {
+            display: block !important;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 200;
+          }
+          .bottom-sheet {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: #fff;
+            border-radius: 16px 16px 0 0;
+            z-index: 250;
+            padding: 0 0 calc(16px + env(safe-area-inset-bottom));
+            animation: slideUp 0.25s ease;
+          }
+          .bottom-sheet-handle {
+            width: 36px; height: 4px;
+            background: #E0E0DC; border-radius: 2px;
+            margin: 12px auto 16px;
+          }
+          .bottom-sheet-item {
+            display: block; width: 100%;
+            padding: 14px 20px;
+            text-align: left;
+            background: none; border: none;
+            font-size: 15px; font-weight: 500; color: #374151;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            border-bottom: 1px solid #F0F0ED;
+          }
+          .bottom-sheet-item:last-child { border-bottom: none; }
+          .bottom-sheet-signout {
+            display: block; width: 100%;
+            padding: 14px 20px;
+            text-align: left;
+            background: none; border: none;
+            font-size: 15px; font-weight: 500; color: #DC2626;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+          }
         }
       `}</style>
 
@@ -323,10 +468,10 @@ export default function Dashboard() {
 
               <div className="export-btn-row" style={styles.exportBtnRow}>
                 <button className="export-btn" style={{ background: "#367C2B", color: "#fff" }}>
-                  📊 Export as Excel (.xlsx)
+                  Export as Excel (.xlsx)
                 </button>
                 <button className="export-btn" style={{ background: "#fff", color: "#374151", border: "1.5px solid #E0E0DC" }}>
-                  📄 Export as PDF (.pdf)
+                  Export as PDF (.pdf)
                 </button>
               </div>
             </div>
@@ -343,7 +488,7 @@ export default function Dashboard() {
             ))}
           </div>
 
-          {/* REP TABLE */}
+          {/* DESKTOP: REP TABLE */}
           <div className="rep-table-card" style={styles.tableCard}>
             <p style={styles.tableTitle}>Rep Activity</p>
 
@@ -363,10 +508,7 @@ export default function Dashboard() {
               {reps.length === 0 ? (
                 <p style={styles.emptyText}>No reps found</p>
               ) : (
-                [...reps].sort((a, b) => sortDirection === "asc"
-                  ? a.full_name.localeCompare(b.full_name)
-                  : b.full_name.localeCompare(a.full_name)
-                ).map(rep => (
+                sortedReps.map(rep => (
                   <div key={rep.id} className="rep-row"
                     onClick={() => navigate(`/dashboard/reps/${rep.id}`)}>
                     <span className="rep-col-name" style={styles.repName}>{rep.full_name}</span>
@@ -389,8 +531,138 @@ export default function Dashboard() {
             </div>
           </div>
 
+          {/* MOBILE: KANBAN GRID */}
+          <div className="rep-kanban">
+            {reps.length === 0 ? (
+              <p style={{ fontSize: "14px", color: "#ABABAB", gridColumn: "1 / -1" }}>No reps found</p>
+            ) : (
+              sortedReps.map(rep => (
+                <div
+                  key={rep.id}
+                  className="kanban-card"
+                  style={{ borderLeft: `3px solid ${rep.atRisk ? "#DC2626" : "#367C2B"}` }}
+                  onClick={() => navigate(`/dashboard/reps/${rep.id}`)}
+                >
+                  <div className="kanban-name">{rep.full_name}</div>
+                  <div className="kanban-stats">
+                    <div className="kanban-stat-item">
+                      <span className="kanban-stat-label">Active</span>
+                      <span className="kanban-stat-value">{rep.activeCount}</span>
+                    </div>
+                    <div className="kanban-stat-item">
+                      <span className="kanban-stat-label">Won</span>
+                      <span className="kanban-stat-value" style={{ color: "#16A34A" }}>{rep.wonCount}</span>
+                    </div>
+                    <div className="kanban-stat-item">
+                      <span className="kanban-stat-label">Lost</span>
+                      <span className="kanban-stat-value" style={{ color: "#DC2626" }}>{rep.lostCount}</span>
+                    </div>
+                    <div className="kanban-stat-item">
+                      <span className="kanban-stat-label">Logs/Wk</span>
+                      <span className="kanban-stat-value">{rep.logsThisWeek}</span>
+                    </div>
+                  </div>
+                  <div
+                    className="kanban-badge"
+                    style={{
+                      background: rep.atRisk ? "#FEF2F2" : "#F0FDF4",
+                      color: rep.atRisk ? "#DC2626" : "#16A34A",
+                      border: `1px solid ${rep.atRisk ? "#FECACA" : "#BBF7D0"}`,
+                    }}
+                  >
+                    {rep.atRisk ? "At Risk" : "On Track"}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
         </div>
       </div>
+
+      {/* MOBILE BOTTOM NAV */}
+      <nav className="bottom-nav">
+        {[
+          {
+            label: "Home", path: "/dashboard",
+            icon: (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+            ),
+          },
+          {
+            label: "Accounts", path: "/dashboard/accounts",
+            icon: (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="7" width="20" height="14" rx="2"/>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+              </svg>
+            ),
+          },
+          {
+            label: "Reps", path: "/dashboard/reps",
+            icon: (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            ),
+          },
+          {
+            label: "Menu", path: null,
+            icon: (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <line x1="3" y1="12" x2="21" y2="12"/>
+                <line x1="3" y1="18" x2="21" y2="18"/>
+              </svg>
+            ),
+          },
+        ].map(item => {
+          const isActive = item.path === "/dashboard";
+          const color = isActive ? "#367C2B" : "#767676";
+          return (
+            <button
+              key={item.label}
+              className="bottom-nav-item"
+              style={{ color }}
+              onClick={() => {
+                if (item.path) navigate(item.path);
+                else setShowBottomSheet(true);
+              }}
+            >
+              {item.icon}
+              <span className="bottom-nav-label">{item.label}</span>
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* BOTTOM SHEET */}
+      {showBottomSheet && (
+        <>
+          <div className="bottom-sheet-overlay" onClick={() => setShowBottomSheet(false)} />
+          <div className="bottom-sheet">
+            <div className="bottom-sheet-handle" />
+            {BOTTOM_SHEET_ITEMS.map(item => (
+              <button
+                key={item.path}
+                className="bottom-sheet-item"
+                onClick={() => { navigate(item.path); setShowBottomSheet(false); }}
+              >
+                {item.label}
+              </button>
+            ))}
+            <button className="bottom-sheet-signout" onClick={handleSignOut}>
+              Sign Out
+            </button>
+          </div>
+        </>
+      )}
     </>
   );
 }
