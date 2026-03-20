@@ -118,6 +118,7 @@ export default function ManagerActivities() {
         @keyframes spin { to { transform: rotate(360deg); } }
         .mobile-select-all { display: none; }
         .act-mobile-list { display: none; }
+        .desktop-only { display: block; }
 
         .table-scroll {
           max-height: 600px; overflow-y: auto; min-width: 650px;
@@ -127,6 +128,7 @@ export default function ManagerActivities() {
 
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 70px !important; }
+          .desktop-only { display: none !important; }
           .filter-bar { flex-direction: column !important; }
           .filter-bar .filter-select { width: 100%; }
           .act-table-card { display: none !important; }
@@ -173,7 +175,7 @@ export default function ManagerActivities() {
         <div className="main-content" style={styles.main}>
           <PullToRefresh onRefresh={loadData}>
           <TopBar title="Activities" profile={profile} onSignOut={handleSignOut} />
-          <p style={styles.subTitle}>{filtered.length} logs</p>
+          <p className="desktop-only" style={styles.subTitle}>{filtered.length} logs</p>
 
           {/* Filters */}
           <div className="filter-bar" style={styles.filterBar}>

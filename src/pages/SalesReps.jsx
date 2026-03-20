@@ -139,9 +139,11 @@ export default function SalesReps() {
         .rep-row { min-width: 720px; }
 
         .rep-mobile-kanban { display: none; }
+        .desktop-only { display: block; }
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 70px !important; }
+          .desktop-only { display: none !important; }
           .rep-table-card { display: none !important; }
           .rep-mobile-kanban { display: flex !important; flex-direction: column; gap: 8px; }
           .rep-kanban-card {
@@ -174,7 +176,7 @@ export default function SalesReps() {
         <div className="main-content" style={styles.main}>
           <PullToRefresh onRefresh={loadData}>
           <TopBar title="Sales Reps" profile={profile} onSignOut={handleSignOut} />
-          <p style={styles.subTitle}>{reps.length} rep{reps.length !== 1 ? "s" : ""}</p>
+          <p className="desktop-only" style={styles.subTitle}>{reps.length} rep{reps.length !== 1 ? "s" : ""}</p>
 
           {selectedIds.length > 0 && (
             <button onClick={handleDelete} disabled={deleting} style={styles.deleteBtn}>
