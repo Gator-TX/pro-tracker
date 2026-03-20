@@ -250,7 +250,7 @@ export default function Dashboard() {
           .main-content {
             margin-left: 0 !important;
             padding-top: 70px !important;
-            padding-bottom: calc(68px + env(safe-area-inset-bottom)) !important;
+            padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
           }
           .table-scroll { max-height: 70vh; min-width: unset !important; }
           .stat-grid { grid-template-columns: repeat(2, 1fr) !important; }
@@ -260,44 +260,52 @@ export default function Dashboard() {
           /* Hide desktop table on mobile */
           .rep-table-card { display: none !important; }
 
-          /* Kanban grid — 2 columns */
+          /* Kanban — single column */
           .rep-kanban {
-            display: grid !important;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
+            display: flex !important;
+            flex-direction: column;
+            gap: 8px;
           }
           .kanban-card {
             background: #fff;
             border: 1px solid #E8E8E6;
             border-radius: 8px;
-            padding: 14px 12px;
+            padding: 14px 16px;
             cursor: pointer;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 10px;
             transition: background 0.15s;
           }
           .kanban-card:active { background: #F9F9F8; }
+          .kanban-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+          }
           .kanban-name {
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 600;
             color: #1A1A1A;
-            margin-bottom: 2px;
+          }
+          .kanban-badge {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 100px;
             white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
           }
           .kanban-stats {
             display: flex;
-            flex-wrap: wrap;
-            gap: 6px 10px;
+            gap: 20px;
             font-size: 12px;
             color: #374151;
           }
           .kanban-stat-item {
             display: flex;
             flex-direction: column;
-            gap: 1px;
+            gap: 2px;
           }
           .kanban-stat-label {
             font-size: 9px;
@@ -306,22 +314,14 @@ export default function Dashboard() {
             text-transform: uppercase;
             letter-spacing: 0.06em;
           }
-          .kanban-stat-value { font-size: 13px; font-weight: 500; }
-          .kanban-badge {
-            margin-top: 6px;
-            align-self: flex-start;
-            font-size: 10px;
-            font-weight: 600;
-            padding: 3px 8px;
-            border-radius: 100px;
-          }
+          .kanban-stat-value { font-size: 14px; font-weight: 500; }
 
           /* Bottom nav */
           .bottom-nav {
             display: flex !important;
             position: fixed;
             bottom: 0; left: 0; right: 0;
-            height: calc(60px + env(safe-area-inset-bottom));
+            height: calc(72px + env(safe-area-inset-bottom));
             padding-bottom: env(safe-area-inset-bottom);
             background: #ffffff;
             border-top: 1px solid #E8E8E6;
@@ -343,7 +343,7 @@ export default function Dashboard() {
             transition: color 0.15s;
           }
           .bottom-nav-label {
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 500;
           }
 
@@ -543,7 +543,19 @@ export default function Dashboard() {
                   style={{ borderLeft: `3px solid ${rep.atRisk ? "#DC2626" : "#367C2B"}` }}
                   onClick={() => navigate(`/dashboard/reps/${rep.id}`)}
                 >
-                  <div className="kanban-name">{rep.full_name}</div>
+                  <div className="kanban-top-row">
+                    <span className="kanban-name">{rep.full_name}</span>
+                    <span
+                      className="kanban-badge"
+                      style={{
+                        background: rep.atRisk ? "#FEF2F2" : "#F0FDF4",
+                        color: rep.atRisk ? "#DC2626" : "#16A34A",
+                        border: `1px solid ${rep.atRisk ? "#FECACA" : "#BBF7D0"}`,
+                      }}
+                    >
+                      {rep.atRisk ? "At Risk" : "On Track"}
+                    </span>
+                  </div>
                   <div className="kanban-stats">
                     <div className="kanban-stat-item">
                       <span className="kanban-stat-label">Active</span>
@@ -561,16 +573,6 @@ export default function Dashboard() {
                       <span className="kanban-stat-label">Logs/Wk</span>
                       <span className="kanban-stat-value">{rep.logsThisWeek}</span>
                     </div>
-                  </div>
-                  <div
-                    className="kanban-badge"
-                    style={{
-                      background: rep.atRisk ? "#FEF2F2" : "#F0FDF4",
-                      color: rep.atRisk ? "#DC2626" : "#16A34A",
-                      border: `1px solid ${rep.atRisk ? "#FECACA" : "#BBF7D0"}`,
-                    }}
-                  >
-                    {rep.atRisk ? "At Risk" : "On Track"}
                   </div>
                 </div>
               ))
