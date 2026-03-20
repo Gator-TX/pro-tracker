@@ -205,16 +205,14 @@ export default function ManagerAccounts() {
           scrollbar-width: thin; scrollbar-color: #E0E0DC transparent;
         }
         .account-row { min-width: 800px; }
-        .acct-mobile-list { display: none; }
+        .mobile-only { display: none; }
+        .desktop-only { display: block; }
 
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 70px !important; }
-          .acct-table-card { display: none !important; }
-          .acct-mobile-list {
-            display: flex !important;
-            flex-direction: column;
-          }
+          .desktop-only { display: none !important; }
+          .mobile-only { display: flex !important; flex-direction: column; gap: 0; }
           .acct-mobile-card {
             background: #fff;
             border: 1px solid #E8E8E6;
@@ -228,10 +226,12 @@ export default function ManagerAccounts() {
             transition: background 0.15s;
           }
           .acct-mobile-card:active { background: #F9F9F8; }
-          .acct-card-name { font-size: 15px; font-weight: 600; color: #1A1A1A; }
-          .acct-card-row2 { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+          .acct-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+          .acct-card-name { font-size: 15px; font-weight: 600; color: #1A1A1A; flex: 1; min-width: 0; }
+          .acct-card-row2 { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
           .acct-card-rep { font-size: 12px; color: #767676; }
-          .acct-card-row3 { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+          .acct-card-days { font-size: 12px; color: #ABABAB; }
+          .acct-card-row3 { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
           .acct-card-meta { font-size: 12px; color: #ABABAB; }
           .acct-card-expanded { border-top: 1px solid #F0F0ED; padding-top: 12px; margin-top: 0; display: flex; flex-direction: column; gap: 14px; }
         }
@@ -279,7 +279,7 @@ export default function ManagerAccounts() {
           )}
 
           {/* Table */}
-          <div className="acct-table-card" style={styles.tableCard}>
+          <div className="acct-table-card desktop-only" style={styles.tableCard}>
             <div className="acct-table-header" style={{ ...styles.accountRow, ...styles.tableHeader, boxShadow: "0 2px 4px rgba(0,0,0,0.06)", position: "relative", zIndex: 1, minWidth: "800px" }}>
               <input
                 type="checkbox"
@@ -486,7 +486,7 @@ export default function ManagerAccounts() {
           </div>
 
           {/* MOBILE: Account Cards */}
-          <div className="acct-mobile-list">
+          <div className="mobile-only">
             {filtered.length === 0 ? (
               <p style={styles.emptyText}>No accounts found</p>
             ) : (
@@ -504,18 +504,33 @@ export default function ManagerAccounts() {
                       (new Date(account.end_date) - new Date(account.start_date))) * 100
                     )))
                   : 0;
+                const status = account.status || "New";
+                const isActive = ["New", "Contacted", "Engaged", "Proposal"].includes(status);
+                const leftBorder = isActive ? "3px solid #367C2B" : status === "Lost" ? "3px solid #DC2626" : "1px solid #E8E8E6";
                 return (
-                  <div key={`m-${account.id}`} className="acct-mobile-card" onClick={() => toggleAccount(account.id)}>
-                    <span className="acct-card-name">{account.name || account.company}</span>
-                    <div className="acct-card-row2">
-                      <span style={{ ...styles.statusBadge, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
-                        {account.status || "New"}
+                  <div
+                    key={`m-${account.id}`}
+                    className="acct-mobile-card"
+                    style={{ borderLeft: leftBorder }}
+                    onClick={() => toggleAccount(account.id)}
+                  >
+                    {/* Top row: name + status badge */}
+                    <div className="acct-card-top">
+                      <span className="acct-card-name">{account.name || account.company}</span>
+                      <span style={{ ...styles.statusBadge, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}`, flexShrink: 0 }}>
+                        {status}
                       </span>
-                      <span className="acct-card-rep">{getRepName(account.rep_id)}</span>
                     </div>
+                    {/* Second row: rep left, days right */}
+                    <div className="acct-card-row2">
+                      <span className="acct-card-rep">{getRepName(account.rep_id)}</span>
+                      <span className="acct-card-days">{daysLeft !== null ? `${daysLeft}d left` : "—"}</span>
+                    </div>
+                    {/* Third row: activity info + unassign */}
                     <div className="acct-card-row3">
-                      <span className="acct-card-meta">{daysLeft !== null ? `${daysLeft}d left` : "—"}</span>
-                      <span className="acct-card-meta">{account.activities?.length || 0} logs</span>
+                      <span className="acct-card-meta">
+                        {getLastActivity(account) ? `Last: ${getLastActivity(account)}` : "No activity"} · {account.activities?.length || 0} logs
+                      </span>
                       {account.rep_id && (
                         unassignMsg === account.id
                           ? <span style={{ fontSize: "12px", color: "#16A34A" }}>Unassigned</span>
