@@ -28,7 +28,7 @@ export default function MobileManagerHeader({ activePath, profile }) {
         .mgr-mobile-header { display: none; }
         .mgr-mobile-header-spacer { display: none; }
         @media (max-width: 768px) {
-          .mgr-mobile-header-spacer { display: block; height: 80px; }
+          .mgr-mobile-header-spacer { display: block; height: 90px; }
           .mgr-mobile-header {
             display: flex;
             align-items: center;
