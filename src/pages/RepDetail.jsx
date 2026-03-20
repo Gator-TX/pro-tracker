@@ -200,7 +200,6 @@ export default function RepDetail() {
       <div style={styles.layout}>
 
         <MobileManagerHeader activePath="/dashboard/reps" profile={profile} />
-        <div className="mobile-header-spacer" />
         <ManagerBottomNav activePath="/dashboard/reps" />
         <Sidebar role="manager" profile={profile} onSignOut={handleSignOut} activePath="/dashboard/reps" />
 

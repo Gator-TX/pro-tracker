@@ -237,7 +237,6 @@ export default function AccountDetail() {
 
       <div style={styles.layout}>
         <MobileHeader activePath="/accounts" profile={profile} />
-        <div className="mobile-header-spacer" />
         <Sidebar role="rep" profile={profile} onSignOut={handleSignOut} activePath="/accounts" />
         <div className="main-content" style={styles.page}>
 

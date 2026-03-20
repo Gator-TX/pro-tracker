@@ -406,7 +406,6 @@ export default function ManageAccounts() {
       <div style={styles.layout}>
 
         <MobileManagerHeader activePath="/manage" profile={profile} />
-        <div className="mobile-header-spacer" />
         <ManagerBottomNav activePath="/manage" />
         <Sidebar role="manager" profile={profile} onSignOut={handleSignOut} activePath="/manage" />
 
