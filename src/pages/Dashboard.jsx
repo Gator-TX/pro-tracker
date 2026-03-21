@@ -332,16 +332,15 @@ export default function Dashboard() {
         }
         .rep-row { min-width: 600px; }
 
-        .dashboard-desktop-only { display: none !important; }
-        @media (min-width: 769px) {
-          .dashboard-desktop-only { display: flex !important; }
-        }
-
-        /* Hide desktop-only sections on mobile */
-        .dash-dt-only { display: block; }
-
-        /* Mobile overview hidden on desktop */
+        /* New desktop layout */
+        .dash-desktop { display: none; }
         .dash-mobile { display: none; }
+        @media (min-width: 769px) {
+          .dash-desktop { display: flex; flex-direction: column; gap: 24px; }
+          .dash-dt-only { display: none !important; }
+          .rep-table-card { display: none !important; }
+          .dt-risk-row:last-of-type { border-bottom: none !important; }
+        }
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -500,116 +499,213 @@ export default function Dashboard() {
 
         <div className="main-content" style={styles.main}>
           <PullToRefresh onRefresh={loadData}>
-          <TopBar title="Team Dashboard" profile={profile} onSignOut={handleSignOut} />
+          {/* ══════════ DESKTOP LAYOUT ══════════ */}
+          <div className="dash-desktop">
 
-          {/* Desktop top bar with sprint badge + export */}
-          <div style={styles.topBar}>
-            <div className="dashboard-desktop-only" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              {daysLeft() !== null && (
-                <div style={styles.sprintBadge}>{daysLeft()} days left</div>
-              )}
-              <button style={styles.exportTopBtn} onClick={() => setShowExport(p => !p)}>
-                {showExport ? "Hide Export" : "Export Report"}
-              </button>
-            </div>
-          </div>
-
-          {/* EXPORT PANEL — desktop only */}
-          {showExport && (
-            <div style={styles.exportPanel}>
-              <p style={styles.exportTitle}>Export Report</p>
-              <div style={styles.exportRow}>
-                {[["sprint","This Sprint"],["7days","Last 7 Days"],["30days","Last 30 Days"],["custom","Custom Range"]].map(([r, label]) => (
-                  <button key={r} className={`range-pill${exportRange === r ? " active" : ""}`}
-                    onClick={() => setExportRange(r)}>{label}</button>
-                ))}
+            {/* 1. Greeting row */}
+            <div style={styles.dtTopHeader}>
+              <div>
+                <h1 style={styles.dtGreeting}>{getGreeting()}, {firstName}</h1>
+                <p style={styles.dtSubGreeting}>{todayLabel()}{sprint ? ` · Sprint ends ${formatDate(sprint.end_date)}` : ""}</p>
               </div>
-              {exportRange === "custom" && (
+              <div style={styles.dtTopRight}>
+                {daysLeft() !== null && <span style={styles.sprintBadge}>{daysLeft()} days left</span>}
+                <button style={styles.exportTopBtn} onClick={() => setShowExport(p => !p)}>
+                  {showExport ? "Hide Export" : "Export Report"}
+                </button>
+              </div>
+            </div>
+
+            {/* Export panel */}
+            {showExport && (
+              <div style={styles.exportPanel}>
+                <p style={styles.exportTitle}>Export Report</p>
                 <div style={styles.exportRow}>
-                  <input className="field-input" type="date" value={customStart}
-                    onChange={e => setCustomStart(e.target.value)} style={{ flex: 1 }} />
-                  <span style={{ color: "#767676", fontSize: "13px" }}>to</span>
-                  <input className="field-input" type="date" value={customEnd}
-                    onChange={e => setCustomEnd(e.target.value)} style={{ flex: 1 }} />
-                </div>
-              )}
-              <div style={styles.exportColumns}>
-                <div style={styles.exportCol}>
-                  <p style={styles.exportColLabel}>Reps</p>
-                  {reps.map(rep => (
-                    <label key={rep.id} style={styles.checkRow}>
-                      <input type="checkbox" checked={selectedReps.includes(rep.id)} onChange={() => toggleRep(rep.id)} />
-                      <span style={{ fontSize: "13px" }}>{rep.full_name}</span>
-                    </label>
+                  {[["sprint","This Sprint"],["7days","Last 7 Days"],["30days","Last 30 Days"],["custom","Custom Range"]].map(([r, label]) => (
+                    <button key={r} className={`range-pill${exportRange === r ? " active" : ""}`} onClick={() => setExportRange(r)}>{label}</button>
                   ))}
                 </div>
-                <div style={styles.exportCol}>
-                  <p style={styles.exportColLabel}>Include in Report</p>
-                  {Object.entries({
-                    activity_log: "Activity Log", account_status: "Account Status",
-                    contact_details: "Contact Details", scheduled_activities: "Scheduled Activities",
-                    sprint_progress: "Sprint Progress", at_risk: "At-Risk Accounts",
-                  }).map(([key, label]) => (
-                    <label key={key} style={styles.checkRow}>
-                      <input type="checkbox" checked={includeOptions[key]} onChange={() => toggleInclude(key)} />
-                      <span style={{ fontSize: "13px" }}>{label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-              <div className="export-btn-row" style={styles.exportBtnRow}>
-                <button className="export-btn" style={{ background: "#367C2B", color: "#fff" }}>Export as Excel (.xlsx)</button>
-                <button className="export-btn" style={{ background: "#fff", color: "#374151", border: "1.5px solid #E0E0DC" }}>Export as PDF (.pdf)</button>
-              </div>
-            </div>
-          )}
-
-          {/* DESKTOP: Stat cards */}
-          <div className="dash-dt-only" style={styles.statGrid}>
-            {STAT_CARDS.map(card => (
-              <div key={card.label} style={styles.statCard}>
-                <p style={styles.statValue}>{card.value}</p>
-                <p style={styles.statLabel}>{card.label}</p>
-                <div style={{ ...styles.statAccent, background: card.color }} />
-              </div>
-            ))}
-          </div>
-
-          {/* DESKTOP: Rep table */}
-          <div className="rep-table-card" style={styles.tableCard}>
-            <p style={styles.tableTitle}>Rep Activity</p>
-            <div className="rep-table-header" style={{ ...styles.repRowStyle, ...styles.tableHeader, boxShadow: "0 2px 4px rgba(0,0,0,0.06)", position: "relative", zIndex: 1, minWidth: "600px" }}>
-              <span style={{ cursor: "pointer" }} onClick={() => setSortDirection(d => d === "asc" ? "desc" : "asc")}>
-                Rep {sortDirection === "asc" ? "↑" : "↓"}
-              </span>
-              <span>Active</span><span>Won</span><span>Lost</span>
-              <span>Logs This Week</span><span>Total Logs</span><span>Status</span>
-            </div>
-            <div className="table-scroll">
-              {reps.length === 0 ? (
-                <p style={styles.emptyText}>No reps found</p>
-              ) : (
-                sortedReps.map(rep => (
-                  <div key={rep.id} className="rep-row" onClick={() => navigate(`/dashboard/reps/${rep.id}`)}>
-                    <span style={styles.repName}>{rep.full_name}</span>
-                    <span style={styles.repStat}>{rep.activeCount}</span>
-                    <span style={styles.repStat}>{rep.wonCount}</span>
-                    <span style={styles.repStat}>{rep.lostCount}</span>
-                    <span style={styles.repStat}>{rep.logsThisWeek}</span>
-                    <span style={styles.repStat}>{rep.totalLogs}</span>
-                    <span style={{
-                      ...styles.statusBadge,
-                      background: rep.atRisk ? "#FEF2F2" : "#F0FDF4",
-                      color: rep.atRisk ? "#DC2626" : "#16A34A",
-                      border: `1px solid ${rep.atRisk ? "#FECACA" : "#BBF7D0"}`,
-                    }}>
-                      {rep.atRisk ? "At Risk" : "On Track"}
-                    </span>
+                {exportRange === "custom" && (
+                  <div style={styles.exportRow}>
+                    <input className="field-input" type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} style={{ flex: 1 }} />
+                    <span style={{ color: "#767676", fontSize: "13px" }}>to</span>
+                    <input className="field-input" type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} style={{ flex: 1 }} />
                   </div>
-                ))
+                )}
+                <div style={styles.exportColumns}>
+                  <div style={styles.exportCol}>
+                    <p style={styles.exportColLabel}>Reps</p>
+                    {reps.map(rep => (
+                      <label key={rep.id} style={styles.checkRow}>
+                        <input type="checkbox" checked={selectedReps.includes(rep.id)} onChange={() => toggleRep(rep.id)} />
+                        <span style={{ fontSize: "13px" }}>{rep.full_name}</span>
+                      </label>
+                    ))}
+                  </div>
+                  <div style={styles.exportCol}>
+                    <p style={styles.exportColLabel}>Include in Report</p>
+                    {Object.entries({
+                      activity_log: "Activity Log", account_status: "Account Status",
+                      contact_details: "Contact Details", scheduled_activities: "Scheduled Activities",
+                      sprint_progress: "Sprint Progress", at_risk: "At-Risk Accounts",
+                    }).map(([key, label]) => (
+                      <label key={key} style={styles.checkRow}>
+                        <input type="checkbox" checked={includeOptions[key]} onChange={() => toggleInclude(key)} />
+                        <span style={{ fontSize: "13px" }}>{label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div className="export-btn-row" style={styles.exportBtnRow}>
+                  <button className="export-btn" style={{ background: "#367C2B", color: "#fff" }}>Export as Excel (.xlsx)</button>
+                  <button className="export-btn" style={{ background: "#fff", color: "#374151", border: "1.5px solid #E0E0DC" }}>Export as PDF (.pdf)</button>
+                </div>
+              </div>
+            )}
+
+            {/* 2. Stat cards 4 across */}
+            <div style={styles.dtStatGrid}>
+              {[
+                { label: "Active Accounts", value: activeAccountCount, accent: "#367C2B" },
+                { label: "At Risk Accounts", value: atRiskAccountsList.length, accent: "#DC2626" },
+                { label: "Won This Sprint",  value: accountHealth.Won,  accent: "#367C2B" },
+                { label: "Lost This Sprint", value: accountHealth.Lost, accent: "#CA8A04" },
+              ].map(card => (
+                <div key={card.label} style={styles.dtStatCard}>
+                  <p style={styles.dtStatVal}>{card.value}</p>
+                  <p style={styles.dtStatLbl}>{card.label}</p>
+                  <div style={{ ...styles.dtStatAccent, background: card.accent }} />
+                </div>
+              ))}
+            </div>
+
+            {/* 3. Middle two-column row */}
+            <div style={styles.dtMidRow}>
+
+              {/* LEFT: Account Health + Sprint Overview */}
+              <div style={styles.dtMidCol}>
+                <div style={styles.dtCard}>
+                  <div style={styles.dtCardHeader}><span style={styles.dtCardTitle}>Account Health</span></div>
+                  {HEALTH_BARS.map(bar => (
+                    <div key={bar.key} style={styles.dtHealthRow}>
+                      <span style={styles.dtHealthName}>{bar.key}</span>
+                      <div style={styles.dtHealthTrack}>
+                        <div style={{ ...styles.dtHealthFill, width: `${Math.round((accountHealth[bar.key] / totalHealthAccounts) * 100)}%`, background: bar.color }} />
+                      </div>
+                      <span style={styles.dtHealthCount}>{accountHealth[bar.key]}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {sprint && (
+                  <div style={styles.dtCard}>
+                    <div style={styles.dtCardHeader}><span style={styles.dtCardTitle}>Sprint Overview</span></div>
+                    <div style={styles.dtSprintNumbers}>
+                      <div style={styles.dtSprintNum}>
+                        <span style={styles.dtSprintVal}>{daysLeft()}</span>
+                        <span style={{ ...styles.dtSprintPill, background: "#FFDE00", color: "#1A1A1A" }}>Days Left</span>
+                      </div>
+                      <div style={styles.dtSprintNum}>
+                        <span style={{ ...styles.dtSprintVal, color: "#16A34A" }}>{sprintRepStats.withActivity}</span>
+                        <span style={{ ...styles.dtSprintPill, background: "#F0FDF4", color: "#16A34A" }}>With Activity</span>
+                      </div>
+                      <div style={styles.dtSprintNum}>
+                        <span style={{ ...styles.dtSprintVal, color: "#DC2626" }}>{sprintRepStats.withoutActivity}</span>
+                        <span style={{ ...styles.dtSprintPill, background: "#FEF2F2", color: "#DC2626" }}>No Activity</span>
+                      </div>
+                    </div>
+                    <div style={styles.dtProgressTrack}>
+                      <div style={{ ...styles.dtProgressFill, width: `${sprintProgress()}%` }} />
+                    </div>
+                    <p style={styles.dtProgressLabel}>{sprintProgress()}% of sprint elapsed</p>
+                  </div>
+                )}
+              </div>
+
+              {/* RIGHT: At Risk Accounts + At Risk Reps */}
+              <div style={styles.dtMidCol}>
+                <div style={styles.dtCard}>
+                  <div style={styles.dtCardHeader}>
+                    <span style={styles.dtCardTitle}>At Risk Accounts</span>
+                    <button style={styles.dtViewAll} onClick={() => navigate("/dashboard/accounts")}>View all {atRiskAccountsList.length} →</button>
+                  </div>
+                  {atRiskAccountsList.length === 0 ? (
+                    <p style={{ fontSize: "13px", color: "#16A34A", fontWeight: 600 }}>✓ All accounts on track</p>
+                  ) : (
+                    atRiskAccountsList.slice(0, 5).map(acc => (
+                      <div key={acc.id} className="dt-risk-row" style={styles.dtRiskRow} onClick={() => navigate("/dashboard/accounts")}>
+                        <div>
+                          <p style={styles.dtRiskName}>{acc.name}</p>
+                          <p style={styles.dtRiskSub}>{acc.repName}</p>
+                        </div>
+                        <span style={styles.dtDaysPill}>{acc.daysSince !== null ? `${acc.daysSince}d ago` : "Never"}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <div style={styles.dtCard}>
+                  <div style={styles.dtCardHeader}>
+                    <span style={styles.dtCardTitle}>At Risk Reps</span>
+                    <button style={styles.dtViewAll} onClick={() => navigate("/dashboard/reps", { state: { filterRisk: "atRisk" } })}>View all →</button>
+                  </div>
+                  {atRiskRepsList.length === 0 ? (
+                    <p style={{ fontSize: "13px", color: "#16A34A", fontWeight: 600 }}>✓ All reps on track</p>
+                  ) : (
+                    atRiskRepsList.slice(0, 5).map(rep => (
+                      <div key={rep.id} className="dt-risk-row" style={{ ...styles.dtRiskRow, cursor: "pointer" }} onClick={() => navigate(`/dashboard/reps/${rep.id}`)}>
+                        <div>
+                          <p style={styles.dtRiskName}>{rep.full_name}</p>
+                          <p style={styles.dtRiskSub}>{rep.accountCount} account{rep.accountCount !== 1 ? "s" : ""}</p>
+                        </div>
+                        <span style={styles.dtDaysPill}>{rep.sinceLabel}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* 4. Recent Activity full width */}
+            <div style={styles.dtCard}>
+              <div style={styles.dtCardHeader}>
+                <span style={styles.dtCardTitle}>Activity (Last 48h)</span>
+                <button style={styles.dtViewAll} onClick={() => navigate("/dashboard/activities")}>View all</button>
+              </div>
+              {recentActivities.length === 0 ? (
+                <p style={{ fontSize: "13px", color: "#ABABAB" }}>No activity in the last 48 hours</p>
+              ) : (
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr>
+                      {["Date", "Account", "Rep", "Notes", "Type"].map(h => (
+                        <th key={h} style={styles.dtTh}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recentActivities.map((act, i) => {
+                      const tc = TYPE_COLORS[act.activity_type] || TYPE_COLORS.Call;
+                      const isLast = i === recentActivities.length - 1;
+                      const tdStyle = { ...styles.dtTd, borderBottom: isLast ? "none" : "1px solid #F0F0ED" };
+                      return (
+                        <tr key={act.id} style={{ cursor: "pointer" }} onClick={() => navigate("/dashboard/activities")}>
+                          <td style={tdStyle}>{formatDate(act.activity_date)}</td>
+                          <td style={{ ...tdStyle, fontWeight: 600 }}>{act.accountName}</td>
+                          <td style={tdStyle}>{act.repName}</td>
+                          <td style={{ ...tdStyle, color: "#767676", maxWidth: "220px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{act.outcome || act.notes || "—"}</td>
+                          <td style={tdStyle}>
+                            <span style={{ fontSize: "11px", fontWeight: 600, padding: "3px 8px", borderRadius: "100px", background: tc.bg, color: tc.color }}>{act.activity_type}</span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               )}
             </div>
-          </div>
+
+          </div>{/* end dash-desktop */}
 
           {/* ══════════ MOBILE OVERVIEW ══════════ */}
           <div className="dash-mobile">
@@ -881,4 +977,39 @@ const styles = {
     borderRadius: "100px", whiteSpace: "nowrap", textAlign: "center",
   },
   emptyText: { fontSize: "14px", color: "#ABABAB", padding: "24px 16px" },
+
+  // ── Desktop layout ──
+  dtTopHeader: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px" },
+  dtGreeting: { fontSize: "24px", fontWeight: 700, color: "#1A1A1A", marginBottom: "4px" },
+  dtSubGreeting: { fontSize: "13px", color: "#767676" },
+  dtTopRight: { display: "flex", alignItems: "center", gap: "12px", flexShrink: 0 },
+  dtStatGrid: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px" },
+  dtStatCard: { backgroundColor: "#ffffff", border: "1px solid #E8E8E6", borderRadius: "8px", padding: "20px 16px", position: "relative", overflow: "hidden" },
+  dtStatVal: { fontSize: "32px", fontWeight: 600, color: "#1A1A1A", lineHeight: 1 },
+  dtStatLbl: { fontSize: "12px", color: "#767676", marginTop: "6px" },
+  dtStatAccent: { position: "absolute", bottom: 0, left: 0, right: 0, height: "3px" },
+  dtMidRow: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", alignItems: "start" },
+  dtMidCol: { display: "flex", flexDirection: "column", gap: "16px" },
+  dtCard: { backgroundColor: "#ffffff", border: "1px solid #E8E8E6", borderRadius: "8px", padding: "20px", display: "flex", flexDirection: "column", gap: "0px" },
+  dtCardHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" },
+  dtCardTitle: { fontSize: "14px", fontWeight: 600, color: "#1A1A1A" },
+  dtViewAll: { fontSize: "12px", fontWeight: 600, color: "#367C2B", background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", textDecoration: "underline" },
+  dtHealthRow: { display: "flex", alignItems: "center", gap: "10px", padding: "5px 0" },
+  dtHealthName: { fontSize: "13px", fontWeight: 500, color: "#374151", width: "70px", flexShrink: 0 },
+  dtHealthTrack: { flex: 1, height: "7px", backgroundColor: "#F0F0ED", borderRadius: "4px", overflow: "hidden" },
+  dtHealthFill: { height: "100%", borderRadius: "4px", transition: "width 0.3s ease" },
+  dtHealthCount: { fontSize: "13px", fontWeight: 600, color: "#374151", width: "28px", textAlign: "right", flexShrink: 0 },
+  dtSprintNumbers: { display: "flex", gap: "12px", justifyContent: "space-around", marginBottom: "16px" },
+  dtSprintNum: { display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" },
+  dtSprintVal: { fontSize: "32px", fontWeight: 700, color: "#1A1A1A", lineHeight: 1 },
+  dtSprintPill: { fontSize: "10px", fontWeight: 700, padding: "3px 10px", borderRadius: "100px", textTransform: "uppercase", letterSpacing: "0.06em" },
+  dtProgressTrack: { height: "5px", backgroundColor: "#F0F0ED", borderRadius: "3px", overflow: "hidden", marginBottom: "6px" },
+  dtProgressFill: { height: "100%", backgroundColor: "#367C2B", borderRadius: "3px" },
+  dtProgressLabel: { fontSize: "12px", color: "#ABABAB" },
+  dtRiskRow: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid #F0F0ED" },
+  dtRiskName: { fontSize: "14px", fontWeight: 600, color: "#1A1A1A", marginBottom: "2px" },
+  dtRiskSub: { fontSize: "12px", color: "#767676" },
+  dtDaysPill: { fontSize: "11px", fontWeight: 600, padding: "3px 8px", borderRadius: "100px", background: "#F5F5F3", color: "#767676", border: "1px solid #E0E0DC", whiteSpace: "nowrap", flexShrink: 0 },
+  dtTh: { textAlign: "left", fontSize: "11px", fontWeight: 600, color: "#ABABAB", textTransform: "uppercase", letterSpacing: "0.06em", padding: "0 12px 10px 0", borderBottom: "1px solid #F0F0ED" },
+  dtTd: { fontSize: "13px", color: "#374151", padding: "12px 12px 12px 0", verticalAlign: "middle" },
 };
