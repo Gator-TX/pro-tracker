@@ -135,9 +135,10 @@ export default function Dashboard() {
     });
     setAccountHealth(health);
 
-    // At-risk accounts: active with no activity in 7+ days
+    // At-risk accounts: assigned, active status, no activity in 7+ days
     const ACTIVE = ["New", "Contacted", "Engaged", "Proposal"];
-    const activeAccIds = (allAccountsData || []).filter(a => ACTIVE.includes(a.status)).map(a => a.id);
+    const activeAccIds = (allAccountsData || [])
+      .filter(a => a.rep_id !== null && ACTIVE.includes(a.status)).map(a => a.id);
     let lastActMap = {};
     if (activeAccIds.length > 0) {
       const { data: lastActs } = await supabase
@@ -151,7 +152,7 @@ export default function Dashboard() {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const atRiskList = (allAccountsData || [])
-      .filter(a => ACTIVE.includes(a.status))
+      .filter(a => a.rep_id !== null && ACTIVE.includes(a.status))
       .filter(a => !lastActMap[a.id] || new Date(lastActMap[a.id]) < sevenDaysAgo)
       .map(a => ({
         id: a.id,
