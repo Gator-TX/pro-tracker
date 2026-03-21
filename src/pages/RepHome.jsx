@@ -227,7 +227,7 @@ export default function RepHome() {
         }
 
         .rh-risk-card {
-          background: #FEF2F2; border: 1px solid #FECACA;
+          background: #ffffff; border: 1px solid #E8E8E6;
           border-radius: 8px; padding: 14px 16px;
           width: 100%; box-sizing: border-box;
         }
@@ -235,12 +235,12 @@ export default function RepHome() {
           display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
         }
         .rh-risk-label {
-          font-size: 10px; font-weight: 600; color: #DC2626;
+          font-size: 10px; font-weight: 600; color: #ABABAB;
           text-transform: uppercase; letter-spacing: 0.08em;
         }
         .rh-risk-row {
           display: flex; align-items: center; justify-content: space-between;
-          padding: 8px 0; border-bottom: 1px solid #FECACA; gap: 8px;
+          padding: 8px 0; border-bottom: 1px solid #F0F0ED; gap: 8px;
         }
         .rh-risk-row:last-of-type { border-bottom: none; }
         .rh-risk-name {
@@ -250,12 +250,12 @@ export default function RepHome() {
           font-size: 11px; color: #767676; margin-top: 1px;
         }
         .rh-days-pill {
-          font-size: 10px; font-weight: 700; padding: 3px 8px;
-          border-radius: 100px; background: #fff; color: #DC2626;
-          border: 1px solid #FECACA; white-space: nowrap; flex-shrink: 0;
+          font-size: 11px; font-weight: 600; padding: 3px 8px;
+          border-radius: 100px; background: #F5F5F3; color: #767676;
+          border: 1px solid #E0E0DC; white-space: nowrap; flex-shrink: 0;
         }
         .rh-risk-viewall {
-          font-size: 12px; font-weight: 600; color: #DC2626;
+          font-size: 12px; font-weight: 600; color: #367C2B;
           background: none; border: none; padding: 8px 0 0;
           cursor: pointer; font-family: 'DM Sans', sans-serif; display: block;
           text-decoration: underline;

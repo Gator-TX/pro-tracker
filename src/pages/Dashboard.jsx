@@ -425,7 +425,7 @@ export default function Dashboard() {
 
           /* At risk card */
           .dm-risk-card {
-            background: #FEF2F2; border: 1px solid #FECACA;
+            background: #ffffff; border: 1px solid #E8E8E6;
             border-radius: 8px; padding: 14px 16px;
             width: 100%; box-sizing: border-box;
           }
@@ -433,25 +433,25 @@ export default function Dashboard() {
             display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
           }
           .dm-risk-label {
-            font-size: 11px; font-weight: 700; color: #DC2626;
+            font-size: 11px; font-weight: 600; color: #ABABAB;
             text-transform: uppercase; letter-spacing: 0.08em;
           }
           .dm-risk-row {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 8px 0; border-bottom: 1px solid #FECACA;
+            padding: 8px 0; border-bottom: 1px solid #F0F0ED;
           }
           .dm-risk-row:last-of-type { border-bottom: none; }
           .dm-risk-name { font-size: 13px; font-weight: 600; color: #1A1A1A; }
           .dm-risk-rep { font-size: 11px; color: #767676; margin-top: 1px; }
           .dm-days-pill {
-            font-size: 10px; font-weight: 700; padding: 3px 8px;
-            border-radius: 100px; background: #FECACA; color: #DC2626;
-            white-space: nowrap; flex-shrink: 0;
+            font-size: 11px; font-weight: 600; padding: 3px 8px;
+            border-radius: 100px; background: #F5F5F3; color: #767676;
+            border: 1px solid #E0E0DC; white-space: nowrap; flex-shrink: 0;
           }
           .dm-viewall {
-            font-size: 12px; font-weight: 600; color: #DC2626;
+            font-size: 12px; font-weight: 600; color: #367C2B;
             background: none; border: none; padding: 8px 0 0;
-            cursor: pointer; font-family: 'DM Sans', sans-serif;
+            cursor: pointer; font-family: 'DM Sans', sans-serif; text-decoration: underline;
           }
 
           /* Activity feed */
