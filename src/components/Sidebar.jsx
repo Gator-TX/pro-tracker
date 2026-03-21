@@ -12,7 +12,9 @@ const MANAGER_NAV = [
 ];
 
 const REP_NAV = [
+  { label: "Home", path: "/home" },
   { label: "My Accounts", path: "/accounts" },
+  { label: "Activities", path: "/activities" },
   { label: "Settings", path: "/rep/settings" },
 ];
 
