@@ -94,15 +94,21 @@ export default function RepHome() {
     upcoming.sort((a, b) => new Date(a.date) - new Date(b.date));
     setUpcomingActivities(upcoming.slice(0, 5));
 
-    // Recent activities (last 5)
+    // Recent activities (last 48 hours)
+    const fortyEightHoursAgo = new Date();
+    fortyEightHoursAgo.setHours(fortyEightHoursAgo.getHours() - 48);
+    const fortyEightHoursAgoStr = fortyEightHoursAgo.toISOString().split("T")[0];
+
     const allActs = [];
     (accountsData || []).forEach(acc => {
       (acc.activities || []).forEach(act => {
-        allActs.push({ ...act, accountName: acc.name || acc.company, accountId: acc.id });
+        if (act.activity_date >= fortyEightHoursAgoStr) {
+          allActs.push({ ...act, accountName: acc.name || acc.company, accountId: acc.id });
+        }
       });
     });
     allActs.sort((a, b) => new Date(b.activity_date) - new Date(a.activity_date));
-    setRecentActivities(allActs.slice(0, 5));
+    setRecentActivities(allActs);
 
     setLoading(false);
   };
@@ -345,7 +351,7 @@ export default function RepHome() {
           {recentActivities.length > 0 && (
             <div className="rh-card" style={{ marginBottom: "80px" }}>
               <div className="rh-card-header">
-                <span className="rh-card-title">Recent Activity</span>
+                <span className="rh-card-title">Activity (Last 48h)</span>
                 <button className="rh-viewall" onClick={() => navigate("/activities")}>View all</button>
               </div>
               {recentActivities.map(act => {
