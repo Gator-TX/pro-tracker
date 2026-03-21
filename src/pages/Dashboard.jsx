@@ -47,6 +47,14 @@ export default function Dashboard() {
     setProfile(profileData);
     if (profileData?.role !== "manager") { navigate("/accounts"); return; }
 
+    // Load configurable thresholds
+    const { data: settingsData } = await supabase
+      .from("app_settings").select("setting_key, setting_value");
+    const settingsMap = {};
+    (settingsData || []).forEach(s => { settingsMap[s.setting_key] = s.setting_value; });
+    const repAtRiskHours = parseInt(settingsMap["rep_at_risk_hours"] || "48", 10);
+    const accountAtRiskDays = parseInt(settingsMap["account_at_risk_days"] || "7", 10);
+
     // Fetch sprint first so start_date is available for activity queries
     const today = new Date().toISOString().split("T")[0];
     const { data: sprintData } = await supabase
@@ -71,18 +79,18 @@ export default function Dashboard() {
       const { data: allActs } = await supabase
         .from("activities").select("id").eq("rep_id", rep.id);
 
-      const fortyEightHoursAgo = new Date();
-      fortyEightHoursAgo.setHours(fortyEightHoursAgo.getHours() - 48);
+      const repAtRiskCutoff = new Date();
+      repAtRiskCutoff.setHours(repAtRiskCutoff.getHours() - repAtRiskHours);
       const { data: recentActs } = await supabase
         .from("activities").select("id").eq("rep_id", rep.id)
-        .gte("created_at", fortyEightHoursAgo.toISOString()).limit(1);
+        .gte("created_at", repAtRiskCutoff.toISOString()).limit(1);
 
       const { data: lastActRow } = await supabase
         .from("activities").select("activity_date")
         .eq("rep_id", rep.id).order("activity_date", { ascending: false }).limit(1);
       const lastActDate = lastActRow?.[0]?.activity_date || null;
 
-      const repIsNew = (new Date() - new Date(rep.created_at)) < 48 * 60 * 60 * 1000;
+      const repIsNew = (new Date() - new Date(rep.created_at)) < repAtRiskHours * 60 * 60 * 1000;
       const activeAccounts = (accounts || []).filter(a =>
         ["New", "Contacted", "Engaged", "Proposal"].includes(a.status));
       const wonAccounts = (accounts || []).filter(a => a.status === "Won");
@@ -135,10 +143,10 @@ export default function Dashboard() {
     });
     setAccountHealth(health);
 
-    // At-risk accounts: assigned, active status, no activity in 7+ days
+    // At-risk accounts: assigned, active status, no activity in configured days
     const ACTIVE = ["New", "Contacted", "Engaged", "Proposal"];
     const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - accountAtRiskDays);
     const activeAccIds = (allAccountsData || [])
       .filter(a => a.rep_id !== null && ACTIVE.includes(a.status) && new Date(a.created_at) < sevenDaysAgo)
       .map(a => a.id);

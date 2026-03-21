@@ -34,6 +34,14 @@ export default function RepHome() {
       .lte("start_date", today).gte("end_date", today).limit(1).single();
     setSprint(sprintData);
 
+    // Load configurable thresholds
+    const { data: settingsData } = await supabase
+      .from("app_settings").select("setting_key, setting_value");
+    const settingsMap = {};
+    (settingsData || []).forEach(s => { settingsMap[s.setting_key] = s.setting_value; });
+    const repAtRiskHours = parseInt(settingsMap["rep_at_risk_hours"] || "48", 10);
+    const accountAtRiskDays = parseInt(settingsMap["account_at_risk_days"] || "7", 10);
+
     // Accounts with activities
     const { data: accountsData } = await supabase
       .from("accounts")
@@ -42,7 +50,7 @@ export default function RepHome() {
 
     const ACTIVE = ["New", "Contacted", "Engaged", "Proposal"];
     const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - accountAtRiskDays);
 
     const active = (accountsData || []).filter(a => ACTIVE.includes(a.status)).length;
     const won = (accountsData || []).filter(a => a.status === "Won").length;

@@ -25,6 +25,9 @@ export default function Settings() {
   const [sprintLength, setSprintLength] = useState("60");
   const [accountsPerRep, setAccountsPerRep] = useState("10");
 
+  const [repAtRiskHours, setRepAtRiskHours] = useState("48");
+  const [accountAtRiskDays, setAccountAtRiskDays] = useState("7");
+
   const [pushEnabled, setPushEnabled] = useState(() => !!localStorage.getItem("push_enabled"));
   const [pushLoading, setPushLoading] = useState(false);
 
@@ -41,6 +44,14 @@ export default function Settings() {
     if (profileData?.role !== "manager") { navigate("/accounts"); return; }
 
     setFullName(profileData?.full_name || "");
+
+    const { data: settingsData } = await supabase
+      .from("app_settings").select("setting_key, setting_value");
+    (settingsData || []).forEach(s => {
+      if (s.setting_key === "rep_at_risk_hours") setRepAtRiskHours(s.setting_value);
+      if (s.setting_key === "account_at_risk_days") setAccountAtRiskDays(s.setting_value);
+    });
+
     setLoading(false);
   };
 
@@ -89,6 +100,10 @@ export default function Settings() {
     await supabase.from("profiles")
       .update({ full_name: fullName })
       .eq("id", profile.id);
+    await supabase.from("app_settings").upsert([
+      { setting_key: "rep_at_risk_hours", setting_value: String(repAtRiskHours), updated_by: profile.id },
+      { setting_key: "account_at_risk_days", setting_value: String(accountAtRiskDays), updated_by: profile.id },
+    ], { onConflict: "setting_key" });
     setSaving(false);
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 3000);
@@ -179,6 +194,29 @@ export default function Settings() {
                   onChange={e => setAccountsPerRep(e.target.value)}
                   style={{ maxWidth: "160px" }} />
                 <p style={styles.fieldHint}>Maximum accounts assigned per rep per sprint</p>
+              </div>
+            </div>
+          </div>
+
+          {/* At Risk Thresholds */}
+          <div style={styles.section}>
+            <p style={styles.sectionTitle}>At Risk Thresholds</p>
+            <div style={styles.card}>
+              <div style={styles.thresholdRow}>
+                <div style={styles.field}>
+                  <label style={styles.fieldLabel}>Rep At Risk After</label>
+                  <input className="field-input" type="number" min="1" value={repAtRiskHours}
+                    onChange={e => setRepAtRiskHours(e.target.value)}
+                    style={{ maxWidth: "120px" }} />
+                  <p style={styles.fieldHint}>hours with no activity</p>
+                </div>
+                <div style={styles.field}>
+                  <label style={styles.fieldLabel}>Account At Risk After</label>
+                  <input className="field-input" type="number" min="1" value={accountAtRiskDays}
+                    onChange={e => setAccountAtRiskDays(e.target.value)}
+                    style={{ maxWidth: "120px" }} />
+                  <p style={styles.fieldHint}>days with no activity</p>
+                </div>
               </div>
             </div>
           </div>
@@ -296,6 +334,7 @@ const styles = {
   sectionTitle: { fontSize: "13px", fontWeight: 600, color: "#374151" },
   card: { backgroundColor: "#ffffff", border: "1px solid #E8E8E6", borderRadius: "8px", padding: "20px", display: "flex", flexDirection: "column", gap: "16px" },
   field: { display: "flex", flexDirection: "column", gap: "6px" },
+  thresholdRow: { display: "flex", gap: "24px", flexWrap: "wrap" },
   fieldLabel: { fontSize: "12px", fontWeight: 600, color: "#374151" },
   fieldHint: { fontSize: "12px", color: "#ABABAB" },
   infoRow: { display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "12px", borderBottom: "1px solid #F0F0ED" },
