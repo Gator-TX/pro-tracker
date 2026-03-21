@@ -24,6 +24,7 @@ export default function Dashboard() {
   const [atRiskAccountsList, setAtRiskAccountsList] = useState([]);
   const [recentActivities, setRecentActivities] = useState([]);
   const [sprintRepStats, setSprintRepStats] = useState({ withActivity: 0, withoutActivity: 0 });
+  const [atRiskRepsList, setAtRiskRepsList] = useState([]);
   // Export panel state
   const [exportRange, setExportRange] = useState("sprint");
   const [customStart, setCustomStart] = useState("");
@@ -76,6 +77,11 @@ export default function Dashboard() {
         .from("activities").select("id").eq("rep_id", rep.id)
         .gte("created_at", fortyEightHoursAgo.toISOString()).limit(1);
 
+      const { data: lastActRow } = await supabase
+        .from("activities").select("activity_date")
+        .eq("rep_id", rep.id).order("activity_date", { ascending: false }).limit(1);
+      const lastActDate = lastActRow?.[0]?.activity_date || null;
+
       const repIsNew = (new Date() - new Date(rep.created_at)) < 48 * 60 * 60 * 1000;
       const activeAccounts = (accounts || []).filter(a =>
         ["New", "Contacted", "Engaged", "Proposal"].includes(a.status));
@@ -91,12 +97,23 @@ export default function Dashboard() {
         lostCount: lostAccounts.length,
         logsThisWeek: acts?.length || 0,
         totalLogs: allActs?.length || 0,
+        lastActDate,
         atRisk,
       };
     }));
 
     setReps(repsWithData);
     setSelectedReps(repsWithData.map(r => r.id));
+
+    const atRiskReps = repsWithData.filter(r => r.atRisk).map(r => {
+      let sinceLabel = "Never";
+      if (r.lastActDate) {
+        const hoursAgo = Math.floor((new Date() - new Date(r.lastActDate)) / (1000 * 60 * 60));
+        sinceLabel = hoursAgo >= 48 ? `${Math.floor(hoursAgo / 24)}d ago` : `${hoursAgo}h ago`;
+      }
+      return { ...r, sinceLabel };
+    });
+    setAtRiskRepsList(atRiskReps);
 
     const totalAccounts = repsWithData.reduce((s, r) => s + (r.accountCount || 0), 0);
     const totalWeekly = repsWithData.reduce((s, r) => s + r.logsThisWeek, 0);
@@ -452,20 +469,6 @@ export default function Dashboard() {
             cursor: pointer; font-family: 'DM Sans', sans-serif;
           }
 
-          /* Rep summary */
-          .dm-rep-row {
-            display: flex; flex-direction: column; gap: 4px;
-            padding: 10px 0; border-bottom: 1px solid #F0F0ED; cursor: pointer;
-          }
-          .dm-rep-row:last-child { border-bottom: none; }
-          .dm-rep-row:active { opacity: 0.7; }
-          .dm-rep-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-          .dm-rep-name { font-size: 14px; font-weight: 600; color: #1A1A1A; }
-          .dm-rep-badge {
-            font-size: 10px; font-weight: 600; padding: 3px 8px;
-            border-radius: 100px; white-space: nowrap;
-          }
-          .dm-rep-stats { font-size: 11px; color: #767676; }
         }
       `}</style>
 
@@ -684,9 +687,43 @@ export default function Dashboard() {
               </div>
             )}
 
-            {/* 6. Recent Activity */}
+            {/* 6. At Risk Reps */}
+            <div>
+              <div className="dm-risk-card">
+                <div className="dm-risk-header">
+                  <span className="dm-risk-label">At Risk Reps</span>
+                  {atRiskRepsList.length > 3 && (
+                    <button className="dm-viewall" style={{ paddingTop: 0 }} onClick={() => navigate("/dashboard/reps")}>
+                      View all {atRiskRepsList.length} →
+                    </button>
+                  )}
+                </div>
+                {atRiskRepsList.length === 0 ? (
+                  <p style={{ fontSize: "13px", color: "#16A34A", fontWeight: 600 }}>✓ All reps on track</p>
+                ) : (
+                  <>
+                    {atRiskRepsList.slice(0, 3).map(rep => (
+                      <div key={rep.id} className="dm-risk-row">
+                        <div>
+                          <p className="dm-risk-name">{rep.full_name}</p>
+                          <p className="dm-risk-rep">{rep.accountCount} account{rep.accountCount !== 1 ? "s" : ""}</p>
+                        </div>
+                        <span className="dm-days-pill">{rep.sinceLabel}</span>
+                      </div>
+                    ))}
+                    {atRiskRepsList.length <= 3 && (
+                      <button className="dm-viewall" onClick={() => navigate("/dashboard/reps")}>
+                        View all {atRiskRepsList.length} →
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* 7. Recent Activity */}
             {recentActivities.length > 0 && (
-              <div>
+              <div style={{ marginBottom: "80px" }}>
                 <div className="dm-card">
                   <div className="dm-card-header">
                     <span className="dm-card-title">Recent Activity</span>
@@ -711,33 +748,6 @@ export default function Dashboard() {
                 </div>
               </div>
             )}
-
-            {/* 7. Rep Summary */}
-            <div style={{ marginBottom: "80px" }}>
-              <div className="dm-card">
-                <div className="dm-card-header">
-                  <span className="dm-card-title">Rep Summary</span>
-                  <button className="dm-viewall-link" onClick={() => navigate("/dashboard/reps")}>View all</button>
-                </div>
-                {sortedReps.map(rep => (
-                  <div key={rep.id} className="dm-rep-row" onClick={() => navigate(`/dashboard/reps/${rep.id}`)}>
-                    <div className="dm-rep-top">
-                      <span className="dm-rep-name">{rep.full_name}</span>
-                      <span className="dm-rep-badge" style={{
-                        background: rep.atRisk ? "#FEF2F2" : "#F0FDF4",
-                        color: rep.atRisk ? "#DC2626" : "#16A34A",
-                        border: `1px solid ${rep.atRisk ? "#FECACA" : "#BBF7D0"}`,
-                      }}>
-                        {rep.atRisk ? "At Risk" : "On Track"}
-                      </span>
-                    </div>
-                    <p className="dm-rep-stats">
-                      Active: {rep.activeCount} · Won: {rep.wonCount} · Lost: {rep.lostCount} · Logs/Wk: {rep.logsThisWeek}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
 
           </div>{/* end dash-mobile */}
 
