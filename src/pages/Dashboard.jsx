@@ -632,15 +632,17 @@ export default function Dashboard() {
                   {atRiskAccountsList.length === 0 ? (
                     <p style={{ fontSize: "13px", color: "#16A34A", fontWeight: 600 }}>✓ All accounts on track</p>
                   ) : (
-                    atRiskAccountsList.slice(0, 5).map(acc => (
-                      <div key={acc.id} className="dt-risk-row" style={styles.dtRiskRow} onClick={() => navigate("/dashboard/accounts")}>
-                        <div>
-                          <p style={styles.dtRiskName}>{acc.name}</p>
-                          <p style={styles.dtRiskSub}>{acc.repName}</p>
+                    <div style={styles.dtRiskScroll}>
+                      {atRiskAccountsList.map(acc => (
+                        <div key={acc.id} className="dt-risk-row" style={styles.dtRiskRow} onClick={() => navigate("/dashboard/accounts")}>
+                          <div>
+                            <p style={styles.dtRiskName}>{acc.name}</p>
+                            <p style={styles.dtRiskSub}>{acc.repName}</p>
+                          </div>
+                          <span style={styles.dtDaysPill}>{acc.daysSince !== null ? `${acc.daysSince}d ago` : "Never"}</span>
                         </div>
-                        <span style={styles.dtDaysPill}>{acc.daysSince !== null ? `${acc.daysSince}d ago` : "Never"}</span>
-                      </div>
-                    ))
+                      ))}
+                    </div>
                   )}
                 </div>
 
@@ -652,15 +654,17 @@ export default function Dashboard() {
                   {atRiskRepsList.length === 0 ? (
                     <p style={{ fontSize: "13px", color: "#16A34A", fontWeight: 600 }}>✓ All reps on track</p>
                   ) : (
-                    atRiskRepsList.slice(0, 5).map(rep => (
-                      <div key={rep.id} className="dt-risk-row" style={{ ...styles.dtRiskRow, cursor: "pointer" }} onClick={() => navigate(`/dashboard/reps/${rep.id}`)}>
-                        <div>
-                          <p style={styles.dtRiskName}>{rep.full_name}</p>
-                          <p style={styles.dtRiskSub}>{rep.accountCount} account{rep.accountCount !== 1 ? "s" : ""}</p>
+                    <div style={styles.dtRiskScroll}>
+                      {atRiskRepsList.map(rep => (
+                        <div key={rep.id} className="dt-risk-row" style={{ ...styles.dtRiskRow, cursor: "pointer" }} onClick={() => navigate(`/dashboard/reps/${rep.id}`)}>
+                          <div>
+                            <p style={styles.dtRiskName}>{rep.full_name}</p>
+                            <p style={styles.dtRiskSub}>{rep.accountCount} account{rep.accountCount !== 1 ? "s" : ""}</p>
+                          </div>
+                          <span style={styles.dtDaysPill}>{rep.sinceLabel}</span>
                         </div>
-                        <span style={styles.dtDaysPill}>{rep.sinceLabel}</span>
-                      </div>
-                    ))
+                      ))}
+                    </div>
                   )}
                 </div>
               </div>
@@ -1006,6 +1010,7 @@ const styles = {
   dtProgressTrack: { height: "5px", backgroundColor: "#F0F0ED", borderRadius: "3px", overflow: "hidden", marginBottom: "6px" },
   dtProgressFill: { height: "100%", backgroundColor: "#367C2B", borderRadius: "3px" },
   dtProgressLabel: { fontSize: "12px", color: "#ABABAB" },
+  dtRiskScroll: { maxHeight: "240px", overflowY: "auto", scrollbarWidth: "thin", scrollbarColor: "#E0E0DC transparent" },
   dtRiskRow: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid #F0F0ED" },
   dtRiskName: { fontSize: "14px", fontWeight: 600, color: "#1A1A1A", marginBottom: "2px" },
   dtRiskSub: { fontSize: "12px", color: "#767676" },
