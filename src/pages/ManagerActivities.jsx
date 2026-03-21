@@ -127,12 +127,12 @@ export default function ManagerActivities() {
         .act-row { min-width: 650px; }
 
         @media (max-width: 768px) {
-          .main-content { margin-left: 0 !important; padding-top: 86px !important; }
+          .main-content { margin-left: 0 !important; padding-top: 86px !important; padding-left: 16px !important; padding-right: 16px !important; }
           .desktop-only { display: none !important; }
           .filter-bar { flex-direction: column !important; }
           .filter-bar .filter-select { width: 100%; }
           .act-table-card { display: none !important; }
-          .act-mobile-list { display: flex !important; flex-direction: column; gap: 8px; padding: 0 16px; width: 100%; }
+          .act-mobile-list { display: flex !important; flex-direction: column; gap: 8px; }
           .act-mobile-card {
             width: 100%;
             box-sizing: border-box;

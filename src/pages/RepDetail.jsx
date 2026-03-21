@@ -196,11 +196,11 @@ export default function RepDetail() {
         .mobile-only { display: none; }
 
         @media (max-width: 768px) {
-          .main-content { margin-left: 0 !important; padding-top: 86px !important; overflow-x: hidden; }
+          .main-content { margin-left: 0 !important; padding-top: 86px !important; padding-left: 16px !important; padding-right: 16px !important; overflow-x: hidden; }
           .desktop-only { display: none !important; }
           .mobile-only { display: block !important; }
           .stat-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
-          .rd-mobile-card-list { display: flex !important; flex-direction: column; gap: 8px; padding: 0 16px; width: 100%; }
+          .rd-mobile-card-list { display: flex !important; flex-direction: column; gap: 8px; }
           .rd-mobile-card {
             width: 100%;
             box-sizing: border-box;
