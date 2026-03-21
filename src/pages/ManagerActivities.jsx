@@ -131,7 +131,9 @@ export default function ManagerActivities() {
           .main-content { margin-left: 0 !important; padding-top: 86px !important; padding-left: 16px !important; padding-right: 16px !important; padding-bottom: 8px !important; }
           .desktop-only { display: none !important; }
           .mobile-only { display: flex !important; }
-          .filter-bar { gap: 8px !important; flex-wrap: nowrap !important; }
+          .filter-bar { gap: 8px !important; flex-wrap: nowrap !important; margin-bottom: 8px !important; }
+          .filter-bar .filter-select { flex: 1; }
+          .mobile-select-all { margin-bottom: 0 !important; }
           .act-table-card { display: none !important; }
           .act-mobile-list {
             display: flex !important; flex-direction: column;
@@ -143,6 +145,7 @@ export default function ManagerActivities() {
             box-sizing: border-box;
             background: #ffffff;
             border: 1px solid #E8E8E6;
+            border-left: 3px solid #367C2B;
             border-radius: 8px;
             padding: 14px 16px;
             padding-right: 44px;
