@@ -7,7 +7,7 @@
 // );
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "../supabase";
 import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
@@ -17,12 +17,14 @@ import PullToRefresh from "../components/PullToRefresh";
 
 export default function SalesReps() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [profile, setProfile] = useState(null);
   const [reps, setReps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sortDirection, setSortDirection] = useState("asc");
   const [selectedIds, setSelectedIds] = useState([]);
   const [deleting, setDeleting] = useState(false);
+  const [filterRisk, setFilterRisk] = useState(location.state?.filterRisk || "all");
 
   useEffect(() => { loadData(); }, []);
 
@@ -108,10 +110,12 @@ export default function SalesReps() {
     return <div style={styles.loadingPage}><div style={styles.spinner} /></div>;
   }
 
-  const sorted = [...reps].sort((a, b) => sortDirection === "asc"
-    ? a.full_name.localeCompare(b.full_name)
-    : b.full_name.localeCompare(a.full_name)
-  );
+  const sorted = [...reps]
+    .filter(r => filterRisk === "all" ? true : filterRisk === "atRisk" ? r.atRisk : !r.atRisk)
+    .sort((a, b) => sortDirection === "asc"
+      ? a.full_name.localeCompare(b.full_name)
+      : b.full_name.localeCompare(a.full_name)
+    );
 
   return (
     <>
@@ -140,11 +144,23 @@ export default function SalesReps() {
 
         .rep-mobile-kanban { display: none; }
         .desktop-only { display: block; }
+        .rep-filter-bar {
+          display: flex; align-items: center; gap: 12px;
+          margin-bottom: 16px; flex-wrap: wrap;
+        }
+        .filter-select {
+          padding: 8px 12px; font-size: 13px;
+          font-family: 'DM Sans', sans-serif;
+          border: 1.5px solid #E0E0DC; border-radius: 6px;
+          background: #fff; color: #1A1A1A; outline: none; cursor: pointer;
+        }
+        .filter-select:focus { border-color: #367C2B; }
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 86px !important; padding-left: 16px !important; padding-right: 16px !important; }
           .desktop-only { display: none !important; }
           .rep-table-card { display: none !important; }
+          .rep-filter-bar { margin-bottom: 8px; }
           .rep-mobile-kanban { display: flex !important; flex-direction: column; gap: 8px; }
           .rep-kanban-card {
             background: #fff;
@@ -178,7 +194,15 @@ export default function SalesReps() {
         <div className="main-content" style={styles.main}>
           <PullToRefresh onRefresh={loadData}>
           <TopBar title="Sales Reps" profile={profile} onSignOut={handleSignOut} />
-          <p className="desktop-only" style={styles.subTitle}>{reps.length} rep{reps.length !== 1 ? "s" : ""}</p>
+          <p className="desktop-only" style={styles.subTitle}>{sorted.length} rep{sorted.length !== 1 ? "s" : ""}</p>
+
+          <div className="rep-filter-bar">
+            <select className="filter-select" value={filterRisk} onChange={e => setFilterRisk(e.target.value)}>
+              <option value="all">All Reps</option>
+              <option value="onTrack">On Track</option>
+              <option value="atRisk">At Risk</option>
+            </select>
+          </div>
 
           {selectedIds.length > 0 && (
             <button onClick={handleDelete} disabled={deleting} style={styles.deleteBtn}>

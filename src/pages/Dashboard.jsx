@@ -600,12 +600,12 @@ export default function Dashboard() {
             {/* 2. Stat cards 2x2 */}
             <div className="dm-stat-grid">
               {[
-                { label: "Active Accounts", value: activeAccountCount, color: "#367C2B" },
-                { label: "At Risk Reps", value: stats.atRisk, color: "#DC2626" },
-                { label: "Won This Sprint", value: accountHealth.Won, color: "#367C2B" },
-                { label: "Lost This Sprint", value: accountHealth.Lost, color: "#CA8A04" },
+                { label: "Active Accounts", value: activeAccountCount, color: "#367C2B", onClick: () => navigate("/dashboard/accounts", { state: { filterStatus: "active" } }) },
+                { label: "At Risk Reps", value: stats.atRisk, color: "#DC2626", onClick: () => navigate("/dashboard/reps", { state: { filterRisk: "atRisk" } }) },
+                { label: "Won This Sprint", value: accountHealth.Won, color: "#367C2B", onClick: () => navigate("/dashboard/accounts", { state: { filterStatus: "Won" } }) },
+                { label: "Lost This Sprint", value: accountHealth.Lost, color: "#CA8A04", onClick: () => navigate("/dashboard/accounts", { state: { filterStatus: "Lost" } }) },
               ].map(card => (
-                <div key={card.label} className="dm-stat-card">
+                <div key={card.label} className="dm-stat-card" onClick={card.onClick} style={{ cursor: "pointer" }}>
                   <p className="dm-stat-value">{card.value}</p>
                   <p className="dm-stat-lbl">{card.label}</p>
                   <div className="dm-stat-accent" style={{ background: card.color }} />

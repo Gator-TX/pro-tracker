@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "../supabase";
 import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
@@ -9,13 +9,14 @@ import PullToRefresh from "../components/PullToRefresh";
 
 export default function ManagerAccounts() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [profile, setProfile] = useState(null);
   const [accounts, setAccounts] = useState([]);
   const [reps, setReps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterRep, setFilterRep] = useState("all");
-  const [filterStatus, setFilterStatus] = useState("active");
+  const [filterStatus, setFilterStatus] = useState(location.state?.filterStatus || "active");
   const [selectedIds, setSelectedIds] = useState([]);
   const [deleting, setDeleting] = useState(false);
   const [expandedAccount, setExpandedAccount] = useState(null);
