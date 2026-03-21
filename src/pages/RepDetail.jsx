@@ -192,8 +192,34 @@ export default function RepDetail() {
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        .desktop-only { display: block; }
+        .mobile-only { display: none; }
+
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 86px !important; overflow-x: hidden; }
+          .desktop-only { display: none !important; }
+          .mobile-only { display: block !important; }
+          .stat-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+          .rd-mobile-card-list { display: flex !important; flex-direction: column; gap: 8px; padding: 12px 16px 16px; }
+          .rd-mobile-card {
+            background: #fff;
+            border: 1px solid #E8E8E6;
+            border-radius: 8px;
+            padding: 14px 16px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: background 0.15s;
+          }
+          .rd-mobile-card:active { background: #F9F9F8; }
+          .rd-card-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+          .rd-card-name { font-size: 15px; font-weight: 600; color: #1A1A1A; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+          .rd-card-meta { font-size: 12px; color: #ABABAB; white-space: nowrap; }
+          .rd-card-stats { display: flex; justify-content: space-between; gap: 16px; }
+          .rd-card-stat-item { display: flex; flex-direction: column; gap: 2px; }
+          .rd-card-stat-label { font-size: 9px; font-weight: 600; color: #ABABAB; text-transform: uppercase; letter-spacing: 0.06em; }
+          .rd-card-stat-value { font-size: 13px; font-weight: 500; color: #374151; }
         }
       `}</style>
 
@@ -213,7 +239,7 @@ export default function RepDetail() {
           </button>
 
           {/* STAT CARDS */}
-          <div style={styles.statGrid}>
+          <div className="stat-grid" style={styles.statGrid}>
             {STAT_CARDS.map(card => (
               <div key={card.label} style={styles.statCard}>
                 <p style={styles.statValue}>{card.value}</p>
@@ -222,8 +248,10 @@ export default function RepDetail() {
             ))}
           </div>
 
-          {/* ACCOUNTS TABLE */}
+          {/* ACCOUNTS TABLE / CARDS */}
           <div style={styles.tableCard}>
+
+            {/* Filter pills — visible on both mobile and desktop */}
             <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "14px 20px", borderBottom: "1px solid #F0F0ED", flexWrap: "wrap" }}>
               <p style={{ fontSize: "14px", fontWeight: 600, color: "#1A1A1A", marginRight: "8px" }}>Accounts</p>
               {[
@@ -244,157 +272,244 @@ export default function RepDetail() {
               ))}
             </div>
 
-            {/* Table header */}
-            <div style={{ ...styles.accountRowGrid, ...styles.tableHeader, padding: "10px 20px" }}>
-              <span>Account / Contact</span>
-              <span>Status</span>
-              <span>Last Activity</span>
-              <span>Logs</span>
-              <span>Days Left</span>
-              <span>Next Scheduled</span>
-              <span></span>
-            </div>
+            {/* DESKTOP: table header + rows */}
+            <div className="desktop-only">
+              <div style={{ ...styles.accountRowGrid, ...styles.tableHeader, padding: "10px 20px" }}>
+                <span>Account / Contact</span>
+                <span>Status</span>
+                <span>Last Activity</span>
+                <span>Logs</span>
+                <span>Days Left</span>
+                <span>Next Scheduled</span>
+                <span></span>
+              </div>
 
-            {visibleAccounts.length === 0 ? (
-              <p style={styles.emptyText}>{accountFilter === "active" ? "No active accounts" : `No ${accountFilter} accounts`}</p>
-            ) : (
-              visibleAccounts.map(account => {
-                const sc = STATUS_COLORS[account.status] || STATUS_COLORS.New;
-                const isExpanded = expandedAccount === account.id;
-                const acts = accountActivities[account.id] || [];
-                const cons = accountContacts[account.id] || [];
-                const primaryContact = cons.find(c => c.is_primary) || cons[0];
+              {visibleAccounts.length === 0 ? (
+                <p style={styles.emptyText}>{accountFilter === "active" ? "No active accounts" : `No ${accountFilter} accounts`}</p>
+              ) : (
+                visibleAccounts.map(account => {
+                  const sc = STATUS_COLORS[account.status] || STATUS_COLORS.New;
+                  const isExpanded = expandedAccount === account.id;
+                  const acts = accountActivities[account.id] || [];
+                  const cons = accountContacts[account.id] || [];
+                  const primaryContact = cons.find(c => c.is_primary) || cons[0];
 
-                return (
-                  <div key={account.id} className="account-row">
-                    {/* Row */}
-                    <div
-                      className="account-row-grid"
-                      onClick={() => loadAccountDetail(account.id)}
-                    >
-                      <div>
-                        <p style={styles.accountName}>{account.name || account.company}</p>
-                        {primaryContact && (
-                          <p style={styles.accountContact}>
-                            {primaryContact.first_name} {primaryContact.last_name}
-                          </p>
-                        )}
-                      </div>
-                      <span style={{
-                        ...styles.statusBadge,
-                        background: sc.bg, color: sc.color, border: `1px solid ${sc.border}`,
-                      }}>
-                        {account.status || "New"}
-                      </span>
-                      <span style={styles.cellText}>
-                        {acts.length > 0 ? formatDate(acts[0]?.activity_date) : "—"}
-                      </span>
-                      <span style={styles.cellText}>{acts.length || "—"}</span>
-                      <span style={styles.cellText}>
-                        {account.end_date
-                          ? `${Math.max(0, Math.ceil((new Date(account.end_date) - new Date()) / (1000 * 60 * 60 * 24)))}d`
-                          : "—"}
-                      </span>
-                      <span style={styles.cellText}>
-                        {getNextScheduled(account.id) || "—"}
-                      </span>
-                      <span>
-                        {unassignMsg === account.id ? (
-                          <span style={styles.unassignConfirm}>Unassigned</span>
-                        ) : (
-                          <button
-                            onClick={e => { e.stopPropagation(); handleUnassign(account.id); }}
-                            style={styles.unassignLink}>
-                            Unassign
-                          </button>
-                        )}
-                      </span>
-                    </div>
-
-                    {/* Expanded detail */}
-                    {isExpanded && (
-                      <div style={styles.expandedDetail}>
-
-                        {/* Company info */}
-                        <div style={styles.detailSection}>
-                          <p style={styles.detailLabel}>Company</p>
-                          <p style={styles.detailValue}>{account.name || account.company}</p>
-                          {account.address && (
-                            <a
-                              href={`https://maps.google.com/?q=${encodeURIComponent(account.address)}`}
-                              target="_blank" rel="noreferrer"
-                              style={styles.addressLink}
-                            >
-                              {account.address}
-                            </a>
+                  return (
+                    <div key={account.id} className="account-row">
+                      <div className="account-row-grid" onClick={() => loadAccountDetail(account.id)}>
+                        <div>
+                          <p style={styles.accountName}>{account.name || account.company}</p>
+                          {primaryContact && (
+                            <p style={styles.accountContact}>
+                              {primaryContact.first_name} {primaryContact.last_name}
+                            </p>
                           )}
                         </div>
-
-                        {/* Contacts */}
-                        {cons.length > 0 && (
-                          <div style={styles.detailSection}>
-                            <p style={styles.detailLabel}>Contacts</p>
-                            {cons.map(c => (
-                              <div key={c.id} style={styles.contactRow}>
-                                <span style={styles.contactName}>
-                                  {c.first_name} {c.last_name}
-                                  {c.title ? ` · ${c.title}` : ""}
-                                </span>
-                                <div style={styles.contactLinks}>
-                                  {c.phone && (
-                                    <a href={`tel:${c.phone}`} style={styles.contactLink}>{c.phone}</a>
-                                  )}
-                                  {c.email && (
-                                    <a href={`mailto:${c.email}`} style={styles.contactLink}>{c.email}</a>
-                                  )}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Activity log */}
-                        <div style={styles.detailSection}>
-                          <p style={styles.detailLabel}>Activity Log</p>
-                          {acts.length === 0 ? (
-                            <p style={styles.emptySmall}>No activity logged</p>
+                        <span style={{ ...styles.statusBadge, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
+                          {account.status || "New"}
+                        </span>
+                        <span style={styles.cellText}>{acts.length > 0 ? formatDate(acts[0]?.activity_date) : "—"}</span>
+                        <span style={styles.cellText}>{acts.length || "—"}</span>
+                        <span style={styles.cellText}>
+                          {account.end_date
+                            ? `${Math.max(0, Math.ceil((new Date(account.end_date) - new Date()) / (1000 * 60 * 60 * 24)))}d`
+                            : "—"}
+                        </span>
+                        <span style={styles.cellText}>{getNextScheduled(account.id) || "—"}</span>
+                        <span>
+                          {unassignMsg === account.id ? (
+                            <span style={styles.unassignConfirm}>Unassigned</span>
                           ) : (
-                            <div style={styles.timeline}>
-                              {acts.map((act, i) => (
-                                <div key={act.id} style={styles.timelineItem}>
-                                  <div style={styles.timelineDotWrap}>
-                                    <div style={styles.timelineDot} />
-                                    {i < acts.length - 1 && <div style={styles.timelineLine} />}
-                                  </div>
-                                  <div style={styles.timelineContent}>
-                                    <div style={styles.timelineHeader}>
-                                      <span style={styles.actType}>{act.activity_type}</span>
-                                      <span style={styles.actDate}>{formatDate(act.activity_date)}</span>
-                                    </div>
-                                    {act.outcome && <p style={styles.actOutcome}>{act.outcome}</p>}
-                                    {act.notes && <p style={styles.actNotes}>{act.notes}</p>}
+                            <button onClick={e => { e.stopPropagation(); handleUnassign(account.id); }} style={styles.unassignLink}>
+                              Unassign
+                            </button>
+                          )}
+                        </span>
+                      </div>
+
+                      {isExpanded && (
+                        <div style={styles.expandedDetail}>
+                          <div style={styles.detailSection}>
+                            <p style={styles.detailLabel}>Company</p>
+                            <p style={styles.detailValue}>{account.name || account.company}</p>
+                            {account.address && (
+                              <a href={`https://maps.google.com/?q=${encodeURIComponent(account.address)}`} target="_blank" rel="noreferrer" style={styles.addressLink}>
+                                {account.address}
+                              </a>
+                            )}
+                          </div>
+                          {cons.length > 0 && (
+                            <div style={styles.detailSection}>
+                              <p style={styles.detailLabel}>Contacts</p>
+                              {cons.map(c => (
+                                <div key={c.id} style={styles.contactRow}>
+                                  <span style={styles.contactName}>{c.first_name} {c.last_name}{c.title ? ` · ${c.title}` : ""}</span>
+                                  <div style={styles.contactLinks}>
+                                    {c.phone && <a href={`tel:${c.phone}`} style={styles.contactLink}>{c.phone}</a>}
+                                    {c.email && <a href={`mailto:${c.email}`} style={styles.contactLink}>{c.email}</a>}
                                   </div>
                                 </div>
                               ))}
                             </div>
                           )}
+                          <div style={styles.detailSection}>
+                            <p style={styles.detailLabel}>Activity Log</p>
+                            {acts.length === 0 ? (
+                              <p style={styles.emptySmall}>No activity logged</p>
+                            ) : (
+                              <div style={styles.timeline}>
+                                {acts.map((act, i) => (
+                                  <div key={act.id} style={styles.timelineItem}>
+                                    <div style={styles.timelineDotWrap}>
+                                      <div style={styles.timelineDot} />
+                                      {i < acts.length - 1 && <div style={styles.timelineLine} />}
+                                    </div>
+                                    <div style={styles.timelineContent}>
+                                      <div style={styles.timelineHeader}>
+                                        <span style={styles.actType}>{act.activity_type}</span>
+                                        <span style={styles.actDate}>{formatDate(act.activity_date)}</span>
+                                      </div>
+                                      {act.outcome && <p style={styles.actOutcome}>{act.outcome}</p>}
+                                      {act.notes && <p style={styles.actNotes}>{act.notes}</p>}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          <div style={styles.detailSection}>
+                            <p style={styles.detailLabel}>Notes</p>
+                            {account.notes
+                              ? <p style={{ fontSize: "13px", color: "#374151", whiteSpace: "pre-wrap", lineHeight: 1.6 }}>{account.notes}</p>
+                              : <p style={styles.emptySmall}>No notes added</p>
+                            }
+                          </div>
                         </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
 
-                        {/* Notes */}
-                        <div style={styles.detailSection}>
-                          <p style={styles.detailLabel}>Notes</p>
-                          {account.notes
-                            ? <p style={{ fontSize: "13px", color: "#374151", whiteSpace: "pre-wrap", lineHeight: 1.6 }}>{account.notes}</p>
-                            : <p style={styles.emptySmall}>No notes added</p>
-                          }
-                        </div>
+            {/* MOBILE: kanban cards */}
+            <div className="mobile-only rd-mobile-card-list">
+              {visibleAccounts.length === 0 ? (
+                <p style={styles.emptyText}>{accountFilter === "active" ? "No active accounts" : `No ${accountFilter} accounts`}</p>
+              ) : (
+                visibleAccounts.map(account => {
+                  const sc = STATUS_COLORS[account.status] || STATUS_COLORS.New;
+                  const isExpanded = expandedAccount === account.id;
+                  const acts = accountActivities[account.id] || [];
+                  const cons = accountContacts[account.id] || [];
+                  const isActive = ACTIVE_STATUSES.includes(account.status || "New");
+                  const isLost = account.status === "Lost";
+                  const leftBorder = isActive ? "3px solid #367C2B" : isLost ? "3px solid #DC2626" : "1px solid #E8E8E6";
+                  const daysLeft = account.end_date
+                    ? Math.max(0, Math.ceil((new Date(account.end_date) - new Date()) / (1000 * 60 * 60 * 24)))
+                    : null;
+                  const lastActDate = acts.length > 0 ? formatDate(acts[0]?.activity_date) : null;
+                  const nextSched = getNextScheduled(account.id);
 
+                  return (
+                    <div
+                      key={account.id}
+                      className="rd-mobile-card"
+                      style={{ borderLeft: leftBorder }}
+                      onClick={() => loadAccountDetail(account.id)}
+                    >
+                      {/* Row 1: name + status badge */}
+                      <div className="rd-card-row">
+                        <span className="rd-card-name">{account.name || account.company}</span>
+                        <span style={{ ...styles.statusBadge, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}`, fontSize: "10px", padding: "3px 8px" }}>
+                          {account.status || "New"}
+                        </span>
                       </div>
-                    )}
-                  </div>
-                );
-              })
-            )}
+
+                      {/* Row 2: last activity + days left */}
+                      <div className="rd-card-row">
+                        <span className="rd-card-meta">{lastActDate ? `Last activity · ${lastActDate}` : "No activity yet"}</span>
+                        <span className="rd-card-meta">{daysLeft !== null ? `${daysLeft}d left` : "—"}</span>
+                      </div>
+
+                      {/* Row 3: activity count + next scheduled */}
+                      <div className="rd-card-stats">
+                        <div className="rd-card-stat-item">
+                          <span className="rd-card-stat-label">Activities</span>
+                          <span className="rd-card-stat-value">{acts.length}</span>
+                        </div>
+                        <div className="rd-card-stat-item" style={{ alignItems: "flex-end" }}>
+                          <span className="rd-card-stat-label">Next Scheduled</span>
+                          <span className="rd-card-stat-value">{nextSched || "—"}</span>
+                        </div>
+                      </div>
+
+                      {/* Expanded detail */}
+                      {isExpanded && (
+                        <div style={{ ...styles.expandedDetail, marginTop: 0 }}>
+                          <div style={styles.detailSection}>
+                            <p style={styles.detailLabel}>Company</p>
+                            <p style={styles.detailValue}>{account.name || account.company}</p>
+                            {account.address && (
+                              <a href={`https://maps.google.com/?q=${encodeURIComponent(account.address)}`} target="_blank" rel="noreferrer" style={styles.addressLink}>
+                                {account.address}
+                              </a>
+                            )}
+                          </div>
+                          {cons.length > 0 && (
+                            <div style={styles.detailSection}>
+                              <p style={styles.detailLabel}>Contacts</p>
+                              {cons.map(c => (
+                                <div key={c.id} style={styles.contactRow}>
+                                  <span style={styles.contactName}>{c.first_name} {c.last_name}{c.title ? ` · ${c.title}` : ""}</span>
+                                  <div style={styles.contactLinks}>
+                                    {c.phone && <a href={`tel:${c.phone}`} style={styles.contactLink}>{c.phone}</a>}
+                                    {c.email && <a href={`mailto:${c.email}`} style={styles.contactLink}>{c.email}</a>}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          <div style={styles.detailSection}>
+                            <p style={styles.detailLabel}>Activity Log</p>
+                            {acts.length === 0 ? (
+                              <p style={styles.emptySmall}>No activity logged</p>
+                            ) : (
+                              <div style={styles.timeline}>
+                                {acts.map((act, i) => (
+                                  <div key={act.id} style={styles.timelineItem}>
+                                    <div style={styles.timelineDotWrap}>
+                                      <div style={styles.timelineDot} />
+                                      {i < acts.length - 1 && <div style={styles.timelineLine} />}
+                                    </div>
+                                    <div style={styles.timelineContent}>
+                                      <div style={styles.timelineHeader}>
+                                        <span style={styles.actType}>{act.activity_type}</span>
+                                        <span style={styles.actDate}>{formatDate(act.activity_date)}</span>
+                                      </div>
+                                      {act.outcome && <p style={styles.actOutcome}>{act.outcome}</p>}
+                                      {act.notes && <p style={styles.actNotes}>{act.notes}</p>}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          <div style={styles.detailSection}>
+                            <p style={styles.detailLabel}>Notes</p>
+                            {account.notes
+                              ? <p style={{ fontSize: "13px", color: "#374151", whiteSpace: "pre-wrap", lineHeight: 1.6 }}>{account.notes}</p>
+                              : <p style={styles.emptySmall}>No notes added</p>
+                            }
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
           </div>
 
         </div>
