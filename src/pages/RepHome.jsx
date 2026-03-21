@@ -39,7 +39,7 @@ export default function RepHome() {
       .from("app_settings").select("setting_key, setting_value");
     const settingsMap = {};
     (settingsData || []).forEach(s => { settingsMap[s.setting_key] = s.setting_value; });
-    const repAtRiskHours = parseInt(settingsMap["rep_at_risk_hours"] || "48", 10);
+    const repAtRiskDays = parseInt(settingsMap["rep_at_risk_days"] || "2", 10); // eslint-disable-line no-unused-vars
     const accountAtRiskDays = parseInt(settingsMap["account_at_risk_days"] || "7", 10);
 
     // Accounts with activities

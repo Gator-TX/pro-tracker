@@ -25,7 +25,7 @@ export default function Settings() {
   const [sprintLength, setSprintLength] = useState("60");
   const [accountsPerRep, setAccountsPerRep] = useState("10");
 
-  const [repAtRiskHours, setRepAtRiskHours] = useState("48");
+  const [repAtRiskDays, setRepAtRiskDays] = useState("2");
   const [accountAtRiskDays, setAccountAtRiskDays] = useState("7");
 
   const [pushEnabled, setPushEnabled] = useState(() => !!localStorage.getItem("push_enabled"));
@@ -48,7 +48,7 @@ export default function Settings() {
     const { data: settingsData } = await supabase
       .from("app_settings").select("setting_key, setting_value");
     (settingsData || []).forEach(s => {
-      if (s.setting_key === "rep_at_risk_hours") setRepAtRiskHours(s.setting_value);
+      if (s.setting_key === "rep_at_risk_days") setRepAtRiskDays(s.setting_value);
       if (s.setting_key === "account_at_risk_days") setAccountAtRiskDays(s.setting_value);
     });
 
@@ -101,7 +101,7 @@ export default function Settings() {
       .update({ full_name: fullName })
       .eq("id", profile.id);
     await supabase.from("app_settings").upsert([
-      { setting_key: "rep_at_risk_hours", setting_value: String(repAtRiskHours), updated_by: profile.id },
+      { setting_key: "rep_at_risk_days", setting_value: String(repAtRiskDays), updated_by: profile.id },
       { setting_key: "account_at_risk_days", setting_value: String(accountAtRiskDays), updated_by: profile.id },
     ], { onConflict: "setting_key" });
     setSaving(false);
@@ -205,9 +205,9 @@ export default function Settings() {
               <div style={styles.thresholdRow}>
                 <div style={{ ...styles.field, flex: 1, minWidth: 0 }}>
                   <label style={styles.fieldLabel}>Rep At Risk After</label>
-                  <input className="field-input" type="number" min="1" value={repAtRiskHours}
-                    onChange={e => setRepAtRiskHours(e.target.value)} />
-                  <p style={styles.fieldHint}>hours with no activity</p>
+                  <input className="field-input" type="number" min="1" value={repAtRiskDays}
+                    onChange={e => setRepAtRiskDays(e.target.value)} />
+                  <p style={styles.fieldHint}>days with no activity</p>
                 </div>
                 <div style={{ ...styles.field, flex: 1, minWidth: 0 }}>
                   <label style={styles.fieldLabel}>Account At Risk After</label>

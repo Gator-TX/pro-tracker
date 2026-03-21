@@ -52,7 +52,7 @@ export default function Dashboard() {
       .from("app_settings").select("setting_key, setting_value");
     const settingsMap = {};
     (settingsData || []).forEach(s => { settingsMap[s.setting_key] = s.setting_value; });
-    const repAtRiskHours = parseInt(settingsMap["rep_at_risk_hours"] || "48", 10);
+    const repAtRiskDays = parseInt(settingsMap["rep_at_risk_days"] || "2", 10);
     const accountAtRiskDays = parseInt(settingsMap["account_at_risk_days"] || "7", 10);
 
     // Fetch sprint first so start_date is available for activity queries
@@ -80,7 +80,7 @@ export default function Dashboard() {
         .from("activities").select("id").eq("rep_id", rep.id);
 
       const repAtRiskCutoff = new Date();
-      repAtRiskCutoff.setHours(repAtRiskCutoff.getHours() - repAtRiskHours);
+      repAtRiskCutoff.setDate(repAtRiskCutoff.getDate() - repAtRiskDays);
       const { data: recentActs } = await supabase
         .from("activities").select("id").eq("rep_id", rep.id)
         .gte("created_at", repAtRiskCutoff.toISOString()).limit(1);
@@ -90,7 +90,8 @@ export default function Dashboard() {
         .eq("rep_id", rep.id).order("activity_date", { ascending: false }).limit(1);
       const lastActDate = lastActRow?.[0]?.activity_date || null;
 
-      const repIsNew = (new Date() - new Date(rep.created_at)) < repAtRiskHours * 60 * 60 * 1000;
+      const repAtRiskMs = repAtRiskDays * 24 * 60 * 60 * 1000;
+      const repIsNew = (new Date() - new Date(rep.created_at)) < repAtRiskMs;
       const activeAccounts = (accounts || []).filter(a =>
         ["New", "Contacted", "Engaged", "Proposal"].includes(a.status));
       const wonAccounts = (accounts || []).filter(a => a.status === "Won");
