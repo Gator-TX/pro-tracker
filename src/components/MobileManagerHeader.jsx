@@ -1,21 +1,9 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabase";
 import logo from "../assets/uatprologo.png";
 
-const NAV_ITEMS = [
-  { label: "Home", path: "/dashboard" },
-  { label: "Accounts", path: "/dashboard/accounts" },
-  { label: "Activities", path: "/dashboard/activities" },
-  { label: "Sales Reps", path: "/dashboard/reps" },
-  { label: "Manage Accounts", path: "/manage" },
-  { label: "Export Reports", path: "/dashboard/export" },
-  { label: "Settings", path: "/dashboard/settings" },
-];
-
 export default function MobileManagerHeader({ activePath, profile }) {
   const navigate = useNavigate();
-  const [menuOpen, setMenuOpen] = useState(false);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -48,161 +36,26 @@ export default function MobileManagerHeader({ activePath, profile }) {
 
       {/* Fixed top bar — mobile only */}
       <div className="mgr-mobile-header">
-        <button
-          onClick={() => setMenuOpen(true)}
-          style={styles.hamburger}
-          aria-label="Open menu"
-        >
-          ☰
-        </button>
+        <div style={{ width: "40px" }} />
 
         <img src={logo} alt="UAT Pro" style={styles.headerLogo} />
 
-        <div style={styles.headerRight}>
-          {profile?.full_name && (
-            <span style={styles.headerName}>{profile.full_name}</span>
-          )}
-          <button onClick={handleSignOut} style={styles.signOutTopBtn}>
-            Sign out
-          </button>
-        </div>
-      </div>
-
-      {/* Overlay */}
-      {menuOpen && (
-        <div style={styles.overlay} onClick={() => setMenuOpen(false)} />
-      )}
-
-      {/* Slide-in drawer */}
-      <div style={{
-        ...styles.drawer,
-        transform: menuOpen ? "translateX(0)" : "translateX(-100%)",
-      }}>
-        <div style={styles.drawerHeader}>
-          <div>
-            <img src={logo} alt="UAT Pro" style={styles.drawerLogo} />
-            <div style={styles.logoAccent} />
-          </div>
-          <button onClick={() => setMenuOpen(false)} style={styles.closeBtn} aria-label="Close menu">
-            ✕
-          </button>
-        </div>
-
-        <nav style={styles.nav}>
-          {NAV_ITEMS.map(item => (
-            <button
-              key={item.path}
-              style={{
-                ...styles.navItem,
-                ...(item.path === activePath ? styles.navItemActive : {}),
-              }}
-              onClick={() => { navigate(item.path); setMenuOpen(false); }}
-            >
-              {item.label}
-            </button>
-          ))}
-        </nav>
-
-        <div style={styles.drawerFooter}>
-          {profile?.full_name && (
-            <p style={styles.drawerName}>{profile.full_name}</p>
-          )}
-        </div>
+        <button onClick={handleSignOut} style={styles.signOutTopBtn}>
+          Sign out
+        </button>
       </div>
     </>
   );
 }
 
 const styles = {
-  hamburger: {
-    background: "none", border: "none",
-    fontSize: "22px", cursor: "pointer", padding: "4px",
-    color: "#1A1A1A", fontFamily: "'DM Sans', sans-serif",
-    width: "40px", display: "flex", alignItems: "center", justifyContent: "center",
-  },
   headerLogo: {
     height: "54px", objectFit: "contain",
     position: "absolute", left: "50%", transform: "translateX(-50%)",
   },
-  overlay: {
-    position: "fixed", inset: 0,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    zIndex: 200,
-  },
-  drawer: {
-    position: "fixed", top: 0, left: 0, bottom: 0,
-    width: "280px",
-    backgroundColor: "#ffffff",
-    zIndex: 300,
-    display: "flex", flexDirection: "column",
-    transition: "transform 0.25s ease",
-    boxShadow: "2px 0 16px rgba(0,0,0,0.12)",
-  },
-  drawerHeader: {
-    display: "flex", alignItems: "flex-start",
-    justifyContent: "space-between",
-    padding: "20px 16px 0",
-  },
-  drawerLogo: { width: "140px", objectFit: "contain" },
-  logoAccent: {
-    height: "3px", backgroundColor: "#FFDE00",
-    borderRadius: "2px", width: "140px", marginTop: "10px",
-  },
-  closeBtn: {
-    background: "none", border: "none",
-    fontSize: "18px", cursor: "pointer",
-    color: "#767676", padding: "4px",
-    fontFamily: "'DM Sans', sans-serif",
-  },
-  nav: {
-    flex: 1,
-    padding: "24px 8px 0",
-    display: "flex", flexDirection: "column", gap: "2px",
-    overflowY: "auto",
-  },
-  navItem: {
-    display: "block", width: "100%",
-    padding: "11px 16px",
-    textAlign: "left",
-    background: "none", border: "none",
-    borderLeft: "3px solid transparent",
-    borderRadius: "6px",
-    fontSize: "14px", fontWeight: 500, color: "#374151",
-    cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
-    transition: "all 0.15s",
-  },
-  navItemActive: {
-    background: "#F0FDF4", color: "#367C2B",
-    borderLeftColor: "#367C2B", fontWeight: 600,
-  },
-  drawerFooter: {
-    padding: "16px",
-    borderTop: "1px solid #E8E8E6",
-  },
-  drawerName: {
-    fontSize: "13px", fontWeight: 600,
-    color: "#1A1A1A", marginBottom: "8px",
-    fontFamily: "'DM Sans', sans-serif",
-  },
-  signOutBtn: {
-    background: "none", border: "none", padding: 0,
-    fontSize: "13px", color: "#767676",
-    textDecoration: "underline", cursor: "pointer",
-    fontFamily: "'DM Sans', sans-serif",
-  },
-  headerRight: {
-    display: "flex", flexDirection: "column",
-    alignItems: "flex-end", gap: "1px",
-  },
-  headerName: {
-    fontSize: "13px", fontWeight: 600, color: "#1A1A1A",
-    fontFamily: "'DM Sans', sans-serif", whiteSpace: "nowrap",
-    maxWidth: "100px", overflow: "hidden", textOverflow: "ellipsis",
-  },
   signOutTopBtn: {
     background: "none", border: "none", padding: 0,
     fontSize: "13px", color: "#367C2B", fontWeight: 600,
-    textDecoration: "none", cursor: "pointer",
-    fontFamily: "'DM Sans', sans-serif",
+    cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
   },
 };
