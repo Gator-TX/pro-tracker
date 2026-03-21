@@ -12,7 +12,7 @@ export default function RepActivities() {
   const [upcoming, setUpcoming] = useState([]);
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filterType, setFilterType] = useState("all");
+  const [filterView, setFilterView] = useState("all");
 
   useEffect(() => { loadData(); }, []);
 
@@ -75,9 +75,8 @@ export default function RepActivities() {
     Email:   { bg: "#FAF5FF", color: "#7C3AED" },
   };
 
-  const filtered = activities.filter(a =>
-    filterType === "all" || a.activity_type === filterType
-  );
+  const showUpcoming = filterView === "all" || filterView === "upcoming";
+  const showPast = filterView === "all" || filterView === "completed";
 
   if (loading) {
     return <div style={styles.loadingPage}><div style={styles.spinner} /></div>;
@@ -103,12 +102,12 @@ export default function RepActivities() {
           margin-bottom: -4px;
         }
 
-        .ra-filter-bar { display: flex; gap: 8px; }
         .ra-filter-select {
-          flex: 1; padding: 8px 12px; font-size: 13px;
+          width: 100%; padding: 8px 12px; font-size: 13px;
           font-family: 'DM Sans', sans-serif;
           border: 1.5px solid #E0E0DC; border-radius: 6px;
           background: #fff; color: #1A1A1A; outline: none; cursor: pointer;
+          appearance: none; -webkit-appearance: none;
         }
         .ra-filter-select:focus { border-color: #367C2B; }
 
@@ -159,8 +158,15 @@ export default function RepActivities() {
       <PullToRefresh onRefresh={loadData}>
         <div className="ra-page">
 
+          {/* View filter dropdown */}
+          <select className="ra-filter-select" value={filterView} onChange={e => setFilterView(e.target.value)}>
+            <option value="all">All Activity</option>
+            <option value="upcoming">Upcoming</option>
+            <option value="completed">Completed</option>
+          </select>
+
           {/* Section 1 — Upcoming Scheduled */}
-          {upcoming.length > 0 && (
+          {showUpcoming && upcoming.length > 0 && (
             <>
               <p className="ra-section-label">Upcoming</p>
               <div className="ra-card-list">
@@ -194,22 +200,14 @@ export default function RepActivities() {
           )}
 
           {/* Section 2 — Past Activity */}
-          <p className="ra-section-label">Past Activity</p>
-
-          <div className="ra-filter-bar">
-            <select className="ra-filter-select" value={filterType} onChange={e => setFilterType(e.target.value)}>
-              <option value="all">All Types</option>
-              {["Call", "Meeting", "Email"].map(t => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
-          </div>
-
-          {filtered.length === 0 ? (
-            <p className="ra-empty">No activity logged yet</p>
-          ) : (
-            <div className="ra-card-list-last">
-              {filtered.map(act => {
+          {showPast && (
+            <>
+              <p className="ra-section-label">Past Activity</p>
+              {activities.length === 0 ? (
+                <p className="ra-empty">No activity logged yet</p>
+              ) : (
+              <div className="ra-card-list-last">
+              {activities.map(act => {
                 const tc = TYPE_COLORS[act.activity_type] || TYPE_COLORS.Call;
                 return (
                   <div key={act.id} className="ra-card" onClick={() => navigate(`/accounts/${act.account_id}`)}>
@@ -226,6 +224,8 @@ export default function RepActivities() {
                 );
               })}
             </div>
+          )}
+            </>
           )}
 
         </div>
