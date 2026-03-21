@@ -722,7 +722,7 @@ export default function Dashboard() {
                 <div className="dm-risk-header">
                   <span className="dm-risk-label">At Risk Reps</span>
                   {atRiskRepsList.length > 3 && (
-                    <button className="dm-viewall" style={{ paddingTop: 0 }} onClick={() => navigate("/dashboard/reps")}>
+                    <button className="dm-viewall" style={{ paddingTop: 0 }} onClick={() => navigate("/dashboard/reps", { state: { filterRisk: "atRisk" } })}>
                       View all {atRiskRepsList.length} →
                     </button>
                   )}
@@ -732,7 +732,7 @@ export default function Dashboard() {
                 ) : (
                   <>
                     {atRiskRepsList.slice(0, 3).map(rep => (
-                      <div key={rep.id} className="dm-risk-row">
+                      <div key={rep.id} className="dm-risk-row" style={{ cursor: "pointer" }} onClick={() => navigate(`/dashboard/reps/${rep.id}`)}>
                         <div>
                           <p className="dm-risk-name">{rep.full_name}</p>
                           <p className="dm-risk-rep">{rep.accountCount} account{rep.accountCount !== 1 ? "s" : ""}</p>
@@ -741,7 +741,7 @@ export default function Dashboard() {
                       </div>
                     ))}
                     {atRiskRepsList.length <= 3 && (
-                      <button className="dm-viewall" onClick={() => navigate("/dashboard/reps")}>
+                      <button className="dm-viewall" onClick={() => navigate("/dashboard/reps", { state: { filterRisk: "atRisk" } })}>
                         View all {atRiskRepsList.length} →
                       </button>
                     )}
