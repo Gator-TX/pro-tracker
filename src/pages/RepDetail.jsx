@@ -200,8 +200,10 @@ export default function RepDetail() {
           .desktop-only { display: none !important; }
           .mobile-only { display: block !important; }
           .stat-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
-          .rd-mobile-card-list { display: flex !important; flex-direction: column; gap: 8px; padding: 12px 16px 16px; }
+          .rd-mobile-card-list { display: flex !important; flex-direction: column; gap: 8px; padding: 0 16px; width: 100%; }
           .rd-mobile-card {
+            width: 100%;
+            box-sizing: border-box;
             background: #fff;
             border: 1px solid #E8E8E6;
             border-radius: 8px;

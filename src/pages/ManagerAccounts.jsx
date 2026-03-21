@@ -213,14 +213,15 @@ export default function ManagerAccounts() {
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 86px !important; }
           .desktop-only { display: none !important; }
-          .mobile-only { display: flex !important; flex-direction: column; gap: 8px; margin-top: 8px; }
+          .mobile-only { display: flex !important; flex-direction: column; gap: 8px; padding: 0 16px; width: 100%; margin-top: 8px; }
           .acct-filter-bar { gap: 8px !important; }
           .acct-mobile-card {
             background: #fff;
+            width: 100%;
+            box-sizing: border-box;
             border: 1px solid #E8E8E6;
             border-radius: 8px;
             padding: 14px 16px;
-            margin-bottom: 8px;
             cursor: pointer;
             display: flex;
             flex-direction: column;

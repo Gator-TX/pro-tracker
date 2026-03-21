@@ -132,14 +132,15 @@ export default function ManagerActivities() {
           .filter-bar { flex-direction: column !important; }
           .filter-bar .filter-select { width: 100%; }
           .act-table-card { display: none !important; }
-          .act-mobile-list { display: flex !important; flex-direction: column; gap: 8px; }
+          .act-mobile-list { display: flex !important; flex-direction: column; gap: 8px; padding: 0 16px; width: 100%; }
           .act-mobile-card {
+            width: 100%;
+            box-sizing: border-box;
             background: #fff;
             border: 1px solid #E8E8E6;
             border-radius: 8px;
             padding: 14px 16px;
             padding-right: 44px;
-            margin-bottom: 8px;
             position: relative;
             display: flex;
             flex-direction: column;

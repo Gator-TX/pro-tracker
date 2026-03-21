@@ -260,11 +260,12 @@ export default function Dashboard() {
             margin-top: 8px;
           }
           .kanban-card {
+            width: 100%;
+            box-sizing: border-box;
             background: #fff;
             border: 1px solid #E8E8E6;
             border-radius: 8px;
             padding: 14px 16px;
-            margin-bottom: 8px;
             cursor: pointer;
             display: flex;
             flex-direction: column;

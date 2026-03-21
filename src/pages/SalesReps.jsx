@@ -145,13 +145,14 @@ export default function SalesReps() {
           .main-content { margin-left: 0 !important; padding-top: 86px !important; }
           .desktop-only { display: none !important; }
           .rep-table-card { display: none !important; }
-          .rep-mobile-kanban { display: flex !important; flex-direction: column; gap: 8px; }
+          .rep-mobile-kanban { display: flex !important; flex-direction: column; gap: 8px; padding: 0 16px; width: 100%; }
           .rep-kanban-card {
             background: #fff;
+            width: 100%;
+            box-sizing: border-box;
             border: 1px solid #E8E8E6;
             border-radius: 8px;
             padding: 14px 16px;
-            margin-bottom: 8px;
             cursor: pointer;
             display: flex;
             flex-direction: column;
