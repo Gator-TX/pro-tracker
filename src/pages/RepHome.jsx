@@ -216,7 +216,7 @@ export default function RepHome() {
           display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
         }
         .rh-risk-label {
-          font-size: 11px; font-weight: 700; color: #DC2626;
+          font-size: 10px; font-weight: 600; color: #DC2626;
           text-transform: uppercase; letter-spacing: 0.08em;
         }
         .rh-risk-row {
@@ -232,13 +232,14 @@ export default function RepHome() {
         }
         .rh-days-pill {
           font-size: 10px; font-weight: 700; padding: 3px 8px;
-          border-radius: 100px; background: #FECACA; color: #DC2626;
-          white-space: nowrap; flex-shrink: 0;
+          border-radius: 100px; background: #fff; color: #DC2626;
+          border: 1px solid #FECACA; white-space: nowrap; flex-shrink: 0;
         }
         .rh-risk-viewall {
           font-size: 12px; font-weight: 600; color: #DC2626;
           background: none; border: none; padding: 8px 0 0;
           cursor: pointer; font-family: 'DM Sans', sans-serif; display: block;
+          text-decoration: underline;
         }
 
         .rh-act-row {
@@ -278,7 +279,7 @@ export default function RepHome() {
           <div className="rh-stat-grid">
             {[
               { label: "Active Accounts", value: stats.active, color: "#367C2B" },
-              { label: "Needs Attention", value: stats.needsAttention, color: "#DC2626" },
+              { label: "At Risk", value: stats.needsAttention, color: "#DC2626" },
               { label: "Won This Sprint", value: stats.won, color: "#367C2B" },
               { label: "In Proposal", value: stats.proposal, color: "#7C3AED" },
             ].map(card => (
@@ -316,38 +317,29 @@ export default function RepHome() {
             </div>
           )}
 
-          {/* Needs Attention */}
+          {/* At Risk Accounts */}
           <div className="rh-risk-card">
             <div className="rh-risk-header">
-              <span className="rh-risk-label">Needs Attention</span>
-              {needsAttentionList.length > 3 && (
-                <button className="rh-risk-viewall" style={{ paddingTop: 0 }} onClick={() => navigate("/accounts")}>
-                  View all {needsAttentionList.length} →
-                </button>
-              )}
+              <span className="rh-risk-label">At Risk Accounts</span>
             </div>
             {needsAttentionList.length === 0 ? (
-              <p style={{ fontSize: "13px", color: "#16A34A", fontWeight: 600 }}>All accounts on track</p>
+              <p style={{ fontSize: "13px", color: "#16A34A", fontWeight: 600 }}>✓ All accounts on track</p>
             ) : (
-              <>
-                {needsAttentionList.slice(0, 3).map(acc => (
-                  <div key={acc.id} className="rh-risk-row" onClick={() => navigate(`/accounts/${acc.id}`)} style={{ cursor: "pointer" }}>
-                    <div>
-                      <p className="rh-risk-name">{acc.name}</p>
-                      <p className="rh-risk-sub">{acc.status}</p>
-                    </div>
-                    <span className="rh-days-pill">
-                      {acc.daysSince !== null ? `${acc.daysSince}d ago` : "Never"}
-                    </span>
+              needsAttentionList.slice(0, 3).map(acc => (
+                <div key={acc.id} className="rh-risk-row" onClick={() => navigate(`/accounts/${acc.id}`)} style={{ cursor: "pointer" }}>
+                  <div>
+                    <p className="rh-risk-name">{acc.name}</p>
+                    <p className="rh-risk-sub">{acc.status}</p>
                   </div>
-                ))}
-                {needsAttentionList.length <= 3 && (
-                  <button className="rh-risk-viewall" onClick={() => navigate("/accounts")}>
-                    View all {needsAttentionList.length} →
-                  </button>
-                )}
-              </>
+                  <span className="rh-days-pill">
+                    {acc.daysSince !== null ? `${acc.daysSince}d ago` : "Never"}
+                  </span>
+                </div>
+              ))
             )}
+            <button className="rh-risk-viewall" onClick={() => navigate("/accounts")}>
+              View all accounts →
+            </button>
           </div>
 
           {/* Recent Activity */}
