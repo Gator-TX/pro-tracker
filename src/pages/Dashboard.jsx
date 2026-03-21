@@ -216,6 +216,15 @@ export default function Dashboard() {
     weekday: "long", month: "long", day: "numeric",
   });
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return "Good Morning";
+    if (hour >= 12 && hour < 17) return "Good Afternoon";
+    return "Good Evening";
+  };
+
+  const firstName = profile?.full_name?.split(" ")[0] || "there";
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate("/login");
@@ -597,8 +606,15 @@ export default function Dashboard() {
           {/* ══════════ MOBILE OVERVIEW ══════════ */}
           <div className="dash-mobile">
 
-            {/* 1. Date line */}
-            <p style={{ fontSize: "12px", color: "#ABABAB", marginBottom: "-8px" }}>{todayLabel()}</p>
+            {/* 1. Greeting */}
+            <div style={{ padding: "0 16px 8px" }}>
+              <div style={{ fontSize: "18px", fontWeight: 600, color: "#1A1A1A" }}>
+                {getGreeting()}, {firstName}
+              </div>
+              <div style={{ fontSize: "11px", color: "#767676", marginTop: "2px" }}>
+                {todayLabel()}
+              </div>
+            </div>
 
             {/* 2. Stat cards 2x2 */}
             <div className="dm-stat-grid">
