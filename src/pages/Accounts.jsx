@@ -118,15 +118,16 @@ export default function Accounts() {
         }
 
         .account-card {
+          width: 100%; box-sizing: border-box;
           background: #ffffff;
           border: 1px solid #E8E8E6;
+          border-left: 3px solid #367C2B;
           border-radius: 8px;
-          padding: 16px;
+          padding: 14px 16px;
           cursor: pointer;
-          transition: border-color 0.15s, box-shadow 0.15s;
+          transition: box-shadow 0.15s;
         }
         .account-card:hover {
-          border-color: #367C2B;
           box-shadow: 0 2px 8px rgba(54,124,43,0.08);
         }
 
@@ -177,6 +178,7 @@ export default function Accounts() {
                       key={account.id}
                       className="account-card"
                       onClick={() => navigate(`/accounts/${account.id}`)}
+                      style={account.status === "Lost" ? { borderLeft: "3px solid #DC2626" } : undefined}
                     >
                       <div style={styles.cardTop}>
                         <div>
@@ -231,9 +233,9 @@ const styles = {
   loadingPage: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#ffffff" },
   loadingDot: { width: "32px", height: "32px", borderRadius: "50%", border: "3px solid #E0E0DC", borderTopColor: "#367C2B", animation: "spin 0.8s linear infinite" },
 
-  filterWrap: { display: "flex", gap: "8px", padding: "16px 20px 0", overflowX: "auto", scrollbarWidth: "none" },
+  filterWrap: { display: "flex", gap: "8px", padding: "16px 16px 0", overflowX: "auto", scrollbarWidth: "none" },
 
-  cardList: { display: "flex", flexDirection: "column", gap: "10px", padding: "16px 20px 0" },
+  cardList: { display: "flex", flexDirection: "column", gap: "8px", padding: "12px 16px 0", width: "100%", marginBottom: "80px" },
   cardTop: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px", marginBottom: "12px" },
   cardCompany: { fontSize: "15px", fontWeight: 600, color: "#1A1A1A", marginBottom: "2px" },
   cardLastContact: { fontSize: "12px", color: "#767676" },
