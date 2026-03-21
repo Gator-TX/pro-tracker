@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import MobileHeader from "../components/MobileHeader";
+import RepBottomNav from "../components/RepBottomNav";
 import RepTopBar from "../components/RepTopBar";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabase";
@@ -235,6 +236,7 @@ export default function Accounts() {
 
       <div style={styles.layout}>
         <MobileHeader activePath="/accounts" profile={profile} />
+        <RepBottomNav activePath="/accounts" />
         <Sidebar role="rep" profile={profile} onSignOut={handleSignOut} activePath="/accounts" />
         <div className="main-content" style={styles.page}>
           <PullToRefresh onRefresh={loadData}>

@@ -4,6 +4,7 @@ import { supabase } from "../supabase";
 import logo from "../assets/uatprologo.png";
 import Sidebar from "../components/Sidebar";
 import MobileHeader from "../components/MobileHeader";
+import RepBottomNav from "../components/RepBottomNav";
 import RepTopBar from "../components/RepTopBar";
 import PullToRefresh from "../components/PullToRefresh";
 
@@ -239,6 +240,7 @@ export default function AccountDetail() {
 
       <div style={styles.layout}>
         <MobileHeader activePath="/accounts" profile={profile} />
+        <RepBottomNav activePath="/accounts" />
         <Sidebar role="rep" profile={profile} onSignOut={handleSignOut} activePath="/accounts" />
         <div className="main-content" style={styles.page}>
           <PullToRefresh onRefresh={loadData}>

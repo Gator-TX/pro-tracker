@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabase";
 import Sidebar from "../components/Sidebar";
 import MobileHeader from "../components/MobileHeader";
+import RepBottomNav from "../components/RepBottomNav";
 import TopBar from "../components/TopBar";
 import { subscribeToPush } from "../utils/pushNotifications";
 
@@ -126,6 +127,7 @@ export default function RepSettings() {
 
       <div style={styles.layout}>
         <MobileHeader activePath="/rep/settings" profile={profile} />
+        <RepBottomNav activePath="/rep/settings" />
         <Sidebar role="rep" profile={profile} onSignOut={handleSignOut} activePath="/rep/settings" />
 
         <div className="main-content" style={styles.main}>
