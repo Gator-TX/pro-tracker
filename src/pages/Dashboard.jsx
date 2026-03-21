@@ -137,6 +137,8 @@ export default function Dashboard() {
 
     // At-risk accounts: assigned, active status, no activity in 7+ days
     const ACTIVE = ["New", "Contacted", "Engaged", "Proposal"];
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const activeAccIds = (allAccountsData || [])
       .filter(a => a.rep_id !== null && ACTIVE.includes(a.status) && new Date(a.created_at) < sevenDaysAgo)
       .map(a => a.id);
@@ -149,9 +151,6 @@ export default function Dashboard() {
         if (!lastActMap[act.account_id]) lastActMap[act.account_id] = act.activity_date;
       });
     }
-
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const atRiskList = (allAccountsData || [])
       .filter(a => a.rep_id !== null && ACTIVE.includes(a.status))
       .filter(a => new Date(a.created_at) < sevenDaysAgo)
