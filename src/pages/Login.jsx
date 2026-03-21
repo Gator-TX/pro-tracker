@@ -46,7 +46,7 @@ export default function Login() {
     if (role === "manager") {
       navigate("/dashboard");
     } else {
-      navigate("/accounts");
+      navigate("/home");
     }
 
     setLoading(false);
