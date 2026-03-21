@@ -508,60 +508,7 @@ export default function Dashboard() {
                 <h1 style={styles.dtGreeting}>{getGreeting()}, {firstName}</h1>
                 <p style={styles.dtSubGreeting}>{todayLabel()}{sprint ? ` · Sprint ends ${formatDate(sprint.end_date)}` : ""}</p>
               </div>
-              <div style={styles.dtTopRight}>
-                {daysLeft() !== null && <span style={styles.sprintBadge}>{daysLeft()} days left</span>}
-                <button style={styles.exportTopBtn} onClick={() => setShowExport(p => !p)}>
-                  {showExport ? "Hide Export" : "Export Report"}
-                </button>
-              </div>
             </div>
-
-            {/* Export panel */}
-            {showExport && (
-              <div style={styles.exportPanel}>
-                <p style={styles.exportTitle}>Export Report</p>
-                <div style={styles.exportRow}>
-                  {[["sprint","This Sprint"],["7days","Last 7 Days"],["30days","Last 30 Days"],["custom","Custom Range"]].map(([r, label]) => (
-                    <button key={r} className={`range-pill${exportRange === r ? " active" : ""}`} onClick={() => setExportRange(r)}>{label}</button>
-                  ))}
-                </div>
-                {exportRange === "custom" && (
-                  <div style={styles.exportRow}>
-                    <input className="field-input" type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} style={{ flex: 1 }} />
-                    <span style={{ color: "#767676", fontSize: "13px" }}>to</span>
-                    <input className="field-input" type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} style={{ flex: 1 }} />
-                  </div>
-                )}
-                <div style={styles.exportColumns}>
-                  <div style={styles.exportCol}>
-                    <p style={styles.exportColLabel}>Reps</p>
-                    {reps.map(rep => (
-                      <label key={rep.id} style={styles.checkRow}>
-                        <input type="checkbox" checked={selectedReps.includes(rep.id)} onChange={() => toggleRep(rep.id)} />
-                        <span style={{ fontSize: "13px" }}>{rep.full_name}</span>
-                      </label>
-                    ))}
-                  </div>
-                  <div style={styles.exportCol}>
-                    <p style={styles.exportColLabel}>Include in Report</p>
-                    {Object.entries({
-                      activity_log: "Activity Log", account_status: "Account Status",
-                      contact_details: "Contact Details", scheduled_activities: "Scheduled Activities",
-                      sprint_progress: "Sprint Progress", at_risk: "At-Risk Accounts",
-                    }).map(([key, label]) => (
-                      <label key={key} style={styles.checkRow}>
-                        <input type="checkbox" checked={includeOptions[key]} onChange={() => toggleInclude(key)} />
-                        <span style={{ fontSize: "13px" }}>{label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-                <div className="export-btn-row" style={styles.exportBtnRow}>
-                  <button className="export-btn" style={{ background: "#367C2B", color: "#fff" }}>Export as Excel (.xlsx)</button>
-                  <button className="export-btn" style={{ background: "#fff", color: "#374151", border: "1.5px solid #E0E0DC" }}>Export as PDF (.pdf)</button>
-                </div>
-              </div>
-            )}
 
             {/* 2. Stat cards 4 across */}
             <div style={styles.dtStatGrid}>
