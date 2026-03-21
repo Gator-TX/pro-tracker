@@ -76,23 +76,26 @@ export default function RepHome() {
       .sort((a, b) => (b.daysSince ?? 9999) - (a.daysSince ?? 9999));
     setNeedsAttentionList(attentionList);
 
-    // Upcoming scheduled activities
-    const upcoming = [];
-    (accountsData || []).forEach(acc => {
-      (acc.activities || []).forEach(act => {
-        if (act.scheduled_next_date) {
-          upcoming.push({
-            accountName: acc.name || acc.company,
-            accountId: acc.id,
-            type: act.scheduled_next_type || "Activity",
-            date: act.scheduled_next_date,
-            time: act.scheduled_next_time,
-          });
-        }
-      });
-    });
-    upcoming.sort((a, b) => new Date(a.date) - new Date(b.date));
-    setUpcomingActivities(upcoming.slice(0, 5));
+    // Upcoming scheduled activities (direct query, >= today)
+    const accountNameMap = {};
+    (accountsData || []).forEach(a => { accountNameMap[a.id] = a.name || a.company; });
+
+    const { data: upcomingData } = await supabase
+      .from("activities")
+      .select("id, account_id, scheduled_next_date, scheduled_next_type, scheduled_next_time")
+      .eq("rep_id", user.id)
+      .not("scheduled_next_date", "is", null)
+      .gte("scheduled_next_date", today)
+      .order("scheduled_next_date", { ascending: true })
+      .limit(5);
+
+    setUpcomingActivities((upcomingData || []).map(act => ({
+      accountId: act.account_id,
+      accountName: accountNameMap[act.account_id] || "—",
+      date: act.scheduled_next_date,
+      type: act.scheduled_next_type || "Activity",
+      time: act.scheduled_next_time,
+    })));
 
     // Recent activities (last 48 hours)
     const fortyEightHoursAgo = new Date();
@@ -191,17 +194,33 @@ export default function RepHome() {
           cursor: pointer; font-family: 'DM Sans', sans-serif;
         }
 
+        .rh-upcoming-card {
+          background: #fff; border: 1px solid #E8E8E6;
+          border-radius: 8px; overflow: hidden;
+          width: 100%; box-sizing: border-box;
+        }
+        .rh-upcoming-header {
+          display: flex; justify-content: space-between; align-items: center;
+          padding: 12px 16px; border-bottom: 1px solid #F0F0ED;
+        }
+        .rh-upcoming-title { font-size: 12px; font-weight: 600; color: #1A1A1A; }
+        .rh-upcoming-viewall {
+          font-size: 12px; font-weight: 600; color: #367C2B;
+          background: none; border: none; padding: 0; cursor: pointer;
+          font-family: 'DM Sans', sans-serif; text-decoration: underline;
+        }
         .rh-upcoming-row {
-          display: flex; align-items: center; justify-content: space-between;
-          padding: 8px 0; border-bottom: 1px solid #F0F0ED; gap: 8px;
+          display: flex; align-items: center;
+          padding: 10px 16px; border-bottom: 1px solid #F0F0ED; gap: 12px;
+          cursor: pointer;
         }
         .rh-upcoming-row:last-child { border-bottom: none; }
         .rh-upcoming-name {
           font-size: 13px; font-weight: 600; color: #1A1A1A;
-          flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-          cursor: pointer;
+          overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
-        .rh-upcoming-name:active { opacity: 0.7; }
+        .rh-upcoming-sub { font-size: 11px; color: #767676; margin-top: 2px; }
+        .rh-upcoming-empty { padding: 14px 16px; font-size: 13px; color: #ABABAB; }
         .rh-date-pill {
           font-size: 10px; font-weight: 700; padding: 3px 8px;
           border-radius: 100px; white-space: nowrap; flex-shrink: 0;
@@ -292,30 +311,30 @@ export default function RepHome() {
           </div>
 
           {/* Upcoming Activities */}
-          {upcomingActivities.length > 0 && (
-            <div className="rh-card">
-              <div className="rh-card-header">
-                <span className="rh-card-title">Upcoming</span>
-                <button className="rh-viewall" onClick={() => navigate("/accounts")}>View all</button>
-              </div>
-              {upcomingActivities.map((act, i) => (
-                <div key={i} className="rh-upcoming-row">
-                  <span
-                    className="rh-upcoming-name"
-                    onClick={() => navigate(`/accounts/${act.accountId}`)}
-                  >
-                    {act.accountName}
-                  </span>
+          <div className="rh-upcoming-card">
+            <div className="rh-upcoming-header">
+              <span className="rh-upcoming-title">Upcoming</span>
+              <button className="rh-upcoming-viewall" onClick={() => navigate("/activities")}>View all</button>
+            </div>
+            {upcomingActivities.length === 0 ? (
+              <p className="rh-upcoming-empty">No upcoming activities scheduled</p>
+            ) : (
+              upcomingActivities.map((act, i) => (
+                <div key={i} className="rh-upcoming-row" onClick={() => navigate(`/accounts/${act.accountId}`)}>
                   <span className="rh-date-pill" style={{
                     background: isToday(act.date) ? "#F0FDF4" : "#EFF6FF",
                     color: isToday(act.date) ? "#16A34A" : "#2563EB",
                   }}>
                     {isToday(act.date) ? "Today" : formatDate(act.date)}
                   </span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p className="rh-upcoming-name">{act.accountName}</p>
+                    <p className="rh-upcoming-sub">{[act.type, act.time].filter(Boolean).join(" · ")}</p>
+                  </div>
                 </div>
-              ))}
-            </div>
-          )}
+              ))
+            )}
+          </div>
 
           {/* At Risk Accounts */}
           <div className="rh-risk-card">
