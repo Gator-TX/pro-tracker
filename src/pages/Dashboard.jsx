@@ -433,8 +433,7 @@ export default function Dashboard() {
             display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
           }
           .dm-risk-label {
-            font-size: 11px; font-weight: 600; color: #ABABAB;
-            text-transform: uppercase; letter-spacing: 0.08em;
+            font-size: 13px; font-weight: 600; color: #1A1A1A;
           }
           .dm-risk-row {
             display: flex; align-items: center; justify-content: space-between;

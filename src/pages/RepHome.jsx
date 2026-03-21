@@ -235,8 +235,7 @@ export default function RepHome() {
           display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
         }
         .rh-risk-label {
-          font-size: 10px; font-weight: 600; color: #ABABAB;
-          text-transform: uppercase; letter-spacing: 0.08em;
+          font-size: 13px; font-weight: 600; color: #1A1A1A;
         }
         .rh-risk-row {
           display: flex; align-items: center; justify-content: space-between;
