@@ -460,9 +460,6 @@ export default function RepHome() {
                 <h1 style={dt.greeting}>{getGreeting()}, {getFirstName()}</h1>
                 <p style={dt.subGreeting}>{todayLabel()}</p>
               </div>
-              {daysLeft() !== null && (
-                <span style={dt.sprintBadge}>{daysLeft()} days left</span>
-              )}
             </div>
 
             {/* 2. Stat cards 4 across */}
