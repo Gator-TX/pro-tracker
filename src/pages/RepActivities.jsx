@@ -75,9 +75,6 @@ export default function RepActivities() {
           padding: 12px 16px 8px;
           display: flex; flex-direction: column; gap: 12px;
         }
-        .ra-title { font-size: 20px; font-weight: 700; color: #1A1A1A; }
-        .ra-count { font-size: 12px; color: #767676; margin-top: 2px; }
-
         .ra-filter-bar { display: flex; gap: 8px; }
         .ra-filter-select {
           flex: 1; padding: 8px 12px; font-size: 13px;
@@ -117,11 +114,6 @@ export default function RepActivities() {
 
       <PullToRefresh onRefresh={loadData}>
         <div className="ra-page">
-
-          <div>
-            <p className="ra-title">Activity Log</p>
-            <p className="ra-count">{filtered.length} log{filtered.length !== 1 ? "s" : ""}</p>
-          </div>
 
           <div className="ra-filter-bar">
             <select className="ra-filter-select" value={filterType} onChange={e => setFilterType(e.target.value)}>
