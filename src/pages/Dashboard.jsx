@@ -745,22 +745,24 @@ export default function Dashboard() {
                 {recentActivities.length === 0 ? (
                   <p style={{ fontSize: "13px", color: "#ABABAB" }}>No activity in the last 48 hours</p>
                 ) : (
-                  {recentActivities.map(act => {
-                    const tc = TYPE_COLORS[act.activity_type] || TYPE_COLORS.Call;
-                    const sub = [act.repName, act.outcome || act.notes].filter(Boolean).join(" · ");
-                    return (
-                      <div key={act.id} className="dm-act-row">
-                        <span className="dm-act-badge" style={{ background: tc.bg, color: tc.color }}>
-                          {act.activity_type}
-                        </span>
-                        <div className="dm-act-middle">
-                          <p className="dm-act-account">{act.accountName}</p>
-                          <p className="dm-act-sub">{sub}</p>
+                  <>
+                    {recentActivities.map(act => {
+                      const tc = TYPE_COLORS[act.activity_type] || TYPE_COLORS.Call;
+                      const sub = [act.repName, act.outcome || act.notes].filter(Boolean).join(" · ");
+                      return (
+                        <div key={act.id} className="dm-act-row">
+                          <span className="dm-act-badge" style={{ background: tc.bg, color: tc.color }}>
+                            {act.activity_type}
+                          </span>
+                          <div className="dm-act-middle">
+                            <p className="dm-act-account">{act.accountName}</p>
+                            <p className="dm-act-sub">{sub}</p>
+                          </div>
+                          <span className="dm-act-date">{formatDate(act.activity_date)}</span>
                         </div>
-                        <span className="dm-act-date">{formatDate(act.activity_date)}</span>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </>
                 )}
               </div>
             </div>
