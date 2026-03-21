@@ -248,10 +248,8 @@ export default function RepDetail() {
             ))}
           </div>
 
-          {/* ACCOUNTS TABLE / CARDS */}
-          <div style={styles.tableCard}>
-
-            {/* Filter pills — visible on both mobile and desktop */}
+          {/* DESKTOP: accounts table inside tableCard */}
+          <div className="desktop-only" style={styles.tableCard}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "14px 20px", borderBottom: "1px solid #F0F0ED", flexWrap: "wrap" }}>
               <p style={{ fontSize: "14px", fontWeight: 600, color: "#1A1A1A", marginRight: "8px" }}>Accounts</p>
               {[
@@ -271,9 +269,7 @@ export default function RepDetail() {
                 </button>
               ))}
             </div>
-
-            {/* DESKTOP: table header + rows */}
-            <div className="desktop-only">
+            <div>
               <div style={{ ...styles.accountRowGrid, ...styles.tableHeader, padding: "10px 20px" }}>
                 <span>Account / Contact</span>
                 <span>Status</span>
@@ -391,9 +387,30 @@ export default function RepDetail() {
                 })
               )}
             </div>
+          </div>
 
-            {/* MOBILE: kanban cards */}
-            <div className="mobile-only rd-mobile-card-list">
+          {/* MOBILE: filter pills + standalone cards */}
+          <div className="mobile-only">
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", paddingBottom: "8px" }}>
+              <p style={{ fontSize: "14px", fontWeight: 600, color: "#1A1A1A", marginRight: "8px" }}>Accounts</p>
+              {[
+                { key: "active", label: `Active: ${stats.activeAccounts}`, bg: accountFilter === "active" ? "#367C2B" : "#fff", color: accountFilter === "active" ? "#fff" : "#367C2B", border: "#367C2B" },
+                { key: "Won", label: `Won: ${stats.wonThisSprint}`, bg: accountFilter === "Won" ? "#367C2B" : "#F0FDF4", color: accountFilter === "Won" ? "#fff" : "#16A34A", border: "#BBF7D0" },
+                { key: "Lost", label: `Lost: ${stats.lostThisSprint}`, bg: accountFilter === "Lost" ? "#DC2626" : "#FEF2F2", color: accountFilter === "Lost" ? "#fff" : "#DC2626", border: "#FECACA" },
+              ].map(pill => (
+                <button key={pill.key} onClick={() => setAccountFilter(pill.key)} style={{
+                  background: pill.bg, color: pill.color,
+                  border: `1.5px solid ${pill.border}`,
+                  borderRadius: "100px", padding: "4px 12px",
+                  fontSize: "12px", fontWeight: 600,
+                  cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
+                  transition: "all 0.15s",
+                }}>
+                  {pill.label}
+                </button>
+              ))}
+            </div>
+            <div className="rd-mobile-card-list">
               {visibleAccounts.length === 0 ? (
                 <p style={styles.emptyText}>{accountFilter === "active" ? "No active accounts" : `No ${accountFilter} accounts`}</p>
               ) : (
@@ -509,7 +526,6 @@ export default function RepDetail() {
                 })
               )}
             </div>
-
           </div>
 
         </div>
