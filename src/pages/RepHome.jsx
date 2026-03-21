@@ -71,7 +71,7 @@ export default function RepHome() {
         const daysSince = lastDate
           ? Math.floor((new Date() - lastDate) / (1000 * 60 * 60 * 24))
           : null;
-        return { id: a.id, name: a.name || a.company, daysSince };
+        return { id: a.id, name: a.name || a.company, status: a.status, daysSince };
       })
       .sort((a, b) => (b.daysSince ?? 9999) - (a.daysSince ?? 9999));
     setNeedsAttentionList(attentionList);
@@ -225,8 +225,10 @@ export default function RepHome() {
         }
         .rh-risk-row:last-of-type { border-bottom: none; }
         .rh-risk-name {
-          font-size: 13px; font-weight: 600; color: #1A1A1A; cursor: pointer;
-          flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+          font-size: 13px; font-weight: 600; color: #1A1A1A;
+        }
+        .rh-risk-sub {
+          font-size: 11px; color: #767676; margin-top: 1px;
         }
         .rh-days-pill {
           font-size: 10px; font-weight: 700; padding: 3px 8px;
@@ -329,10 +331,11 @@ export default function RepHome() {
             ) : (
               <>
                 {needsAttentionList.slice(0, 3).map(acc => (
-                  <div key={acc.id} className="rh-risk-row">
-                    <span className="rh-risk-name" onClick={() => navigate(`/accounts/${acc.id}`)}>
-                      {acc.name}
-                    </span>
+                  <div key={acc.id} className="rh-risk-row" onClick={() => navigate(`/accounts/${acc.id}`)} style={{ cursor: "pointer" }}>
+                    <div>
+                      <p className="rh-risk-name">{acc.name}</p>
+                      <p className="rh-risk-sub">{acc.status}</p>
+                    </div>
                     <span className="rh-days-pill">
                       {acc.daysSince !== null ? `${acc.daysSince}d ago` : "Never"}
                     </span>
@@ -356,6 +359,7 @@ export default function RepHome() {
               </div>
               {recentActivities.map(act => {
                 const tc = TYPE_COLORS[act.activity_type] || TYPE_COLORS.Call;
+                const sub = [act.outcome, act.notes].filter(Boolean).join(" · ") || "—";
                 return (
                   <div key={act.id} className="rh-act-row">
                     <span className="rh-act-badge" style={{ background: tc.bg, color: tc.color }}>
@@ -363,7 +367,7 @@ export default function RepHome() {
                     </span>
                     <div className="rh-act-middle">
                       <p className="rh-act-account">{act.accountName}</p>
-                      <p className="rh-act-sub">{act.outcome || act.notes || "—"}</p>
+                      <p className="rh-act-sub">{sub}</p>
                     </div>
                     <span className="rh-act-date">{formatDate(act.activity_date)}</span>
                   </div>
