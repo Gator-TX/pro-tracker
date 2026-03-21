@@ -460,6 +460,14 @@ export default function RepHome() {
                 <h1 style={dt.greeting}>{getGreeting()}, {getFirstName()}</h1>
                 <p style={dt.subGreeting}>{todayLabel()}</p>
               </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px", flexShrink: 0 }}>
+                <span style={{ fontSize: "13px", fontWeight: 600, color: "#1A1A1A", fontFamily: "'DM Sans', sans-serif" }}>
+                  {profile?.full_name}
+                </span>
+                <button onClick={handleSignOut} style={{ fontSize: "12px", color: "#767676", textDecoration: "underline", background: "none", border: "none", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
+                  Sign out
+                </button>
+              </div>
             </div>
 
             {/* 2. Stat cards 4 across */}

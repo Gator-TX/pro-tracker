@@ -508,6 +508,14 @@ export default function Dashboard() {
                 <h1 style={styles.dtGreeting}>{getGreeting()}, {firstName}</h1>
                 <p style={styles.dtSubGreeting}>{todayLabel()}{sprint ? ` · Sprint ends ${formatDate(sprint.end_date)}` : ""}</p>
               </div>
+              <div style={styles.dtTopRight}>
+                <span style={{ fontSize: "13px", fontWeight: 600, color: "#1A1A1A", fontFamily: "'DM Sans', sans-serif" }}>
+                  {profile?.full_name}
+                </span>
+                <button onClick={handleSignOut} style={{ fontSize: "12px", color: "#767676", textDecoration: "underline", background: "none", border: "none", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
+                  Sign out
+                </button>
+              </div>
             </div>
 
             {/* 2. Stat cards 4 across */}
