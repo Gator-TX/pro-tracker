@@ -354,9 +354,6 @@ export default function RepHome() {
             <div>
               <p className="rh-greeting">{getGreeting()}, {getFirstName()}</p>
               <p className="rh-date">{todayLabel()}</p>
-              {daysLeft() !== null && (
-                <p className="rh-sprint">{daysLeft()} sprint day{daysLeft() !== 1 ? "s" : ""} left</p>
-              )}
             </div>
 
             {/* Stat cards 2x2 */}
@@ -461,7 +458,7 @@ export default function RepHome() {
             <div style={dt.topHeader}>
               <div>
                 <h1 style={dt.greeting}>{getGreeting()}, {getFirstName()}</h1>
-                <p style={dt.subGreeting}>{todayLabel()}{sprint ? ` · Sprint ends ${formatDate(sprint.end_date)}` : ""}</p>
+                <p style={dt.subGreeting}>{todayLabel()}</p>
               </div>
               {daysLeft() !== null && (
                 <span style={dt.sprintBadge}>{daysLeft()} days left</span>
