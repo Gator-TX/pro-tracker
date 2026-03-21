@@ -11,6 +11,7 @@ export default function Accounts() {
   const navigate = useNavigate();
   const [accounts, setAccounts] = useState([]);
   const [filter, setFilter] = useState("Active");
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
 
@@ -69,13 +70,15 @@ export default function Accounts() {
     return latest.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
-  const filteredAccounts = filter === "All"
-    ? accounts
-    : filter === "Active"
-    ? accounts.filter(a => ACTIVE_STATUSES.includes(a.status))
-    : filter === "Closed"
-    ? accounts.filter(a => ["Won", "Lost"].includes(a.status))
-    : accounts.filter(a => a.status === filter);
+  const filteredAccounts = accounts.filter(a => {
+    const matchSearch = !search ||
+      (a.name || a.company || "").toLowerCase().includes(search.toLowerCase());
+    const matchStatus = filter === "All" ? true
+      : filter === "Active" ? ACTIVE_STATUSES.includes(a.status)
+      : filter === "Closed" ? ["Won", "Lost"].includes(a.status)
+      : a.status === filter;
+    return matchSearch && matchStatus;
+  });
 
   if (loading) {
     return (
@@ -92,10 +95,32 @@ export default function Accounts() {
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #F5F5F3; font-family: 'DM Sans', sans-serif; }
 
+        .mobile-search-bar { display: none; }
+        .desktop-filter-pills { display: flex; }
+
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 86px !important; }
           .account-card { width: 100%; box-sizing: border-box; }
+          .mobile-search-bar { display: flex; gap: 8px; padding: 12px 16px 0; }
+          .desktop-filter-pills { display: none; }
         }
+
+        .acct-search-input {
+          flex: 1; padding: 8px 12px; font-size: 13px;
+          font-family: 'DM Sans', sans-serif;
+          border: 1.5px solid #E0E0DC; border-radius: 6px;
+          background: #fff; color: #1A1A1A; outline: none;
+        }
+        .acct-search-input:focus { border-color: #367C2B; }
+
+        .acct-filter-select {
+          padding: 8px 12px; font-size: 13px;
+          font-family: 'DM Sans', sans-serif;
+          border: 1.5px solid #E0E0DC; border-radius: 6px;
+          background: #fff; color: #1A1A1A; outline: none;
+          cursor: pointer; appearance: none; -webkit-appearance: none;
+        }
+        .acct-filter-select:focus { border-color: #367C2B; }
 
         .filter-pill {
           padding: 6px 14px;
@@ -142,8 +167,28 @@ export default function Accounts() {
           <PullToRefresh onRefresh={loadData}>
             <RepTopBar title="My Accounts" profile={profile} onSignOut={handleSignOut} />
 
-            {/* Filter pills */}
-            <div style={styles.filterWrap}>
+            {/* Mobile: search + dropdown */}
+            <div className="mobile-search-bar">
+              <input
+                className="acct-search-input"
+                type="text"
+                placeholder="Search accounts..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+              <select
+                className="acct-filter-select"
+                value={filter}
+                onChange={e => setFilter(e.target.value)}
+              >
+                {STATUS_FILTERS.map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Desktop: filter pills */}
+            <div className="desktop-filter-pills" style={styles.filterWrap}>
               {STATUS_FILTERS.map(s => (
                 <button
                   key={s}
