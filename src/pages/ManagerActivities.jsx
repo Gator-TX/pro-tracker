@@ -127,10 +127,9 @@ export default function ManagerActivities() {
         .act-row { min-width: 650px; }
 
         @media (max-width: 768px) {
-          .main-content { margin-left: 0 !important; padding-top: 86px !important; padding-left: 16px !important; padding-right: 16px !important; }
+          .main-content { margin-left: 0 !important; padding-top: 86px !important; padding-left: 16px !important; padding-right: 16px !important; padding-bottom: 8px !important; }
           .desktop-only { display: none !important; }
-          .filter-bar { flex-direction: column !important; }
-          .filter-bar .filter-select { width: 100%; }
+          .filter-bar { gap: 8px !important; flex-wrap: nowrap !important; }
           .act-table-card { display: none !important; }
           .act-mobile-list { display: flex !important; flex-direction: column; gap: 8px; }
           .act-mobile-card {
@@ -140,28 +139,23 @@ export default function ManagerActivities() {
             border: 1px solid #E8E8E6;
             border-radius: 8px;
             padding: 14px 16px;
-            padding-right: 44px;
-            position: relative;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
           }
-          .act-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-          .act-card-account { font-size: 15px; font-weight: 600; color: #1A1A1A; }
-          .act-card-date { font-size: 12px; color: #767676; }
+          .act-card-top { display: flex; align-items: center; gap: 8px; }
+          .act-card-account { font-size: 15px; font-weight: 600; color: #1A1A1A; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+          .act-card-row2 { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+          .act-card-date { font-size: 12px; color: #ABABAB; white-space: nowrap; flex-shrink: 0; }
           .act-card-rep { font-size: 12px; color: #767676; }
           .act-card-checkbox {
-            position: absolute;
-            top: 14px; right: 14px;
-            width: 18px; height: 18px;
-            cursor: pointer;
-            accent-color: #367C2B;
+            width: 18px; height: 18px; flex-shrink: 0;
+            cursor: pointer; accent-color: #367C2B;
           }
           .mobile-select-all {
             display: flex !important; align-items: center; gap: 10px;
             padding: 10px 16px; background: #fff;
             border: 1px solid #E8E8E6; border-radius: 8px;
-            margin-bottom: 4px;
           }
           .mobile-delete-btn { width: 100% !important; text-align: center; }
         }
@@ -290,25 +284,24 @@ export default function ManagerActivities() {
                 const tc = typeColors[act.activity_type] || typeColors.Call;
                 return (
                   <div key={`m-${act.id}`} className="act-mobile-card">
-                    <input
-                      type="checkbox"
-                      className="act-card-checkbox"
-                      checked={selectedIds.includes(act.id)}
-                      onChange={() => toggleSelect(act.id)}
-                    />
                     <div className="act-card-top">
-                      <span className="type-badge" style={{ background: tc.bg, color: tc.color }}>
+                      <span className="act-card-account">{getAccountName(act.account_id)}</span>
+                      <span className="type-badge" style={{ background: tc.bg, color: tc.color, flexShrink: 0 }}>
                         {act.activity_type}
                       </span>
+                      <input
+                        type="checkbox"
+                        className="act-card-checkbox"
+                        checked={selectedIds.includes(act.id)}
+                        onChange={() => toggleSelect(act.id)}
+                      />
+                    </div>
+                    <div className="act-card-row2">
+                      <span className="act-card-rep">{getRepName(act.rep_id)}</span>
                       <span className="act-card-date">{formatDate(act.activity_date)}</span>
                     </div>
-                    <span className="act-card-account">{getAccountName(act.account_id)}</span>
-                    <span className="act-card-rep">{getRepName(act.rep_id)}</span>
                     {(act.outcome || act.notes) && (
-                      <div>
-                        {act.outcome && <p style={styles.outcomeText}>{act.outcome}</p>}
-                        {act.notes && <p style={styles.notesText}>{act.notes}</p>}
-                      </div>
+                      <p style={styles.notesText}>{act.outcome || act.notes}</p>
                     )}
                   </div>
                 );
