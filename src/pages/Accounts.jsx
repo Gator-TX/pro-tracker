@@ -95,14 +95,9 @@ export default function Accounts() {
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #F5F5F3; font-family: 'DM Sans', sans-serif; }
 
-        .mobile-search-bar { display: none; }
-        .desktop-filter-pills { display: flex; }
-
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 86px !important; }
           .account-card { width: 100%; box-sizing: border-box; }
-          .mobile-search-bar { display: flex; gap: 8px; padding: 12px 16px 0; }
-          .desktop-filter-pills { display: none; }
         }
 
         .acct-search-input {
@@ -121,26 +116,6 @@ export default function Accounts() {
           cursor: pointer; appearance: none; -webkit-appearance: none;
         }
         .acct-filter-select:focus { border-color: #367C2B; }
-
-        .filter-pill {
-          padding: 6px 14px;
-          border-radius: 100px;
-          font-size: 13px;
-          font-weight: 500;
-          border: 1.5px solid #E0E0DC;
-          background: #ffffff;
-          color: #767676;
-          cursor: pointer;
-          white-space: nowrap;
-          transition: all 0.15s;
-          font-family: 'DM Sans', sans-serif;
-        }
-        .filter-pill:hover { border-color: #367C2B; color: #367C2B; }
-        .filter-pill.active {
-          background: #367C2B;
-          border-color: #367C2B;
-          color: #ffffff;
-        }
 
         .account-card {
           width: 100%; box-sizing: border-box;
@@ -167,8 +142,8 @@ export default function Accounts() {
           <PullToRefresh onRefresh={loadData}>
             <RepTopBar title="My Accounts" profile={profile} onSignOut={handleSignOut} />
 
-            {/* Mobile: search + dropdown */}
-            <div className="mobile-search-bar">
+            {/* Search + status filter */}
+            <div style={styles.filterWrap}>
               <input
                 className="acct-search-input"
                 type="text"
@@ -185,19 +160,6 @@ export default function Accounts() {
                   <option key={s} value={s}>{s}</option>
                 ))}
               </select>
-            </div>
-
-            {/* Desktop: filter pills */}
-            <div className="desktop-filter-pills" style={styles.filterWrap}>
-              {STATUS_FILTERS.map(s => (
-                <button
-                  key={s}
-                  className={`filter-pill${filter === s ? " active" : ""}`}
-                  onClick={() => setFilter(s)}
-                >
-                  {s}
-                </button>
-              ))}
             </div>
 
             {/* Account cards */}
@@ -278,7 +240,7 @@ const styles = {
   loadingPage: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#F5F5F3" },
   loadingDot: { width: "32px", height: "32px", borderRadius: "50%", border: "3px solid #E0E0DC", borderTopColor: "#367C2B", animation: "spin 0.8s linear infinite" },
 
-  filterWrap: { display: "flex", gap: "8px", padding: "16px 16px 0", overflowX: "auto", scrollbarWidth: "none" },
+  filterWrap: { display: "flex", gap: "8px", padding: "16px 16px 0", alignItems: "center" },
 
   cardList: { display: "flex", flexDirection: "column", gap: "8px", padding: "12px 16px 0", width: "100%", marginBottom: "80px" },
   cardTop: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px", marginBottom: "12px" },
