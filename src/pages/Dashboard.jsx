@@ -16,11 +16,17 @@ export default function Dashboard() {
     accountsTracked: 0,
     activitiesThisWeek: 0,
     atRisk: 0,
+    totalActive: 0,
+    totalWon: 0,
+    totalLost: 0,
+    atRiskAccounts: 0,
   });
   const [loading, setLoading] = useState(true);
   const [showExport, setShowExport] = useState(false);
   const [sprint, setSprint] = useState(null);
   const [sortDirection, setSortDirection] = useState("asc");
+  const [atRiskAccountsList, setAtRiskAccountsList] = useState([]);
+  const [recentActivities, setRecentActivities] = useState([]);
   // Export panel state
   const [exportRange, setExportRange] = useState("sprint");
   const [customStart, setCustomStart] = useState("");
@@ -113,12 +119,78 @@ export default function Dashboard() {
     const totalAccounts = repsWithData.reduce((sum, r) => sum + (r.accountCount || 0), 0);
     const totalWeekly = repsWithData.reduce((sum, r) => sum + r.logsThisWeek, 0);
     const atRiskCount = repsWithData.filter(r => r.atRisk).length;
+    const totalActive = repsWithData.reduce((sum, r) => sum + r.activeCount, 0);
+    const totalWon = repsWithData.reduce((sum, r) => sum + r.wonCount, 0);
+    const totalLost = repsWithData.reduce((sum, r) => sum + r.lostCount, 0);
+
+    // Build rep name map for cross-referencing
+    const repNameMap = {};
+    repsWithData.forEach(r => { repNameMap[r.id] = r.full_name; });
+
+    // Fetch all accounts for name map + at-risk analysis
+    const ACTIVE_STATUSES = ["New", "Contacted", "Engaged", "Proposal"];
+    const { data: allAccountsData } = await supabase
+      .from("accounts")
+      .select("id, name, company, status, rep_id");
+
+    const accountNameMap = {};
+    (allAccountsData || []).forEach(a => {
+      accountNameMap[a.id] = a.name || a.company;
+    });
+
+    // Find last activity date per active account
+    const activeAccIds = (allAccountsData || [])
+      .filter(a => ACTIVE_STATUSES.includes(a.status))
+      .map(a => a.id);
+
+    let lastActMap = {};
+    if (activeAccIds.length > 0) {
+      const { data: lastActs } = await supabase
+        .from("activities")
+        .select("account_id, activity_date")
+        .in("account_id", activeAccIds)
+        .order("activity_date", { ascending: false });
+      (lastActs || []).forEach(act => {
+        if (!lastActMap[act.account_id]) lastActMap[act.account_id] = act.activity_date;
+      });
+    }
+
+    const cutoff48h = new Date();
+    cutoff48h.setHours(cutoff48h.getHours() - 48);
+
+    const atRiskList = (allAccountsData || [])
+      .filter(a => ACTIVE_STATUSES.includes(a.status))
+      .filter(a => !lastActMap[a.id] || new Date(lastActMap[a.id]) < cutoff48h)
+      .map(a => ({
+        id: a.id,
+        name: a.name || a.company,
+        status: a.status,
+        repName: repNameMap[a.rep_id] || "Unassigned",
+        lastActivity: lastActMap[a.id] || null,
+      }));
+    setAtRiskAccountsList(atRiskList);
+
+    // Recent activity feed
+    const { data: recentActsData } = await supabase
+      .from("activities")
+      .select("id, activity_type, activity_date, outcome, notes, account_id, rep_id")
+      .order("activity_date", { ascending: false })
+      .limit(8);
+    setRecentActivities((recentActsData || []).map(act => ({
+      ...act,
+      accountName: accountNameMap[act.account_id] || "Unknown",
+      repName: repNameMap[act.rep_id] || "Unknown",
+    })));
 
     setStats({
       activeReps: repsWithData.length,
       accountsTracked: totalAccounts,
       activitiesThisWeek: totalWeekly,
       atRisk: atRiskCount,
+      totalActive,
+      totalWon,
+      totalLost,
+      atRiskAccounts: atRiskList.length,
     });
 
     const today = new Date().toISOString().split("T")[0];
@@ -139,6 +211,19 @@ export default function Dashboard() {
     const diff = Math.ceil((new Date(sprint.end_date) - new Date()) / (1000 * 60 * 60 * 24));
     return diff > 0 ? diff : 0;
   };
+
+  const sprintProgress = () => {
+    if (!sprint) return 0;
+    const start = new Date(sprint.start_date);
+    const end = new Date(sprint.end_date);
+    const total = (end - start) / (1000 * 60 * 60 * 24);
+    const elapsed = (new Date() - start) / (1000 * 60 * 60 * 24);
+    return Math.min(100, Math.max(0, Math.round((elapsed / total) * 100)));
+  };
+
+  const formatDate = (d) => d
+    ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+    : "—";
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -166,6 +251,12 @@ export default function Dashboard() {
     ? a.full_name.localeCompare(b.full_name)
     : b.full_name.localeCompare(a.full_name)
   );
+
+  const TYPE_COLORS = {
+    Call:    { bg: "#EFF6FF", color: "#2563EB" },
+    Meeting: { bg: "#F0FDF4", color: "#16A34A" },
+    Email:   { bg: "#FAF5FF", color: "#7C3AED" },
+  };
 
   if (loading) {
     return (
@@ -226,13 +317,13 @@ export default function Dashboard() {
         }
         .rep-row { min-width: 600px; }
 
-        /* Kanban — hidden on desktop */
-        .rep-kanban { display: none; }
-
         .dashboard-desktop-only { display: none !important; }
         @media (min-width: 769px) {
           .dashboard-desktop-only { display: flex !important; }
         }
+
+        /* Mobile overview — hidden on desktop */
+        .dash-mobile { display: none; }
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -242,74 +333,128 @@ export default function Dashboard() {
             padding-top: 86px !important;
             padding-left: 16px !important;
             padding-right: 16px !important;
-            padding-bottom: 8px !important;
+            padding-bottom: 32px !important;
           }
           .table-scroll { max-height: 70vh; min-width: unset !important; }
           .stat-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
           .export-btn-row { flex-direction: column !important; }
           .export-btn { flex: none !important; }
-
-          /* Hide desktop table on mobile */
           .rep-table-card { display: none !important; }
 
-          /* Kanban — single column */
-          .rep-kanban {
+          /* Mobile overview */
+          .dash-mobile {
             display: flex !important;
             flex-direction: column;
-            gap: 8px;
-            margin-top: 8px;
-          }
-          .kanban-card {
-            width: 100%;
-            box-sizing: border-box;
-            background: #fff;
-            border: 1px solid #E8E8E6;
-            border-radius: 8px;
-            padding: 14px 16px;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            transition: background 0.15s;
-          }
-          .kanban-card:active { background: #F9F9F8; }
-          .kanban-top-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-          }
-          .kanban-name {
-            font-size: 15px;
-            font-weight: 600;
-            color: #1A1A1A;
-          }
-          .kanban-badge {
-            font-size: 10px;
-            font-weight: 600;
-            padding: 3px 8px;
-            border-radius: 100px;
-            white-space: nowrap;
-          }
-          .kanban-stats {
-            display: flex;
             gap: 20px;
-            font-size: 12px;
-            color: #374151;
+            margin-top: 4px;
           }
-          .kanban-stat-item {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
+          .dash-section-label {
+            font-size: 11px; font-weight: 600; color: #ABABAB;
+            text-transform: uppercase; letter-spacing: 0.08em;
+            margin-bottom: 8px;
           }
-          .kanban-stat-label {
-            font-size: 9px;
-            font-weight: 600;
-            color: #ABABAB;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
+          .dash-card-list {
+            display: flex; flex-direction: column; gap: 8px;
           }
-          .kanban-stat-value { font-size: 14px; font-weight: 500; }
+          .dash-kanban-card {
+            width: 100%; box-sizing: border-box;
+            background: #fff; border: 1px solid #E8E8E6;
+            border-radius: 8px; padding: 14px 16px;
+            display: flex; flex-direction: column; gap: 8px;
+            cursor: pointer; transition: background 0.15s;
+          }
+          .dash-kanban-card:active { background: #F9F9F8; }
+          .dash-card-row {
+            display: flex; align-items: center;
+            justify-content: space-between; gap: 8px;
+          }
+          .dash-card-name {
+            font-size: 15px; font-weight: 600; color: #1A1A1A;
+            flex: 1; min-width: 0; overflow: hidden;
+            text-overflow: ellipsis; white-space: nowrap;
+          }
+          .dash-card-badge {
+            font-size: 10px; font-weight: 600;
+            padding: 3px 8px; border-radius: 100px; white-space: nowrap;
+          }
+          .dash-card-meta {
+            font-size: 12px; color: #ABABAB; white-space: nowrap;
+          }
+          .dash-card-meta-left {
+            font-size: 12px; color: #ABABAB;
+            flex: 1; min-width: 0; overflow: hidden;
+            text-overflow: ellipsis; white-space: nowrap;
+          }
+          .dash-stat-row {
+            display: flex; gap: 20px;
+          }
+          .dash-stat-item {
+            display: flex; flex-direction: column; gap: 2px;
+          }
+          .dash-stat-label {
+            font-size: 9px; font-weight: 600; color: #ABABAB;
+            text-transform: uppercase; letter-spacing: 0.06em;
+          }
+          .dash-stat-value { font-size: 14px; font-weight: 500; }
+
+          /* Sprint card */
+          .dash-sprint-card {
+            width: 100%; box-sizing: border-box;
+            background: #fff; border: 1px solid #E8E8E6;
+            border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; gap: 12px;
+          }
+          .dash-sprint-top {
+            display: flex; justify-content: space-between; align-items: center;
+          }
+          .dash-sprint-name {
+            font-size: 14px; font-weight: 600; color: #1A1A1A;
+          }
+          .dash-sprint-days {
+            font-size: 12px; font-weight: 700;
+            background: #FFDE00; color: #1A1A1A;
+            padding: 3px 10px; border-radius: 100px;
+          }
+          .dash-progress-track {
+            height: 6px; background: #F0F0ED;
+            border-radius: 3px; overflow: hidden;
+          }
+          .dash-progress-fill {
+            height: 100%; background: #367C2B;
+            border-radius: 3px; transition: width 0.3s ease;
+          }
+          .dash-sprint-stats {
+            display: flex; gap: 24px;
+          }
+          .dash-sprint-stat {
+            display: flex; flex-direction: column; gap: 2px;
+          }
+          .dash-sprint-stat-label {
+            font-size: 9px; font-weight: 600; color: #ABABAB;
+            text-transform: uppercase; letter-spacing: 0.06em;
+          }
+          .dash-sprint-stat-value { font-size: 16px; font-weight: 600; color: #1A1A1A; }
+
+          /* Activity feed */
+          .dash-activity-feed {
+            background: #fff; border: 1px solid #E8E8E6;
+            border-radius: 8px; overflow: hidden;
+          }
+          .dash-act-row {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 11px 14px; border-bottom: 1px solid #F0F0ED;
+          }
+          .dash-act-row:last-child { border-bottom: none; }
+          .dash-act-type {
+            flex-shrink: 0; font-size: 10px; font-weight: 600;
+            padding: 3px 8px; border-radius: 100px; white-space: nowrap; margin-top: 2px;
+          }
+          .dash-act-middle { flex: 1; min-width: 0; }
+          .dash-act-account {
+            font-size: 13px; font-weight: 600; color: #1A1A1A; margin-bottom: 2px;
+          }
+          .dash-act-rep { font-size: 11px; color: #767676; }
+          .dash-act-date { font-size: 11px; color: #ABABAB; white-space: nowrap; flex-shrink: 0; }
         }
       `}</style>
 
@@ -323,7 +468,7 @@ export default function Dashboard() {
           <PullToRefresh onRefresh={loadData}>
           <TopBar title="Team Dashboard" profile={profile} onSignOut={handleSignOut} />
 
-          {/* Top bar */}
+          {/* Desktop top bar */}
           <div style={styles.topBar}>
             <div className="dashboard-desktop-only" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               {daysLeft() !== null && (
@@ -339,14 +484,12 @@ export default function Dashboard() {
           {showExport && (
             <div style={styles.exportPanel}>
               <p style={styles.exportTitle}>Export Report</p>
-
               <div style={styles.exportRow}>
                 {[["sprint","This Sprint"],["7days","Last 7 Days"],["30days","Last 30 Days"],["custom","Custom Range"]].map(([r, label]) => (
                   <button key={r} className={`range-pill${exportRange === r ? " active" : ""}`}
                     onClick={() => setExportRange(r)}>{label}</button>
                 ))}
               </div>
-
               {exportRange === "custom" && (
                 <div style={styles.exportRow}>
                   <input className="field-input" type="date" value={customStart}
@@ -356,7 +499,6 @@ export default function Dashboard() {
                     onChange={e => setCustomEnd(e.target.value)} style={{ flex: 1 }} />
                 </div>
               )}
-
               <div style={styles.exportColumns}>
                 <div style={styles.exportCol}>
                   <p style={styles.exportColLabel}>Reps</p>
@@ -368,7 +510,6 @@ export default function Dashboard() {
                     </label>
                   ))}
                 </div>
-
                 <div style={styles.exportCol}>
                   <p style={styles.exportColLabel}>Include in Report</p>
                   {Object.entries({
@@ -387,7 +528,6 @@ export default function Dashboard() {
                   ))}
                 </div>
               </div>
-
               <div className="export-btn-row" style={styles.exportBtnRow}>
                 <button className="export-btn" style={{ background: "#367C2B", color: "#fff" }}>
                   Export as Excel (.xlsx)
@@ -399,7 +539,7 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* STAT CARDS */}
+          {/* DESKTOP: STAT CARDS */}
           <div className="stat-grid" style={styles.statGrid}>
             {STAT_CARDS.map(card => (
               <div key={card.label} style={styles.statCard}>
@@ -413,7 +553,6 @@ export default function Dashboard() {
           {/* DESKTOP: REP TABLE */}
           <div className="rep-table-card" style={styles.tableCard}>
             <p style={styles.tableTitle}>Rep Activity</p>
-
             <div className="rep-table-header" style={{ ...styles.repRowStyle, ...styles.tableHeader, boxShadow: "0 2px 4px rgba(0,0,0,0.06)", position: "relative", zIndex: 1, minWidth: "600px" }}>
               <span style={{ cursor: "pointer" }} onClick={() => setSortDirection(d => d === "asc" ? "desc" : "asc")}>
                 Rep {sortDirection === "asc" ? "↑" : "↓"}
@@ -425,7 +564,6 @@ export default function Dashboard() {
               <span>Total Logs</span>
               <span>Status</span>
             </div>
-
             <div className="table-scroll">
               {reps.length === 0 ? (
                 <p style={styles.emptyText}>No reps found</p>
@@ -453,55 +591,159 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* MOBILE: KANBAN GRID */}
-          <div className="rep-kanban">
-            {reps.length === 0 ? (
-              <p style={{ fontSize: "14px", color: "#ABABAB", gridColumn: "1 / -1" }}>No reps found</p>
-            ) : (
-              sortedReps.map(rep => (
-                <div
-                  key={rep.id}
-                  className="kanban-card"
-                  style={{ borderLeft: `3px solid ${rep.atRisk ? "#DC2626" : "#367C2B"}` }}
-                  onClick={() => navigate(`/dashboard/reps/${rep.id}`)}
-                >
-                  <div className="kanban-top-row">
-                    <span className="kanban-name">{rep.full_name}</span>
-                    <span
-                      className="kanban-badge"
-                      style={{
-                        background: rep.atRisk ? "#FEF2F2" : "#F0FDF4",
-                        color: rep.atRisk ? "#DC2626" : "#16A34A",
-                        border: `1px solid ${rep.atRisk ? "#FECACA" : "#BBF7D0"}`,
-                      }}
-                    >
-                      {rep.atRisk ? "At Risk" : "On Track"}
-                    </span>
+          {/* ── MOBILE OVERVIEW ── */}
+          <div className="dash-mobile">
+
+            {/* 1. Account stat cards */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+              {[
+                { label: "Active", value: stats.totalActive, color: "#2563EB", bg: "#EFF6FF" },
+                { label: "At Risk", value: stats.atRiskAccounts, color: "#DC2626", bg: "#FEF2F2" },
+                { label: "Won", value: stats.totalWon, color: "#16A34A", bg: "#F0FDF4" },
+                { label: "Lost", value: stats.totalLost, color: "#767676", bg: "#F5F5F3" },
+              ].map(card => (
+                <div key={card.label} style={{ background: card.bg, borderRadius: "8px", padding: "14px 16px", border: "1px solid #E8E8E6" }}>
+                  <p style={{ fontSize: "28px", fontWeight: 700, color: card.color, lineHeight: 1 }}>{card.value}</p>
+                  <p style={{ fontSize: "11px", fontWeight: 600, color: "#374151", marginTop: "4px" }}>{card.label} Accounts</p>
+                </div>
+              ))}
+            </div>
+
+            {/* 2. Needs Attention */}
+            {atRiskAccountsList.length > 0 && (
+              <div>
+                <p className="dash-section-label">Needs Attention ({atRiskAccountsList.length})</p>
+                <div className="dash-card-list">
+                  {atRiskAccountsList.slice(0, 6).map(acc => (
+                    <div key={acc.id} className="dash-kanban-card"
+                      style={{ borderLeft: "3px solid #DC2626" }}>
+                      <div className="dash-card-row">
+                        <span className="dash-card-name">{acc.name}</span>
+                        <span className="dash-card-badge" style={{ background: "#FEF2F2", color: "#DC2626", border: "1px solid #FECACA" }}>
+                          {acc.status}
+                        </span>
+                      </div>
+                      <div className="dash-card-row">
+                        <span className="dash-card-meta-left">{acc.repName}</span>
+                        <span className="dash-card-meta">
+                          {acc.lastActivity ? `Last: ${formatDate(acc.lastActivity)}` : "No activity"}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                  {atRiskAccountsList.length > 6 && (
+                    <p style={{ fontSize: "12px", color: "#767676", textAlign: "center", paddingTop: "4px" }}>
+                      +{atRiskAccountsList.length - 6} more — view in Accounts
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* 3. Sprint Progress */}
+            {sprint && (
+              <div>
+                <p className="dash-section-label">Sprint</p>
+                <div className="dash-sprint-card">
+                  <div className="dash-sprint-top">
+                    <span className="dash-sprint-name">{sprint.name || "Current Sprint"}</span>
+                    {daysLeft() !== null && (
+                      <span className="dash-sprint-days">{daysLeft()}d left</span>
+                    )}
                   </div>
-                  <div className="kanban-stats">
-                    <div className="kanban-stat-item">
-                      <span className="kanban-stat-label">Active</span>
-                      <span className="kanban-stat-value">{rep.activeCount}</span>
+                  <div className="dash-progress-track">
+                    <div className="dash-progress-fill" style={{ width: `${sprintProgress()}%` }} />
+                  </div>
+                  <div className="dash-sprint-stats">
+                    <div className="dash-sprint-stat">
+                      <span className="dash-sprint-stat-label">Won</span>
+                      <span className="dash-sprint-stat-value" style={{ color: "#16A34A" }}>{stats.totalWon}</span>
                     </div>
-                    <div className="kanban-stat-item">
-                      <span className="kanban-stat-label">Won</span>
-                      <span className="kanban-stat-value" style={{ color: "#16A34A" }}>{rep.wonCount}</span>
+                    <div className="dash-sprint-stat">
+                      <span className="dash-sprint-stat-label">Active</span>
+                      <span className="dash-sprint-stat-value">{stats.totalActive}</span>
                     </div>
-                    <div className="kanban-stat-item">
-                      <span className="kanban-stat-label">Lost</span>
-                      <span className="kanban-stat-value" style={{ color: "#DC2626" }}>{rep.lostCount}</span>
+                    <div className="dash-sprint-stat">
+                      <span className="dash-sprint-stat-label">Activities / Wk</span>
+                      <span className="dash-sprint-stat-value">{stats.activitiesThisWeek}</span>
                     </div>
-                    <div className="kanban-stat-item">
-                      <span className="kanban-stat-label">Logs/Wk</span>
-                      <span className="kanban-stat-value">{rep.logsThisWeek}</span>
+                    <div className="dash-sprint-stat">
+                      <span className="dash-sprint-stat-label">Progress</span>
+                      <span className="dash-sprint-stat-value">{sprintProgress()}%</span>
                     </div>
                   </div>
                 </div>
-              ))
+              </div>
             )}
-          </div>
 
-                  </PullToRefresh>
+            {/* 4. Recent Activity */}
+            {recentActivities.length > 0 && (
+              <div>
+                <p className="dash-section-label">Recent Activity</p>
+                <div className="dash-activity-feed">
+                  {recentActivities.map(act => {
+                    const tc = TYPE_COLORS[act.activity_type] || TYPE_COLORS.Call;
+                    return (
+                      <div key={act.id} className="dash-act-row">
+                        <span className="dash-act-type" style={{ background: tc.bg, color: tc.color }}>
+                          {act.activity_type}
+                        </span>
+                        <div className="dash-act-middle">
+                          <p className="dash-act-account">{act.accountName}</p>
+                          <p className="dash-act-rep">{act.repName}</p>
+                        </div>
+                        <span className="dash-act-date">{formatDate(act.activity_date)}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* 5. Rep Pulse */}
+            <div>
+              <p className="dash-section-label">Rep Pulse</p>
+              <div className="dash-card-list">
+                {sortedReps.map(rep => (
+                  <div key={rep.id} className="dash-kanban-card"
+                    style={{ borderLeft: `3px solid ${rep.atRisk ? "#DC2626" : "#367C2B"}` }}
+                    onClick={() => navigate(`/dashboard/reps/${rep.id}`)}>
+                    <div className="dash-card-row">
+                      <span className="dash-card-name">{rep.full_name}</span>
+                      <span className="dash-card-badge" style={{
+                        background: rep.atRisk ? "#FEF2F2" : "#F0FDF4",
+                        color: rep.atRisk ? "#DC2626" : "#16A34A",
+                        border: `1px solid ${rep.atRisk ? "#FECACA" : "#BBF7D0"}`,
+                      }}>
+                        {rep.atRisk ? "At Risk" : "On Track"}
+                      </span>
+                    </div>
+                    <div className="dash-stat-row">
+                      <div className="dash-stat-item">
+                        <span className="dash-stat-label">Active</span>
+                        <span className="dash-stat-value">{rep.activeCount}</span>
+                      </div>
+                      <div className="dash-stat-item">
+                        <span className="dash-stat-label">Won</span>
+                        <span className="dash-stat-value" style={{ color: "#16A34A" }}>{rep.wonCount}</span>
+                      </div>
+                      <div className="dash-stat-item">
+                        <span className="dash-stat-label">Lost</span>
+                        <span className="dash-stat-value" style={{ color: "#DC2626" }}>{rep.lostCount}</span>
+                      </div>
+                      <div className="dash-stat-item">
+                        <span className="dash-stat-label">Logs/Wk</span>
+                        <span className="dash-stat-value">{rep.logsThisWeek}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>{/* end dash-mobile */}
+
+          </PullToRefresh>
         </div>
       </div>
 
