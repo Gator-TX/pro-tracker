@@ -152,7 +152,7 @@ export default function RepHome() {
 
         .rh-page {
           min-height: 100vh; background: #F5F5F3;
-          padding: 86px 16px 8px;
+          padding: 12px 16px 8px;
           display: flex; flex-direction: column; gap: 16px;
         }
 
