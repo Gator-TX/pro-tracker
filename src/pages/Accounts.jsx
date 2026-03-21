@@ -90,7 +90,7 @@ export default function Accounts() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #ffffff; font-family: 'DM Sans', sans-serif; }
+        body { background: #F5F5F3; font-family: 'DM Sans', sans-serif; }
 
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 86px !important; }
@@ -222,15 +222,15 @@ export default function Accounts() {
 }
 
 const styles = {
-  layout: { display: "flex", minHeight: "100vh", backgroundColor: "#ffffff" },
+  layout: { display: "flex", minHeight: "100vh", backgroundColor: "#F5F5F3" },
   page: {
     marginLeft: "220px", flex: 1, minHeight: "100vh",
     display: "flex", flexDirection: "column",
-    backgroundColor: "#ffffff", fontFamily: "'DM Sans', sans-serif",
-    paddingBottom: "40px",
+    backgroundColor: "#F5F5F3", fontFamily: "'DM Sans', sans-serif",
+    paddingBottom: "40px", overflowX: "hidden",
   },
 
-  loadingPage: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#ffffff" },
+  loadingPage: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#F5F5F3" },
   loadingDot: { width: "32px", height: "32px", borderRadius: "50%", border: "3px solid #E0E0DC", borderTopColor: "#367C2B", animation: "spin 0.8s linear infinite" },
 
   filterWrap: { display: "flex", gap: "8px", padding: "16px 16px 0", overflowX: "auto", scrollbarWidth: "none" },
