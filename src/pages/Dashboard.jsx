@@ -679,6 +679,7 @@ export default function Dashboard() {
               {recentActivities.length === 0 ? (
                 <p style={{ fontSize: "13px", color: "#ABABAB" }}>No activity in the last 48 hours</p>
               ) : (
+                <div style={styles.dtActivityScroll}>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
                     <tr>
@@ -706,6 +707,7 @@ export default function Dashboard() {
                     })}
                   </tbody>
                 </table>
+                </div>
               )}
             </div>
 
@@ -1011,6 +1013,7 @@ const styles = {
   dtProgressFill: { height: "100%", backgroundColor: "#367C2B", borderRadius: "3px" },
   dtProgressLabel: { fontSize: "12px", color: "#ABABAB" },
   dtRiskScroll: { maxHeight: "240px", overflowY: "auto", scrollbarWidth: "thin", scrollbarColor: "#E0E0DC transparent" },
+  dtActivityScroll: { maxHeight: "280px", overflowY: "auto", scrollbarWidth: "thin", scrollbarColor: "#E0E0DC transparent" },
   dtRiskRow: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid #F0F0ED" },
   dtRiskName: { fontSize: "14px", fontWeight: 600, color: "#1A1A1A", marginBottom: "2px" },
   dtRiskSub: { fontSize: "12px", color: "#767676" },
