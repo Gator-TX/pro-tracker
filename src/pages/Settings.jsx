@@ -203,18 +203,16 @@ export default function Settings() {
             <p style={styles.sectionTitle}>At Risk Thresholds</p>
             <div style={styles.card}>
               <div style={styles.thresholdRow}>
-                <div style={styles.field}>
+                <div style={{ ...styles.field, flex: 1, minWidth: 0 }}>
                   <label style={styles.fieldLabel}>Rep At Risk After</label>
                   <input className="field-input" type="number" min="1" value={repAtRiskHours}
-                    onChange={e => setRepAtRiskHours(e.target.value)}
-                    style={{ maxWidth: "120px" }} />
+                    onChange={e => setRepAtRiskHours(e.target.value)} />
                   <p style={styles.fieldHint}>hours with no activity</p>
                 </div>
-                <div style={styles.field}>
+                <div style={{ ...styles.field, flex: 1, minWidth: 0 }}>
                   <label style={styles.fieldLabel}>Account At Risk After</label>
                   <input className="field-input" type="number" min="1" value={accountAtRiskDays}
-                    onChange={e => setAccountAtRiskDays(e.target.value)}
-                    style={{ maxWidth: "120px" }} />
+                    onChange={e => setAccountAtRiskDays(e.target.value)} />
                   <p style={styles.fieldHint}>days with no activity</p>
                 </div>
               </div>
@@ -334,7 +332,7 @@ const styles = {
   sectionTitle: { fontSize: "13px", fontWeight: 600, color: "#374151" },
   card: { backgroundColor: "#ffffff", border: "1px solid #E8E8E6", borderRadius: "8px", padding: "20px", display: "flex", flexDirection: "column", gap: "16px" },
   field: { display: "flex", flexDirection: "column", gap: "6px" },
-  thresholdRow: { display: "flex", gap: "24px", flexWrap: "wrap" },
+  thresholdRow: { display: "flex", gap: "16px", flexWrap: "wrap" },
   fieldLabel: { fontSize: "12px", fontWeight: 600, color: "#374151" },
   fieldHint: { fontSize: "12px", color: "#ABABAB" },
   infoRow: { display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "12px", borderBottom: "1px solid #F0F0ED" },
