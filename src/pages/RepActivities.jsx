@@ -72,7 +72,7 @@ export default function RepActivities() {
 
         .ra-page {
           min-height: 100vh; background: #F5F5F3;
-          padding: 86px 16px 8px;
+          padding: 12px 16px 8px;
           display: flex; flex-direction: column; gap: 12px;
         }
         .ra-title { font-size: 20px; font-weight: 700; color: #1A1A1A; }
