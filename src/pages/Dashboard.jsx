@@ -125,7 +125,7 @@ export default function Dashboard() {
 
     // All accounts — health counts + name map
     const { data: allAccountsData } = await supabase
-      .from("accounts").select("id, name, company, status, rep_id");
+      .from("accounts").select("id, name, company, status, rep_id, created_at");
 
     const health = { New: 0, Contacted: 0, Engaged: 0, Proposal: 0, Won: 0, Lost: 0 };
     const accountNameMap = {};
@@ -138,7 +138,8 @@ export default function Dashboard() {
     // At-risk accounts: assigned, active status, no activity in 7+ days
     const ACTIVE = ["New", "Contacted", "Engaged", "Proposal"];
     const activeAccIds = (allAccountsData || [])
-      .filter(a => a.rep_id !== null && ACTIVE.includes(a.status)).map(a => a.id);
+      .filter(a => a.rep_id !== null && ACTIVE.includes(a.status) && new Date(a.created_at) < sevenDaysAgo)
+      .map(a => a.id);
     let lastActMap = {};
     if (activeAccIds.length > 0) {
       const { data: lastActs } = await supabase
@@ -153,6 +154,7 @@ export default function Dashboard() {
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const atRiskList = (allAccountsData || [])
       .filter(a => a.rep_id !== null && ACTIVE.includes(a.status))
+      .filter(a => new Date(a.created_at) < sevenDaysAgo)
       .filter(a => !lastActMap[a.id] || new Date(lastActMap[a.id]) < sevenDaysAgo)
       .map(a => ({
         id: a.id,
