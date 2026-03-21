@@ -168,9 +168,12 @@ export default function Dashboard() {
       .sort((a, b) => (b.daysSince ?? 9999) - (a.daysSince ?? 9999));
     setAtRiskAccountsList(atRiskList);
 
-    // Recent activities (last 5 displayed)
+    // Recent activities — last 48 hours only
+    const fortyEightHoursAgoAct = new Date();
+    fortyEightHoursAgoAct.setHours(fortyEightHoursAgoAct.getHours() - 48);
     const { data: recentActsData } = await supabase
       .from("activities").select("id, activity_type, activity_date, outcome, notes, account_id, rep_id")
+      .gte("created_at", fortyEightHoursAgoAct.toISOString())
       .order("activity_date", { ascending: false }).limit(20);
     setRecentActivities((recentActsData || []).slice(0, 5).map(act => ({
       ...act,
@@ -733,13 +736,15 @@ export default function Dashboard() {
             </div>
 
             {/* 7. Recent Activity */}
-            {recentActivities.length > 0 && (
-              <div style={{ marginBottom: "80px" }}>
-                <div className="dm-card">
-                  <div className="dm-card-header">
-                    <span className="dm-card-title">Recent Activity</span>
-                    <button className="dm-viewall-link" onClick={() => navigate("/dashboard/activities")}>View all</button>
-                  </div>
+            <div style={{ marginBottom: "80px" }}>
+              <div className="dm-card">
+                <div className="dm-card-header">
+                  <span className="dm-card-title">Activity (Last 48h)</span>
+                  <button className="dm-viewall-link" onClick={() => navigate("/dashboard/activities")}>View all</button>
+                </div>
+                {recentActivities.length === 0 ? (
+                  <p style={{ fontSize: "13px", color: "#ABABAB" }}>No activity in the last 48 hours</p>
+                ) : (
                   {recentActivities.map(act => {
                     const tc = TYPE_COLORS[act.activity_type] || TYPE_COLORS.Call;
                     const sub = [act.repName, act.outcome || act.notes].filter(Boolean).join(" · ");
@@ -756,9 +761,9 @@ export default function Dashboard() {
                       </div>
                     );
                   })}
-                </div>
+                )}
               </div>
-            )}
+            </div>
 
           </div>{/* end dash-mobile */}
 
