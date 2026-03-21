@@ -74,14 +74,14 @@ export default function ManagerBottomNav({ activePath }) {
         }
         @media (max-width: 768px) {
           .main-content {
-            padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
+            padding-bottom: calc(95px + env(safe-area-inset-bottom)) !important;
           }
           .mgr-bottom-nav {
             display: flex !important;
             position: fixed;
             bottom: 0; left: 0; right: 0;
-            height: calc(72px + env(safe-area-inset-bottom));
-            padding-bottom: env(safe-area-inset-bottom);
+            height: calc(85px + env(safe-area-inset-bottom));
+            padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
             background: #ffffff;
             border-top: 1px solid #E8E8E6;
             z-index: 150;

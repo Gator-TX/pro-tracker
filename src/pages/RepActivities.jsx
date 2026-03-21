@@ -115,7 +115,7 @@ export default function RepActivities() {
           display: flex; flex-direction: column; gap: 8px;
         }
         .ra-card-list-last {
-          display: flex; flex-direction: column; gap: 8px; margin-bottom: 80px;
+          display: flex; flex-direction: column; gap: 8px; margin-bottom: 95px;
         }
         .ra-card {
           width: 100%; box-sizing: border-box;

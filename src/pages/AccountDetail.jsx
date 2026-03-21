@@ -517,7 +517,7 @@ export default function AccountDetail() {
           {/* ── LOG ACTIVITY BUTTON ── */}
           <button
             className="btn-primary"
-            style={{ marginBottom: "80px" }}
+            style={{ marginBottom: "95px" }}
             onClick={() => navigate(`/accounts/${id}/log`)}
           >
             + Log Activity

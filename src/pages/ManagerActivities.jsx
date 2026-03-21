@@ -138,7 +138,7 @@ export default function ManagerActivities() {
           .act-mobile-list {
             display: flex !important; flex-direction: column;
             gap: 8px; width: 100%;
-            margin-top: 8px; margin-bottom: 80px;
+            margin-top: 8px; margin-bottom: 95px;
           }
           .act-mobile-card {
             width: 100%;

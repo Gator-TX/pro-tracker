@@ -362,7 +362,7 @@ export default function RepHome() {
 
           {/* Recent Activity */}
           {recentActivities.length > 0 && (
-            <div className="rh-card" style={{ marginBottom: "80px" }}>
+            <div className="rh-card" style={{ marginBottom: "95px" }}>
               <div className="rh-card-header">
                 <span className="rh-card-title">Activity (Last 48h)</span>
                 <button className="rh-viewall" onClick={() => navigate("/activities")}>View all</button>

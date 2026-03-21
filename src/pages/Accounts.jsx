@@ -242,7 +242,7 @@ const styles = {
 
   filterWrap: { display: "flex", gap: "8px", padding: "16px 16px 0", alignItems: "center" },
 
-  cardList: { display: "flex", flexDirection: "column", gap: "8px", padding: "12px 16px 0", width: "100%", marginBottom: "80px" },
+  cardList: { display: "flex", flexDirection: "column", gap: "8px", padding: "12px 16px 0", width: "100%", marginBottom: "95px" },
   cardTop: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px", marginBottom: "12px" },
   cardCompany: { fontSize: "15px", fontWeight: 600, color: "#1A1A1A", marginBottom: "2px" },
   cardLastContact: { fontSize: "12px", color: "#767676" },

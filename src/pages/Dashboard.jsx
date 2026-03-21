@@ -751,7 +751,7 @@ export default function Dashboard() {
             </div>
 
             {/* 7. Recent Activity */}
-            <div style={{ marginBottom: "80px" }}>
+            <div style={{ marginBottom: "95px" }}>
               <div className="dm-card">
                 <div className="dm-card-header">
                   <span className="dm-card-title">Activity (Last 48h)</span>
