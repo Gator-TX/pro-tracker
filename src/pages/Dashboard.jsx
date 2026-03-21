@@ -663,31 +663,40 @@ export default function Dashboard() {
             )}
 
             {/* 5. At Risk Accounts */}
-            {atRiskAccountsList.length > 0 && (
-              <div>
-                <div className="dm-risk-card">
-                  <div className="dm-risk-header">
-                    <span className="dm-risk-label">At Risk Accounts</span>
-                  </div>
-                  {atRiskAccountsList.slice(0, 3).map(acc => (
-                    <div key={acc.id} className="dm-risk-row">
-                      <div>
-                        <p className="dm-risk-name">{acc.name}</p>
-                        <p className="dm-risk-rep">{acc.repName}</p>
-                      </div>
-                      <span className="dm-days-pill">
-                        {acc.daysSince !== null ? `${acc.daysSince}d ago` : "Never"}
-                      </span>
-                    </div>
-                  ))}
-                  {atRiskAccountsList.length > 0 && (
-                    <button className="dm-viewall" onClick={() => navigate("/dashboard/accounts")}>
+            <div>
+              <div className="dm-risk-card">
+                <div className="dm-risk-header">
+                  <span className="dm-risk-label">At Risk Accounts</span>
+                  {atRiskAccountsList.length > 3 && (
+                    <button className="dm-viewall" style={{ paddingTop: 0 }} onClick={() => navigate("/dashboard/accounts")}>
                       View all {atRiskAccountsList.length} →
                     </button>
                   )}
                 </div>
+                {atRiskAccountsList.length === 0 ? (
+                  <p style={{ fontSize: "13px", color: "#16A34A", fontWeight: 600 }}>✓ All accounts on track</p>
+                ) : (
+                  <>
+                    {atRiskAccountsList.slice(0, 3).map(acc => (
+                      <div key={acc.id} className="dm-risk-row">
+                        <div>
+                          <p className="dm-risk-name">{acc.name}</p>
+                          <p className="dm-risk-rep">{acc.repName}</p>
+                        </div>
+                        <span className="dm-days-pill">
+                          {acc.daysSince !== null ? `${acc.daysSince}d ago` : "Never"}
+                        </span>
+                      </div>
+                    ))}
+                    {atRiskAccountsList.length <= 3 && (
+                      <button className="dm-viewall" onClick={() => navigate("/dashboard/accounts")}>
+                        View all {atRiskAccountsList.length} →
+                      </button>
+                    )}
+                  </>
+                )}
               </div>
-            )}
+            </div>
 
             {/* 6. At Risk Reps */}
             <div>
