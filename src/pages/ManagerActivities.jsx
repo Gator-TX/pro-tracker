@@ -119,6 +119,7 @@ export default function ManagerActivities() {
         .mobile-select-all { display: none; }
         .act-mobile-list { display: none; }
         .desktop-only { display: block; }
+        .mobile-only { display: none; }
 
         .table-scroll {
           max-height: 600px; overflow-y: auto; min-width: 650px;
@@ -129,27 +130,39 @@ export default function ManagerActivities() {
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 86px !important; padding-left: 16px !important; padding-right: 16px !important; padding-bottom: 8px !important; }
           .desktop-only { display: none !important; }
+          .mobile-only { display: flex !important; }
           .filter-bar { gap: 8px !important; flex-wrap: nowrap !important; }
           .act-table-card { display: none !important; }
-          .act-mobile-list { display: flex !important; flex-direction: column; gap: 8px; }
+          .act-mobile-list {
+            display: flex !important; flex-direction: column;
+            gap: 8px; width: 100%;
+            margin-top: 8px; margin-bottom: 80px;
+          }
           .act-mobile-card {
             width: 100%;
             box-sizing: border-box;
-            background: #fff;
+            background: #ffffff;
             border: 1px solid #E8E8E6;
             border-radius: 8px;
             padding: 14px 16px;
+            padding-right: 44px;
+            position: relative;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
           }
-          .act-card-top { display: flex; align-items: center; gap: 8px; }
-          .act-card-account { font-size: 15px; font-weight: 600; color: #1A1A1A; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-          .act-card-row2 { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+          .act-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
           .act-card-date { font-size: 12px; color: #ABABAB; white-space: nowrap; flex-shrink: 0; }
+          .act-card-account { font-size: 14px; font-weight: 600; color: #1A1A1A; }
           .act-card-rep { font-size: 12px; color: #767676; }
+          .act-card-outcome { font-size: 12px; font-weight: 500; color: #374151; }
+          .act-card-notes {
+            font-size: 12px; color: #767676;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+          }
           .act-card-checkbox {
-            width: 18px; height: 18px; flex-shrink: 0;
+            position: absolute; top: 14px; right: 14px;
+            width: 18px; height: 18px;
             cursor: pointer; accent-color: #367C2B;
           }
           .mobile-select-all {
@@ -215,8 +228,8 @@ export default function ManagerActivities() {
             )}
           </div>
 
-          {/* Table */}
-          <div className="act-table-card" style={styles.tableCard}>
+          {/* Table — desktop only */}
+          <div className="act-table-card desktop-only" style={styles.tableCard}>
             <div className="act-table-header" style={{ ...styles.actRowStyle, ...styles.tableHeader, boxShadow: "0 2px 4px rgba(0,0,0,0.06)", position: "relative", zIndex: 1, minWidth: "650px" }}>
               <input
                 type="checkbox"
@@ -271,7 +284,7 @@ export default function ManagerActivities() {
           </div>
 
           {/* MOBILE: Activity Cards */}
-          <div className="act-mobile-list">
+          <div className="act-mobile-list mobile-only" style={{ flexDirection: "column" }}>
             {filtered.length === 0 ? (
               <p style={styles.emptyText}>No activities found</p>
             ) : (
@@ -284,25 +297,22 @@ export default function ManagerActivities() {
                 const tc = typeColors[act.activity_type] || typeColors.Call;
                 return (
                   <div key={`m-${act.id}`} className="act-mobile-card">
+                    <input
+                      type="checkbox"
+                      className="act-card-checkbox"
+                      checked={selectedIds.includes(act.id)}
+                      onChange={() => toggleSelect(act.id)}
+                    />
                     <div className="act-card-top">
-                      <span className="act-card-account">{getAccountName(act.account_id)}</span>
-                      <span className="type-badge" style={{ background: tc.bg, color: tc.color, flexShrink: 0 }}>
+                      <span className="type-badge" style={{ background: tc.bg, color: tc.color }}>
                         {act.activity_type}
                       </span>
-                      <input
-                        type="checkbox"
-                        className="act-card-checkbox"
-                        checked={selectedIds.includes(act.id)}
-                        onChange={() => toggleSelect(act.id)}
-                      />
-                    </div>
-                    <div className="act-card-row2">
-                      <span className="act-card-rep">{getRepName(act.rep_id)}</span>
                       <span className="act-card-date">{formatDate(act.activity_date)}</span>
                     </div>
-                    {(act.outcome || act.notes) && (
-                      <p style={styles.notesText}>{act.outcome || act.notes}</p>
-                    )}
+                    <p className="act-card-account">{getAccountName(act.account_id)}</p>
+                    <p className="act-card-rep">{getRepName(act.rep_id)}</p>
+                    {act.outcome && <p className="act-card-outcome">{act.outcome}</p>}
+                    {act.notes && <p className="act-card-notes">{act.notes}</p>}
                   </div>
                 );
               })
