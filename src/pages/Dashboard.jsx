@@ -632,9 +632,10 @@ export default function Dashboard() {
             </div>
 
             {/* 3. Account Health */}
-            <div>
-              <p className="dm-label">Account Health</p>
-              <div className="dm-card">
+            <div className="dm-card">
+              <div className="dm-card-header">
+                <span className="dm-card-title">Account Health</span>
+              </div>
                 {HEALTH_BARS.map(bar => (
                   <div key={bar.key} className="dm-health-row">
                     <span className="dm-health-name">{bar.key}</span>
@@ -650,14 +651,14 @@ export default function Dashboard() {
                     <span className="dm-health-count">{accountHealth[bar.key]}</span>
                   </div>
                 ))}
-              </div>
             </div>
 
             {/* 4. Sprint Overview */}
             {sprint && (
-              <div>
-                <p className="dm-label">Sprint Overview</p>
-                <div className="dm-card">
+              <div className="dm-card">
+                <div className="dm-card-header">
+                  <span className="dm-card-title">Sprint Overview</span>
+                </div>
                   <div className="dm-sprint-numbers">
                     <div className="dm-sprint-num">
                       <span className="dm-sprint-val">{daysLeft()}</span>
@@ -676,7 +677,6 @@ export default function Dashboard() {
                     <div className="dm-progress-fill" style={{ width: `${sprintProgress()}%` }} />
                   </div>
                   <p className="dm-progress-label">{sprintProgress()}% of sprint elapsed</p>
-                </div>
               </div>
             )}
 
