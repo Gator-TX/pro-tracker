@@ -198,7 +198,7 @@ export default function LogActivity() {
 
         {/* ── HEADER ── */}
         <div style={styles.header}>
-          <button onClick={() => navigate(`/accounts/${id}`)} style={styles.backBtn}>← Back</button>
+          <button onClick={() => navigate(-1)} style={styles.backBtn}>← Back</button>
           <div style={{ width: "40px" }} />
         </div>
 

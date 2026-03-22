@@ -249,7 +249,7 @@ export default function AccountDetail() {
 
         {/* ── HEADER ── */}
         <div className="desktop-header" style={styles.header}>
-          <button onClick={() => navigate("/accounts")} style={styles.backBtn}>← Back</button>
+          <button onClick={() => navigate(-1)} style={styles.backBtn}>← Back</button>
           <span style={{
             ...styles.statusBadgeSmall,
             background: statusStyle.bg,

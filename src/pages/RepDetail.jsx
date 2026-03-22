@@ -236,8 +236,8 @@ export default function RepDetail() {
           <TopBar title={rep?.full_name} profile={profile} onSignOut={handleSignOut} />
 
           {/* Back link */}
-          <button onClick={() => navigate("/dashboard/reps")} style={styles.backLink}>
-            ← Back to dashboard
+          <button onClick={() => navigate(-1)} style={styles.backLink}>
+            ← Back
           </button>
 
           {/* STAT CARDS */}
