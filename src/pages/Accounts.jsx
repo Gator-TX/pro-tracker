@@ -98,6 +98,8 @@ export default function Accounts() {
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 86px !important; }
           .account-card { width: 100%; box-sizing: border-box; }
+          .acct-desktop-table { display: none !important; }
+          .acct-desktop-topbar { display: none !important; }
         }
 
         .acct-search-input {
@@ -127,8 +129,24 @@ export default function Accounts() {
           cursor: pointer;
           transition: box-shadow 0.15s;
         }
-        .account-card:hover {
-          box-shadow: 0 2px 8px rgba(54,124,43,0.08);
+        .account-card:hover { box-shadow: 0 2px 8px rgba(54,124,43,0.08); }
+
+        /* Desktop table */
+        .acct-desktop-table { display: none; }
+        .acct-dt-row {
+          display: grid;
+          grid-template-columns: 2fr 120px 90px 120px 60px 80px;
+          gap: 12px; align-items: center;
+          padding: 12px 20px;
+          border-bottom: 1px solid #F0F0ED;
+          cursor: pointer; transition: background 0.15s;
+        }
+        .acct-dt-row:hover { background: #F9F9F8; }
+        .acct-dt-row:last-child { border-bottom: none; }
+
+        @media (min-width: 769px) {
+          .acct-mobile-list { display: none !important; }
+          .acct-desktop-table { display: block; }
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -162,8 +180,59 @@ export default function Accounts() {
               </select>
             </div>
 
-            {/* Account cards */}
-            <div style={styles.cardList}>
+            {/* ── DESKTOP TABLE ── */}
+            <div className="acct-desktop-table" style={styles.dtTableWrap}>
+              <div style={styles.dtTableCard}>
+                {/* Header */}
+                <div style={styles.dtHeader}>
+                  {["Account", "Status", "Days Left", "Last Activity", "Logs", "Actions"].map(h => (
+                    <span key={h} style={styles.dtTh}>{h}</span>
+                  ))}
+                </div>
+
+                {/* Rows */}
+                {filteredAccounts.length === 0 ? (
+                  <p style={styles.emptyText}>No accounts{filter !== "All" ? ` with status "${filter}"` : ""}</p>
+                ) : (
+                  filteredAccounts.map(account => {
+                    const sc = STATUS_COLORS[account.status] || STATUS_COLORS.New;
+                    const lastContact = getLastContact(account);
+                    const daysLeft = account.end_date
+                      ? Math.max(0, Math.ceil((new Date(account.end_date) - new Date()) / (1000 * 60 * 60 * 24)))
+                      : null;
+                    return (
+                      <div
+                        key={account.id}
+                        className="acct-dt-row"
+                        onClick={() => navigate(`/accounts/${account.id}`)}
+                      >
+                        <span style={styles.dtName}>{account.name || account.company}</span>
+                        <span style={{
+                          ...styles.statusBadge,
+                          background: sc.bg, color: sc.color, border: `1px solid ${sc.border}`,
+                        }}>
+                          {account.status || "New"}
+                        </span>
+                        <span style={styles.dtCell}>{daysLeft !== null ? `${daysLeft}d` : "—"}</span>
+                        <span style={styles.dtCell}>{lastContact || "—"}</span>
+                        <span style={styles.dtCell}>{account.activities?.length || 0}</span>
+                        <span>
+                          <button
+                            onClick={e => { e.stopPropagation(); navigate(`/accounts/${account.id}`); }}
+                            style={styles.viewLink}
+                          >
+                            View
+                          </button>
+                        </span>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+
+            {/* ── MOBILE CARD LIST ── */}
+            <div className="acct-mobile-list" style={styles.cardList}>
               {filteredAccounts.length === 0 ? (
                 <p style={styles.emptyText}>No accounts{filter !== "All" ? ` with status "${filter}"` : ""}</p>
               ) : (
@@ -242,6 +311,30 @@ const styles = {
 
   filterWrap: { display: "flex", gap: "8px", padding: "16px 16px 0", alignItems: "center" },
 
+  // Desktop table
+  dtTableWrap: { padding: "16px 16px 24px" },
+  dtTableCard: {
+    background: "#ffffff", border: "0.5px solid #E8E8E6",
+    borderRadius: "8px", overflow: "hidden",
+  },
+  dtHeader: {
+    display: "grid",
+    gridTemplateColumns: "2fr 120px 90px 120px 60px 80px",
+    gap: "12px", alignItems: "center",
+    padding: "10px 20px",
+    background: "#FAFAFA", borderBottom: "1px solid #E8E8E6",
+  },
+  dtTh: { fontSize: "11px", fontWeight: 600, color: "#ABABAB", textTransform: "uppercase", letterSpacing: "0.06em" },
+  dtName: { fontSize: "14px", fontWeight: 600, color: "#1A1A1A" },
+  dtCell: { fontSize: "13px", color: "#374151" },
+  viewLink: {
+    fontSize: "13px", fontWeight: 600, color: "#367C2B",
+    background: "none", border: "none", padding: 0,
+    cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
+    textDecoration: "underline",
+  },
+
+  // Mobile card list
   cardList: { display: "flex", flexDirection: "column", gap: "8px", padding: "12px 16px 0", width: "100%", marginBottom: "95px" },
   cardTop: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px", marginBottom: "12px" },
   cardCompany: { fontSize: "15px", fontWeight: 600, color: "#1A1A1A", marginBottom: "2px" },

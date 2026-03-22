@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabase";
 import MobileHeader from "../components/MobileHeader";
 import RepBottomNav from "../components/RepBottomNav";
+import Sidebar from "../components/Sidebar";
 import PullToRefresh from "../components/PullToRefresh";
 
 export default function RepActivities() {
@@ -15,6 +16,11 @@ export default function RepActivities() {
   const [filterView, setFilterView] = useState("all");
 
   useEffect(() => { loadData(); }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate("/login");
+  };
 
   const loadData = async () => {
     setLoading(true);
@@ -76,7 +82,7 @@ export default function RepActivities() {
   };
 
   const showUpcoming = filterView === "all" || filterView === "upcoming";
-  const showPast = filterView === "all" || filterView === "completed";
+  const showPast     = filterView === "all" || filterView === "completed";
 
   if (loading) {
     return <div style={styles.loadingPage}><div style={styles.spinner} /></div>;
@@ -90,18 +96,17 @@ export default function RepActivities() {
         body { background: #F5F5F3; font-family: 'DM Sans', sans-serif; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        /* ── MOBILE ── */
         .ra-page {
           min-height: 100vh; background: #F5F5F3;
           padding: 12px 16px 8px;
           display: flex; flex-direction: column; gap: 12px;
         }
-
         .ra-section-label {
           font-size: 10px; font-weight: 600; color: #ABABAB;
           text-transform: uppercase; letter-spacing: 0.08em;
           margin-bottom: -4px;
         }
-
         .ra-filter-select {
           width: 100%; padding: 8px 12px; font-size: 13px;
           font-family: 'DM Sans', sans-serif;
@@ -110,13 +115,8 @@ export default function RepActivities() {
           appearance: none; -webkit-appearance: none;
         }
         .ra-filter-select:focus { border-color: #367C2B; }
-
-        .ra-card-list {
-          display: flex; flex-direction: column; gap: 8px;
-        }
-        .ra-card-list-last {
-          display: flex; flex-direction: column; gap: 8px; margin-bottom: 95px;
-        }
+        .ra-card-list { display: flex; flex-direction: column; gap: 8px; }
+        .ra-card-list-last { display: flex; flex-direction: column; gap: 8px; margin-bottom: 95px; }
         .ra-card {
           width: 100%; box-sizing: border-box;
           background: #ffffff; border: 1px solid #E8E8E6;
@@ -150,86 +150,211 @@ export default function RepActivities() {
           overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
         .ra-empty { font-size: 14px; color: #ABABAB; padding: 8px 0 24px; }
+
+        /* ── DESKTOP ── */
+        .ra-desktop { display: none; }
+
+        .ra-dt-row {
+          display: grid;
+          grid-template-columns: 120px 2fr 120px 160px 1fr;
+          gap: 12px; align-items: center;
+          padding: 12px 20px;
+          border-bottom: 1px solid #F0F0ED;
+          cursor: pointer; transition: background 0.15s;
+        }
+        .ra-dt-row:hover { background: #F9F9F8; }
+        .ra-dt-row:last-child { border-bottom: none; }
+
+        @media (min-width: 769px) {
+          .ra-main-content { margin-left: 220px; padding: 24px; background: #F5F5F3; min-height: 100vh; }
+          .ra-page { display: none !important; }
+          .ra-desktop { display: block; }
+        }
       `}</style>
 
       <MobileHeader activePath="/activities" profile={profile} />
+      <Sidebar role="rep" profile={profile} onSignOut={handleSignOut} activePath="/activities" />
       <RepBottomNav activePath="/activities" />
 
-      <PullToRefresh onRefresh={loadData}>
-        <div className="ra-page">
+      <div className="ra-main-content">
+        <PullToRefresh onRefresh={loadData}>
 
-          {/* View filter dropdown */}
-          <select className="ra-filter-select" value={filterView} onChange={e => setFilterView(e.target.value)}>
-            <option value="all">All Activity</option>
-            <option value="upcoming">Upcoming</option>
-            <option value="completed">Completed</option>
-          </select>
+          {/* ══════════ MOBILE LAYOUT ══════════ */}
+          <div className="ra-page">
 
-          {/* Section 1 — Upcoming Scheduled */}
-          {showUpcoming && upcoming.length > 0 && (
-            <>
-              <p className="ra-section-label">Upcoming</p>
-              <div className="ra-card-list">
-                {upcoming.map(act => {
-                  const tc = TYPE_COLORS[act.scheduled_next_type] || TYPE_COLORS.Call;
-                  const today = isToday(act.scheduled_next_date);
-                  return (
-                    <div
-                      key={act.id}
-                      className="ra-card-upcoming"
-                      onClick={() => navigate(`/accounts/${act.account_id}`)}
-                    >
-                      <div className="ra-card-top">
-                        <span className="ra-badge" style={{ background: tc.bg, color: tc.color }}>
-                          {act.scheduled_next_type || "Activity"}
-                        </span>
-                        <span className="ra-date-pill" style={{
-                          background: today ? "#F0FDF4" : "#EFF6FF",
-                          color: today ? "#16A34A" : "#2563EB",
-                        }}>
+            {/* View filter dropdown */}
+            <select className="ra-filter-select" value={filterView} onChange={e => setFilterView(e.target.value)}>
+              <option value="all">All Activity</option>
+              <option value="upcoming">Upcoming</option>
+              <option value="completed">Completed</option>
+            </select>
+
+            {/* Section 1 — Upcoming Scheduled */}
+            {showUpcoming && upcoming.length > 0 && (
+              <>
+                <p className="ra-section-label">Upcoming</p>
+                <div className="ra-card-list">
+                  {upcoming.map(act => {
+                    const tc = TYPE_COLORS[act.scheduled_next_type] || TYPE_COLORS.Call;
+                    const today = isToday(act.scheduled_next_date);
+                    return (
+                      <div
+                        key={act.id}
+                        className="ra-card-upcoming"
+                        onClick={() => navigate(`/accounts/${act.account_id}`)}
+                      >
+                        <div className="ra-card-top">
+                          <span className="ra-badge" style={{ background: tc.bg, color: tc.color }}>
+                            {act.scheduled_next_type || "Activity"}
+                          </span>
+                          <span className="ra-date-pill" style={{
+                            background: today ? "#F0FDF4" : "#EFF6FF",
+                            color: today ? "#16A34A" : "#2563EB",
+                          }}>
+                            {today ? "Today" : formatShortDate(act.scheduled_next_date)}
+                          </span>
+                        </div>
+                        <p className="ra-card-account">{getAccountName(act.account_id)}</p>
+                        {act.notes && <p className="ra-card-notes">{act.notes}</p>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
+            {/* Section 2 — Past Activity */}
+            {showPast && (
+              <>
+                <p className="ra-section-label">Past Activity</p>
+                {activities.length === 0 ? (
+                  <p className="ra-empty">No activity logged yet</p>
+                ) : (
+                  <div className="ra-card-list-last">
+                    {activities.map(act => {
+                      const tc = TYPE_COLORS[act.activity_type] || TYPE_COLORS.Call;
+                      return (
+                        <div key={act.id} className="ra-card" onClick={() => navigate(`/accounts/${act.account_id}`)}>
+                          <div className="ra-card-top">
+                            <span className="ra-badge" style={{ background: tc.bg, color: tc.color }}>
+                              {act.activity_type}
+                            </span>
+                            <span className="ra-card-date">{formatDate(act.activity_date)}</span>
+                          </div>
+                          <p className="ra-card-account">{getAccountName(act.account_id)}</p>
+                          {act.outcome && <p className="ra-card-outcome">{act.outcome}</p>}
+                          {act.notes && <p className="ra-card-notes">{act.notes}</p>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
+            )}
+
+          </div>
+
+          {/* ══════════ DESKTOP LAYOUT ══════════ */}
+          <div className="ra-desktop">
+
+            {/* Filter row */}
+            <div style={dt.filterRow}>
+              <select
+                style={dt.filterSelect}
+                value={filterView}
+                onChange={e => setFilterView(e.target.value)}
+              >
+                <option value="all">All Activity</option>
+                <option value="upcoming">Upcoming</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+
+            {/* Upcoming table */}
+            {showUpcoming && upcoming.length > 0 && (
+              <div style={{ marginBottom: "24px" }}>
+                <p style={dt.sectionLabel}>UPCOMING</p>
+                <div style={dt.tableCard}>
+                  <div style={{ ...dt.headerRow, gridTemplateColumns: "120px 2fr 120px 1fr" }}>
+                    {["Date", "Account", "Type", "Notes"].map(h => (
+                      <span key={h} style={dt.th}>{h}</span>
+                    ))}
+                  </div>
+                  {upcoming.map(act => {
+                    const tc = TYPE_COLORS[act.scheduled_next_type] || TYPE_COLORS.Call;
+                    const today = isToday(act.scheduled_next_date);
+                    return (
+                      <div
+                        key={act.id}
+                        className="ra-dt-row"
+                        style={{ gridTemplateColumns: "120px 2fr 120px 1fr" }}
+                        onClick={() => navigate(`/accounts/${act.account_id}`)}
+                      >
+                        <span style={{ ...dt.cell, color: today ? "#16A34A" : "#2563EB", fontWeight: 600 }}>
                           {today ? "Today" : formatShortDate(act.scheduled_next_date)}
                         </span>
+                        <span style={dt.nameCell}>{getAccountName(act.account_id)}</span>
+                        <span>
+                          <span style={{ background: tc.bg, color: tc.color, padding: "2px 8px", borderRadius: "100px", fontSize: "11px", fontWeight: 600, whiteSpace: "nowrap" }}>
+                            {act.scheduled_next_type || "Activity"}
+                          </span>
+                        </span>
+                        <span style={{ ...dt.cell, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {act.notes || "—"}
+                        </span>
                       </div>
-                      <p className="ra-card-account">{getAccountName(act.account_id)}</p>
-                      {act.notes && <p className="ra-card-notes">{act.notes}</p>}
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
-            </>
-          )}
+            )}
 
-          {/* Section 2 — Past Activity */}
-          {showPast && (
-            <>
-              <p className="ra-section-label">Past Activity</p>
-              {activities.length === 0 ? (
-                <p className="ra-empty">No activity logged yet</p>
-              ) : (
-              <div className="ra-card-list-last">
-              {activities.map(act => {
-                const tc = TYPE_COLORS[act.activity_type] || TYPE_COLORS.Call;
-                return (
-                  <div key={act.id} className="ra-card" onClick={() => navigate(`/accounts/${act.account_id}`)}>
-                    <div className="ra-card-top">
-                      <span className="ra-badge" style={{ background: tc.bg, color: tc.color }}>
-                        {act.activity_type}
-                      </span>
-                      <span className="ra-card-date">{formatDate(act.activity_date)}</span>
-                    </div>
-                    <p className="ra-card-account">{getAccountName(act.account_id)}</p>
-                    {act.outcome && <p className="ra-card-outcome">{act.outcome}</p>}
-                    {act.notes && <p className="ra-card-notes">{act.notes}</p>}
+            {/* Past activity table */}
+            {showPast && (
+              <div>
+                <p style={dt.sectionLabel}>PAST ACTIVITY</p>
+                <div style={dt.tableCard}>
+                  <div style={dt.headerRow}>
+                    {["Date", "Account", "Type", "Outcome", "Notes"].map(h => (
+                      <span key={h} style={dt.th}>{h}</span>
+                    ))}
                   </div>
-                );
-              })}
-            </div>
-          )}
-            </>
-          )}
+                  {activities.length === 0 ? (
+                    <p style={dt.emptyText}>No activity logged yet</p>
+                  ) : (
+                    activities.map(act => {
+                      const tc = TYPE_COLORS[act.activity_type] || TYPE_COLORS.Call;
+                      return (
+                        <div
+                          key={act.id}
+                          className="ra-dt-row"
+                          onClick={() => navigate(`/accounts/${act.account_id}`)}
+                        >
+                          <span style={dt.cell}>{formatShortDate(act.activity_date)}</span>
+                          <span style={dt.nameCell}>{getAccountName(act.account_id)}</span>
+                          <span>
+                            <span style={{ background: tc.bg, color: tc.color, padding: "2px 8px", borderRadius: "100px", fontSize: "11px", fontWeight: 600, whiteSpace: "nowrap" }}>
+                              {act.activity_type}
+                            </span>
+                          </span>
+                          <span style={{ ...dt.cell, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {act.outcome || "—"}
+                          </span>
+                          <span style={{ ...dt.cell, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {act.notes || "—"}
+                          </span>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            )}
 
-        </div>
-      </PullToRefresh>
+          </div>
+
+        </PullToRefresh>
+      </div>
     </>
   );
 }
@@ -237,4 +362,31 @@ export default function RepActivities() {
 const styles = {
   loadingPage: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#F5F5F3" },
   spinner: { width: "32px", height: "32px", borderRadius: "50%", border: "3px solid #E0E0DC", borderTopColor: "#367C2B", animation: "spin 0.8s linear infinite" },
+};
+
+const dt = {
+  filterRow:  { display: "flex", gap: "8px", marginBottom: "20px" },
+  filterSelect: {
+    padding: "8px 12px", fontSize: "13px",
+    fontFamily: "'DM Sans', sans-serif",
+    border: "1.5px solid #E0E0DC", borderRadius: "6px",
+    background: "#fff", color: "#1A1A1A", outline: "none",
+    cursor: "pointer", appearance: "none",
+  },
+  sectionLabel: { fontSize: "11px", fontWeight: 700, color: "#ABABAB", letterSpacing: "0.06em", marginBottom: "8px" },
+  tableCard: {
+    background: "#ffffff", border: "0.5px solid #E8E8E6",
+    borderRadius: "8px", overflow: "hidden",
+  },
+  headerRow: {
+    display: "grid",
+    gridTemplateColumns: "120px 2fr 120px 160px 1fr",
+    gap: "12px", alignItems: "center",
+    padding: "10px 20px",
+    background: "#FAFAFA", borderBottom: "1px solid #E8E8E6",
+  },
+  th:       { fontSize: "11px", fontWeight: 600, color: "#ABABAB", textTransform: "uppercase", letterSpacing: "0.06em" },
+  nameCell: { fontSize: "14px", fontWeight: 600, color: "#1A1A1A" },
+  cell:     { fontSize: "13px", color: "#374151" },
+  emptyText: { fontSize: "14px", color: "#ABABAB", padding: "24px 20px" },
 };
