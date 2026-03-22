@@ -199,7 +199,6 @@ export default function LogActivity() {
         {/* ── HEADER ── */}
         <div style={styles.header}>
           <button onClick={() => navigate(`/accounts/${id}`)} style={styles.backBtn}>← Back</button>
-          <img src={logo} alt="United Ag & Turf" style={styles.headerLogo} />
           <div style={{ width: "40px" }} />
         </div>
 

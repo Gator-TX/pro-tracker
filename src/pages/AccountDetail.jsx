@@ -250,7 +250,6 @@ export default function AccountDetail() {
         {/* ── HEADER ── */}
         <div className="desktop-header" style={styles.header}>
           <button onClick={() => navigate("/accounts")} style={styles.backBtn}>← Back</button>
-          <img src={logo} alt="United Ag & Turf" style={styles.headerLogo} />
           <span style={{
             ...styles.statusBadgeSmall,
             background: statusStyle.bg,
