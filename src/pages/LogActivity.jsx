@@ -10,6 +10,9 @@ import RepTopBar from "../components/RepTopBar";
 export default function LogActivity() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const handleBack = () => {
+    if (window.history.length > 1) { navigate(-1); } else { navigate(`/accounts/${id}`); }
+  };
 
   const [profile, setProfile] = useState(null);
   const [account, setAccount] = useState(null);
@@ -198,7 +201,7 @@ export default function LogActivity() {
 
         {/* ── HEADER ── */}
         <div style={styles.header}>
-          <button onClick={() => navigate(-1)} style={styles.backBtn}>← Back</button>
+          <button onClick={handleBack} style={styles.backBtn}>← Back</button>
           <div style={{ width: "40px" }} />
         </div>
 

@@ -11,6 +11,9 @@ import PullToRefresh from "../components/PullToRefresh";
 export default function AccountDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const handleBack = () => {
+    if (window.history.length > 1) { navigate(-1); } else { navigate("/accounts"); }
+  };
 
   const [profile, setProfile] = useState(null);
   const [account, setAccount] = useState(null);
@@ -249,7 +252,7 @@ export default function AccountDetail() {
 
         {/* ── HEADER ── */}
         <div className="desktop-header" style={styles.header}>
-          <button onClick={() => navigate(-1)} style={styles.backBtn}>← Back</button>
+          <button onClick={handleBack} style={styles.backBtn}>← Back</button>
           <span style={{
             ...styles.statusBadgeSmall,
             background: statusStyle.bg,

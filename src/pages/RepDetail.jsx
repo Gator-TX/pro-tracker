@@ -9,6 +9,9 @@ import ManagerBottomNav from "../components/ManagerBottomNav";
 export default function RepDetail() {
   const { repId } = useParams();
   const navigate = useNavigate();
+  const handleBack = () => {
+    if (window.history.length > 1) { navigate(-1); } else { navigate("/dashboard/reps"); }
+  };
 
   const [profile, setProfile] = useState(null);
   const [rep, setRep] = useState(null);
@@ -236,7 +239,7 @@ export default function RepDetail() {
           <TopBar title={rep?.full_name} profile={profile} onSignOut={handleSignOut} />
 
           {/* Back link */}
-          <button onClick={() => navigate(-1)} style={styles.backLink}>
+          <button onClick={handleBack} style={styles.backLink}>
             ← Back
           </button>
 
