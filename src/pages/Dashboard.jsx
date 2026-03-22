@@ -506,7 +506,7 @@ export default function Dashboard() {
             <div style={styles.dtTopHeader}>
               <div>
                 <h1 style={styles.dtGreeting}>{getGreeting()}, {firstName}</h1>
-                <p style={styles.dtSubGreeting}>{todayLabel()}{sprint ? ` · Sprint ends ${formatDate(sprint.end_date)}` : ""}</p>
+                <p style={styles.dtSubGreeting}>{todayLabel()}</p>
               </div>
               <div style={styles.dtTopRight}>
                 <span style={{ fontSize: "13px", fontWeight: 600, color: "#1A1A1A", fontFamily: "'DM Sans', sans-serif" }}>
