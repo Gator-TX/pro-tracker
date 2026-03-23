@@ -31,7 +31,7 @@ export default function ExportReports() {
     account_status: "Account Status",
     contact_details: "Contact Details",
     scheduled_activities: "Scheduled Activities",
-    sprint_progress: "Sprint Progress",
+    sprint_progress: "Target Progress",
     at_risk: "At-Risk Accounts",
   };
 
@@ -170,7 +170,7 @@ export default function ExportReports() {
         lastNotes: lastAct?.notes || "",
         activityCount: activities.length,
         nextScheduled: nextAct ? `${nextAct.scheduled_next_type} on ${nextAct.scheduled_next_date}` : "None",
-        sprintDaysLeft: daysLeft !== null ? `${daysLeft} days` : "No sprint",
+        sprintDaysLeft: daysLeft !== null ? `${daysLeft} days` : "No target",
         atRisk: atRisk ? "At Risk" : "On Track",
       });
     }
@@ -195,7 +195,7 @@ export default function ExportReports() {
       if (includeOptions.contact_details) headers.push("Contact Name", "Phone", "Email");
       if (includeOptions.activity_log) headers.push("Last Activity", "Notes", "Total Activities");
       if (includeOptions.scheduled_activities) headers.push("Next Scheduled");
-      if (includeOptions.sprint_progress) headers.push("Days Left in Sprint");
+      if (includeOptions.sprint_progress) headers.push("Days Left in Target");
       if (includeOptions.at_risk) headers.push("Risk Status");
 
       const rows = data.map(row => {
@@ -406,7 +406,7 @@ export default function ExportReports() {
               <p style={styles.sectionLabel}>Date Range</p>
               <div style={styles.pillRow}>
                 {[
-                  ["sprint", "This Sprint"],
+                  ["sprint", "This Target"],
                   ["7days", "Last 7 Days"],
                   ["30days", "Last 30 Days"],
                   ["custom", "Custom Range"],
@@ -494,7 +494,7 @@ export default function ExportReports() {
                 Exporting <strong>{selectedReps.length} rep{selectedReps.length !== 1 ? "s" : ""}</strong> ·{" "}
                 <strong>{Object.values(includeOptions).filter(Boolean).length} sections</strong> ·{" "}
                 <strong>
-                  {exportRange === "sprint" && "This Sprint"}
+                  {exportRange === "sprint" && "This Target"}
                   {exportRange === "7days" && "Last 7 Days"}
                   {exportRange === "30days" && "Last 30 Days"}
                   {exportRange === "custom" && (customStart && customEnd ? `${customStart} to ${customEnd}` : "Custom range")}

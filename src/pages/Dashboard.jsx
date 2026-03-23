@@ -523,8 +523,8 @@ export default function Dashboard() {
               {[
                 { label: "Active Accounts", value: activeAccountCount, accent: "#367C2B" },
                 { label: "At Risk Accounts", value: atRiskAccountsList.length, accent: "#DC2626" },
-                { label: "Won This Sprint",  value: accountHealth.Won,  accent: "#367C2B" },
-                { label: "Lost This Sprint", value: accountHealth.Lost, accent: "#CA8A04" },
+                { label: "Won This Target",  value: accountHealth.Won,  accent: "#367C2B" },
+                { label: "Lost This Target", value: accountHealth.Lost, accent: "#CA8A04" },
               ].map(card => (
                 <div key={card.label} style={styles.dtStatCard}>
                   <p style={styles.dtStatVal}>{card.value}</p>
@@ -537,7 +537,7 @@ export default function Dashboard() {
             {/* 3. Middle two-column row */}
             <div style={styles.dtMidRow}>
 
-              {/* LEFT: Account Health + Sprint Overview */}
+              {/* LEFT: Account Health + Target Overview */}
               <div style={styles.dtMidCol}>
                 <div style={styles.dtCard}>
                   <div style={styles.dtCardHeader}><span style={styles.dtCardTitle}>Account Health</span></div>
@@ -554,7 +554,7 @@ export default function Dashboard() {
 
                 {sprint && (
                   <div style={styles.dtCard}>
-                    <div style={styles.dtCardHeader}><span style={styles.dtCardTitle}>Sprint Overview</span></div>
+                    <div style={styles.dtCardHeader}><span style={styles.dtCardTitle}>Target Overview</span></div>
                     <div style={styles.dtSprintNumbers}>
                       <div style={styles.dtSprintNum}>
                         <span style={styles.dtSprintVal}>{daysLeft()}</span>
@@ -572,7 +572,7 @@ export default function Dashboard() {
                     <div style={styles.dtProgressTrack}>
                       <div style={{ ...styles.dtProgressFill, width: `${sprintProgress()}%` }} />
                     </div>
-                    <p style={styles.dtProgressLabel}>{sprintProgress()}% of sprint elapsed</p>
+                    <p style={styles.dtProgressLabel}>{sprintProgress()}% of target elapsed</p>
                   </div>
                 )}
               </div>
@@ -686,8 +686,8 @@ export default function Dashboard() {
               {[
                 { label: "Active Accounts", value: activeAccountCount, color: "#367C2B", onClick: () => navigate("/dashboard/accounts", { state: { filterStatus: "active" } }) },
                 { label: "At Risk Reps", value: stats.atRisk, color: "#DC2626", onClick: () => navigate("/dashboard/reps", { state: { filterRisk: "atRisk" } }) },
-                { label: "Won This Sprint", value: accountHealth.Won, color: "#367C2B", onClick: () => navigate("/dashboard/accounts", { state: { filterStatus: "Won" } }) },
-                { label: "Lost This Sprint", value: accountHealth.Lost, color: "#CA8A04", onClick: () => navigate("/dashboard/accounts", { state: { filterStatus: "Lost" } }) },
+                { label: "Won This Target", value: accountHealth.Won, color: "#367C2B", onClick: () => navigate("/dashboard/accounts", { state: { filterStatus: "Won" } }) },
+                { label: "Lost This Target", value: accountHealth.Lost, color: "#CA8A04", onClick: () => navigate("/dashboard/accounts", { state: { filterStatus: "Lost" } }) },
               ].map(card => (
                 <div key={card.label} className="dm-stat-card" onClick={card.onClick} style={{ cursor: "pointer" }}>
                   <p className="dm-stat-value">{card.value}</p>
@@ -719,11 +719,11 @@ export default function Dashboard() {
                 ))}
             </div>
 
-            {/* 4. Sprint Overview */}
+            {/* 4. Target Overview */}
             {sprint && (
               <div className="dm-card">
                 <div className="dm-card-header">
-                  <span className="dm-card-title">Sprint Overview</span>
+                  <span className="dm-card-title">Target Overview</span>
                 </div>
                   <div className="dm-sprint-numbers">
                     <div className="dm-sprint-num">
@@ -742,7 +742,7 @@ export default function Dashboard() {
                   <div className="dm-progress-track">
                     <div className="dm-progress-fill" style={{ width: `${sprintProgress()}%` }} />
                   </div>
-                  <p className="dm-progress-label">{sprintProgress()}% of sprint elapsed</p>
+                  <p className="dm-progress-label">{sprintProgress()}% of target elapsed</p>
               </div>
             )}
 

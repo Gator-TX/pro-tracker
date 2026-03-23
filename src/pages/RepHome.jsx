@@ -361,7 +361,7 @@ export default function RepHome() {
               {[
                 { label: "Active Accounts", value: stats.active, color: "#367C2B" },
                 { label: "At Risk", value: stats.needsAttention, color: "#DC2626" },
-                { label: "Won This Sprint", value: stats.won, color: "#367C2B" },
+                { label: "Won This Target", value: stats.won, color: "#367C2B" },
                 { label: "In Proposal", value: stats.proposal, color: "#7C3AED" },
               ].map(card => (
                 <div key={card.label} className="rh-stat-card">
@@ -475,7 +475,7 @@ export default function RepHome() {
               {[
                 { label: "Active Accounts", value: stats.active,        accent: "#367C2B" },
                 { label: "At Risk Accounts", value: stats.needsAttention, accent: "#DC2626" },
-                { label: "Won This Sprint",  value: stats.won,           accent: "#367C2B" },
+                { label: "Won This Target",  value: stats.won,           accent: "#367C2B" },
                 { label: "In Proposal",      value: stats.proposal,      accent: "#7C3AED" },
               ].map(c => (
                 <div key={c.label} style={dt.statCard}>
@@ -625,7 +625,7 @@ export default function RepHome() {
 
                 {/* Sprint Progress card */}
                 <div style={dt.card}>
-                  <p style={dt.sectionLabel}>SPRINT PROGRESS</p>
+                  <p style={dt.sectionLabel}>TARGET PROGRESS</p>
                   <div style={dt.sprintStats}>
                     <div style={{ textAlign: "center" }}>
                       <span style={{ ...dt.sprintPill, background: "#FEF9C3", color: "#92400E" }}>
@@ -649,7 +649,7 @@ export default function RepHome() {
                   <div style={dt.progressTrack}>
                     <div style={{ ...dt.progressFill, width: `${sprintPct()}%` }} />
                   </div>
-                  <p style={dt.progressLabel}>{sprintPct()}% of sprint elapsed</p>
+                  <p style={dt.progressLabel}>{sprintPct()}% of target elapsed</p>
                 </div>
 
               </div>

@@ -600,13 +600,13 @@ export default function ManageAccounts() {
                     {/* Sprint dates */}
                     <div className="sprint-row" style={styles.sprintRow}>
                       <div style={styles.field}>
-                        <label style={styles.fieldLabel}>Sprint Start</label>
+                        <label style={styles.fieldLabel}>Target Start</label>
                         <input className="field-input" type="date"
                           value={sprintStart}
                           onChange={e => setSprintStart(e.target.value)} />
                       </div>
                       <div style={styles.field}>
-                        <label style={styles.fieldLabel}>Sprint End</label>
+                        <label style={styles.fieldLabel}>Target End</label>
                         <input className="field-input" type="date"
                           value={sprintEnd}
                           onChange={e => setSprintEnd(e.target.value)} />

@@ -174,8 +174,8 @@ export default function RepDetail() {
   const STAT_CARDS = [
     { label: "Active Accounts", value: stats.activeAccounts },
     { label: "Logs This Week", value: stats.logsThisWeek },
-    { label: "Won This Sprint", value: stats.wonThisSprint },
-    { label: "Lost This Sprint", value: stats.lostThisSprint },
+    { label: "Won This Target", value: stats.wonThisSprint },
+    { label: "Lost This Target", value: stats.lostThisSprint },
   ];
 
   return (

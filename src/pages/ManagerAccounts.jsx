@@ -402,7 +402,7 @@ export default function ManagerAccounts() {
                         {/* Sprint progress */}
                         {account.end_date && (
                           <div style={styles.detailSection}>
-                            <p style={styles.detailLabel}>Sprint Progress</p>
+                            <p style={styles.detailLabel}>Target Progress</p>
                             <div style={styles.progressTrack}>
                               <div style={{ ...styles.progressFill, width: `${progress}%` }} />
                             </div>
@@ -412,7 +412,7 @@ export default function ManagerAccounts() {
 
                         {/* Sprint Dates */}
                         <div style={styles.detailSection}>
-                          <p style={styles.detailLabel}>Sprint Dates</p>
+                          <p style={styles.detailLabel}>Target Dates</p>
                           <div style={styles.sprintDateRow}>
                             <div style={styles.sprintDateField}>
                               <label style={styles.sprintDateLabel}>Start Date</label>
@@ -568,7 +568,7 @@ export default function ManagerAccounts() {
                         )}
                         {account.end_date && (
                           <div style={styles.detailSection}>
-                            <p style={styles.detailLabel}>Sprint Progress</p>
+                            <p style={styles.detailLabel}>Target Progress</p>
                             <div style={styles.progressTrack}><div style={{ ...styles.progressFill, width: `${progress}%` }} /></div>
                             <p style={styles.progressNote}>{daysLeft} days left</p>
                           </div>

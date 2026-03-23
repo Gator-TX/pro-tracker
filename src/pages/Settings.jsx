@@ -177,15 +177,15 @@ export default function Settings() {
 
           {/* Sprint settings */}
           <div style={styles.section}>
-            <p style={styles.sectionTitle}>Sprint Defaults</p>
+            <p style={styles.sectionTitle}>Target Defaults</p>
             <div style={styles.card}>
               <div style={styles.field}>
-                <label style={styles.fieldLabel}>Sprint Length (days)</label>
+                <label style={styles.fieldLabel}>Target Length (days)</label>
                 <input id="sprint_length" name="sprint_length" className="field-input" type="number"
                   value={sprintLength}
                   onChange={e => setSprintLength(e.target.value)}
                   style={{ maxWidth: "160px" }} />
-                <p style={styles.fieldHint}>Default sprint duration when creating new sprints</p>
+                <p style={styles.fieldHint}>Default target duration when creating new targets</p>
               </div>
               <div style={styles.field}>
                 <label style={styles.fieldLabel}>Accounts Per Rep</label>
@@ -193,7 +193,7 @@ export default function Settings() {
                   value={accountsPerRep}
                   onChange={e => setAccountsPerRep(e.target.value)}
                   style={{ maxWidth: "160px" }} />
-                <p style={styles.fieldHint}>Maximum accounts assigned per rep per sprint</p>
+                <p style={styles.fieldHint}>Maximum accounts assigned per rep per target</p>
               </div>
             </div>
           </div>

@@ -480,7 +480,7 @@ export default function AccountDetail() {
           {account?.end_date && (
             <div style={styles.card}>
               <div style={styles.cardHeader}>
-                <p style={styles.cardLabel}>Sprint Progress</p>
+                <p style={styles.cardLabel}>Target Progress</p>
                 <span style={styles.daysLeftText}>{daysLeft()} days left</span>
               </div>
               <div style={styles.progressTrack}>
