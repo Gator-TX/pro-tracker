@@ -258,6 +258,7 @@ const styles = {
     marginLeft: "220px", flex: 1, minHeight: "100vh",
     display: "flex", flexDirection: "column",
     background: "#F5F5F3", fontFamily: "'DM Sans', sans-serif",
+    paddingTop: "56px",
   },
   content: { padding: "28px 32px", display: "flex", flexDirection: "column", gap: "16px" },
   spinner: { width: "32px", height: "32px", borderRadius: "50%", border: "3px solid #E0E0DC", borderTopColor: "#367C2B", animation: "spin 0.8s linear infinite" },
