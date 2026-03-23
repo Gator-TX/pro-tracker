@@ -37,9 +37,16 @@ export default function Login() {
     // Fetch role from profiles table
     const { data: profile } = await supabase
       .from("profiles")
-      .select("role")
+      .select("role, is_active")
       .eq("id", data.user.id)
       .single();
+
+    if (profile?.is_active === false) {
+      await supabase.auth.signOut();
+      setError("Your account has been deactivated. Contact your manager.");
+      setLoading(false);
+      return;
+    }
 
     const role = profile?.role;
 

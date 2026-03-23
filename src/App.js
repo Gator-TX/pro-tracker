@@ -14,6 +14,7 @@ import ExportReports from './pages/ExportReports'
 import RepSettings from './pages/RepSettings'
 import RepHome from './pages/RepHome'
 import RepActivities from './pages/RepActivities'
+import UserManagement from './pages/UserManagement'
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
         <Route path="/rep/settings" element={<RepSettings />} />
         <Route path="/home" element={<RepHome />} />
         <Route path="/activities" element={<RepActivities />} />
+        <Route path="/dashboard/users" element={<UserManagement />} />
       </Routes>
     </BrowserRouter>
   )
