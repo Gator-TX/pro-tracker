@@ -132,7 +132,7 @@ export default function UserManagement() {
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #F5F5F3; font-family: 'DM Sans', sans-serif; }
         @media (max-width: 768px) {
-          .main-content { margin-left: 0 !important; padding-top: 16px !important; overflow-x: hidden; }
+          .main-content { margin-left: 0 !important; padding-top: 86px !important; overflow-x: hidden; }
           .um-desktop-only { display: none !important; }
           .um-mobile-only { display: flex !important; }
         }
@@ -169,13 +169,15 @@ export default function UserManagement() {
           <TopBar title="User Management" profile={profile} onSignOut={handleSignOut} />
 
             {/* Search */}
-            <input
-              className="um-search"
-              type="text"
-              placeholder="Search by name..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
+            <div style={{ marginTop: "8px" }}>
+              <input
+                className="um-search"
+                type="text"
+                placeholder="Search by name..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+            </div>
 
             {/* ── DESKTOP TABLE ── */}
             <div className="um-desktop-only" style={styles.tableCard}>
