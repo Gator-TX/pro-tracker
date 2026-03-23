@@ -125,7 +125,7 @@ export default function UserManagement() {
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #F5F5F3; font-family: 'DM Sans', sans-serif; }
-        @media (max-width: 768px) { .main-content { margin-left: 0 !important; padding-top: 86px !important; } }
+        @media (max-width: 768px) { .main-content { margin-left: 0 !important; padding-top: 86px !important; overflow-x: hidden; } }
         @keyframes spin { to { transform: rotate(360deg); } }
         .um-tr:hover { background: #F9F9F8; }
         .um-search {
@@ -154,8 +154,6 @@ export default function UserManagement() {
 
         <div className="main-content" style={styles.main}>
           <TopBar title="User Management" profile={profile} onSignOut={handleSignOut} />
-
-          <div style={styles.content}>
 
             {/* Info banner */}
             <div style={styles.banner}>
@@ -222,7 +220,6 @@ export default function UserManagement() {
                 ))
               )}
             </div>
-          </div>
         </div>
       </div>
 
@@ -265,14 +262,11 @@ export default function UserManagement() {
 }
 
 const styles = {
-  layout: { display: "flex", minHeight: "100vh", background: "#F5F5F3" },
+  layout: { display: "flex", minHeight: "100vh", backgroundColor: "#F5F5F3" },
   main: {
     marginLeft: "220px", flex: 1, minHeight: "100vh",
-    display: "flex", flexDirection: "column",
-    background: "#F5F5F3", fontFamily: "'DM Sans', sans-serif",
-    paddingTop: "56px",
+    padding: "28px 32px", display: "flex", flexDirection: "column", gap: "16px",
   },
-  content: { padding: "28px 32px", display: "flex", flexDirection: "column", gap: "16px" },
   spinner: { width: "32px", height: "32px", borderRadius: "50%", border: "3px solid #E0E0DC", borderTopColor: "#367C2B", animation: "spin 0.8s linear infinite" },
 
   banner: {
