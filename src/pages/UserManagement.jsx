@@ -162,11 +162,6 @@ export default function UserManagement() {
         <div className="main-content" style={styles.main}>
           <TopBar title="User Management" profile={profile} onSignOut={handleSignOut} />
 
-            {/* Info banner */}
-            <div style={styles.banner}>
-              To create new users go to your Supabase dashboard → Authentication → Users → Add User. Then set their role here.
-            </div>
-
             {/* Search */}
             <input
               className="um-search"
