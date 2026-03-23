@@ -230,7 +230,7 @@ export default function RepSettings() {
             </div>
           </div>
 
-          <button className="btn-primary" disabled={saving} onClick={handleSave}>
+          <button className="btn-primary" disabled={saving} onClick={handleSave} style={{ marginBottom: "100px" }}>
             {saving ? "Saving…" : "Save Settings"}
           </button>
         </div>
