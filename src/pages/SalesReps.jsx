@@ -38,6 +38,10 @@ export default function SalesReps() {
     setProfile(profileData);
     if (profileData?.role !== "manager") { navigate("/accounts"); return; }
 
+    const { data: settings } = await supabase
+      .from("app_settings").select("setting_key, setting_value");
+    const repAtRiskDays = parseInt(settings?.find(s => s.setting_key === "rep_at_risk_days")?.setting_value || "2");
+
     const { data: repsData } = await supabase
       .from("profiles").select("*").eq("role", "rep");
 
@@ -59,15 +63,15 @@ export default function SalesReps() {
       const lostCount = (accounts || []).filter(a => a.status === "Lost").length;
       const weeklyCount = weekActs?.length || 0;
 
-      const fortyEightHoursAgo = new Date();
-      fortyEightHoursAgo.setHours(fortyEightHoursAgo.getHours() - 48);
+      const repAtRiskMs = repAtRiskDays * 24 * 60 * 60 * 1000;
+      const repAtRiskCutoff = new Date(Date.now() - repAtRiskMs);
       const { data: recentActs } = await supabase
         .from("activities")
         .select("id")
         .eq("rep_id", rep.id)
-        .gte("created_at", fortyEightHoursAgo.toISOString())
+        .gte("created_at", repAtRiskCutoff.toISOString())
         .limit(1);
-      const repIsNew = (new Date() - new Date(rep.created_at)) < 48 * 60 * 60 * 1000;
+      const repIsNew = (new Date() - new Date(rep.created_at)) < repAtRiskMs;
       const atRisk = !repIsNew && (!recentActs || recentActs.length === 0) && activeCount > 0;
 
       return {

@@ -45,6 +45,12 @@ export default function RepDetail() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { navigate("/login"); return; }
 
+    // Settings
+    const { data: settings } = await supabase
+      .from("app_settings").select("setting_key, setting_value");
+    const repAtRiskDays = parseInt(settings?.find(s => s.setting_key === "rep_at_risk_days")?.setting_value || "2");
+    const accountAtRiskDays = parseInt(settings?.find(s => s.setting_key === "account_at_risk_days")?.setting_value || "7"); // eslint-disable-line no-unused-vars
+
     // Manager profile
     const { data: profileData } = await supabase
       .from("profiles").select("*").eq("id", user.id).single();
