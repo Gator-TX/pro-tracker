@@ -125,7 +125,14 @@ export default function UserManagement() {
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #F5F5F3; font-family: 'DM Sans', sans-serif; }
-        @media (max-width: 768px) { .main-content { margin-left: 0 !important; padding-top: 86px !important; overflow-x: hidden; } }
+        @media (max-width: 768px) {
+          .main-content { margin-left: 0 !important; padding-top: 16px !important; overflow-x: hidden; }
+          .um-desktop-only { display: none !important; }
+          .um-mobile-only { display: flex !important; }
+        }
+        @media (min-width: 769px) {
+          .um-mobile-only { display: none !important; }
+        }
         @keyframes spin { to { transform: rotate(360deg); } }
         .um-tr:hover { background: #F9F9F8; }
         .um-search {
@@ -169,8 +176,8 @@ export default function UserManagement() {
               onChange={e => setSearch(e.target.value)}
             />
 
-            {/* Table */}
-            <div style={styles.tableCard}>
+            {/* ── DESKTOP TABLE ── */}
+            <div className="um-desktop-only" style={styles.tableCard}>
               {/* Header */}
               <div style={styles.thead}>
                 {["Name", "Email", "Role", "Status", "Joined", "Actions"].map(h => (
@@ -220,6 +227,57 @@ export default function UserManagement() {
                 ))
               )}
             </div>
+
+            {/* ── MOBILE CARD LIST ── */}
+            <div className="um-mobile-only" style={styles.mobileList}>
+              {filteredUsers.length === 0 ? (
+                <p style={styles.empty}>No users found.</p>
+              ) : (
+                filteredUsers.map(u => (
+                  <div key={u.id} style={{
+                    ...styles.mobileCard,
+                    borderLeft: u.is_active === false ? "3px solid #DC2626" : "3px solid #367C2B",
+                  }}>
+                    {/* Top row: name + role badge */}
+                    <div style={styles.mobileCardTop}>
+                      <span style={styles.mobileCardName}>{u.full_name || "—"}</span>
+                      <span style={{
+                        ...styles.badge,
+                        background: u.role === "manager" ? "#F0FDF4" : "#EFF6FF",
+                        color: u.role === "manager" ? "#16A34A" : "#2563EB",
+                        border: `1px solid ${u.role === "manager" ? "#BBF7D0" : "#BFDBFE"}`,
+                      }}>
+                        {u.role === "manager" ? "Manager" : "Rep"}
+                      </span>
+                    </div>
+                    {/* Second row: status + joined */}
+                    <div style={styles.mobileCardMid}>
+                      <span style={{
+                        ...styles.badge,
+                        background: u.is_active === false ? "#FEF2F2" : "#F0FDF4",
+                        color: u.is_active === false ? "#DC2626" : "#16A34A",
+                        border: `1px solid ${u.is_active === false ? "#FECACA" : "#BBF7D0"}`,
+                      }}>
+                        {u.is_active === false ? "Inactive" : "Active"}
+                      </span>
+                      <span style={styles.mobileCardJoined}>
+                        {u.created_at ? new Date(u.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—"}
+                      </span>
+                    </div>
+                    {/* Actions row */}
+                    <div style={styles.mobileCardActions}>
+                      <button style={styles.actionGreen} onClick={() => openEdit(u)}>Edit</button>
+                      <button style={styles.actionGreen} onClick={() => handleResetPassword(u)}>Reset PW</button>
+                      <button style={styles.actionRed} onClick={() => handleToggleActive(u)}>
+                        {u.is_active === false ? "Activate" : "Deactivate"}
+                      </button>
+                      <button style={styles.actionRed} onClick={() => handleDelete(u)}>Delete</button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
         </div>
       </div>
 
@@ -312,6 +370,19 @@ const styles = {
     textDecoration: "underline",
   },
   empty: { padding: "32px", textAlign: "center", fontSize: "14px", color: "#ABABAB" },
+
+  // Mobile cards
+  mobileList: { flexDirection: "column", gap: "8px", padding: "0 16px", marginBottom: "80px" },
+  mobileCard: {
+    backgroundColor: "#ffffff", border: "1px solid #E8E8E6",
+    borderRadius: "8px", padding: "14px 16px",
+    width: "100%", display: "flex", flexDirection: "column", gap: "8px",
+  },
+  mobileCardTop: { display: "flex", justifyContent: "space-between", alignItems: "center", gap: "8px" },
+  mobileCardName: { fontSize: "15px", fontWeight: 600, color: "#1A1A1A" },
+  mobileCardMid: { display: "flex", justifyContent: "space-between", alignItems: "center" },
+  mobileCardJoined: { fontSize: "12px", color: "#767676" },
+  mobileCardActions: { display: "flex", gap: "14px", alignItems: "center", flexWrap: "wrap", paddingTop: "4px" },
 
   overlay: {
     position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)",

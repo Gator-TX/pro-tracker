@@ -52,6 +52,7 @@ const SHEET_ITEMS = [
   { label: "Activities", path: "/dashboard/activities" },
   { label: "Manage Accounts", path: "/manage" },
   { label: "Export Reports", path: "/dashboard/export" },
+  { label: "User Management", path: "/dashboard/users" },
   { label: "Settings", path: "/dashboard/settings" },
 ];
 
