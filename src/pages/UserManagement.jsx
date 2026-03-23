@@ -37,7 +37,13 @@ export default function UserManagement() {
 
     const { data: usersData } = await supabase
       .from("profiles").select("*").order("created_at", { ascending: false });
-    setUsers(usersData || []);
+    const data = usersData || [];
+    const byName = (a, b) => (a.full_name || "").toLowerCase().localeCompare((b.full_name || "").toLowerCase());
+    const sorted = [
+      ...data.filter(u => u.role === "rep").sort(byName),
+      ...data.filter(u => u.role === "manager").sort(byName),
+    ];
+    setUsers(sorted);
     setLoading(false);
   };
 
