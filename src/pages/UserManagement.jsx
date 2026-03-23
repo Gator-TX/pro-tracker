@@ -91,10 +91,22 @@ export default function UserManagement() {
 
   const handleDelete = async (u) => {
     if (!window.confirm(`Delete ${u.full_name}? This cannot be undone.`)) return;
-    const { error } = await supabase.from("profiles").delete().eq("id", u.id);
-    if (error) { showToast("Failed to delete user.", "error"); return; }
-    showToast(`Profile removed. To fully delete the auth account go to Supabase → Authentication → Users.`);
-    loadData();
+    try {
+      await supabase.from("accounts")
+        .update({ rep_id: null, start_date: null, end_date: null })
+        .eq("rep_id", u.id);
+      await supabase.from("activities")
+        .update({ rep_id: null })
+        .eq("rep_id", u.id);
+      await supabase.from("sprints").delete().eq("rep_id", u.id);
+      await supabase.from("push_subscriptions").delete().eq("user_id", u.id);
+      const { error } = await supabase.from("profiles").delete().eq("id", u.id);
+      if (error) throw error;
+      showToast("User deleted. Accounts have been unassigned and kept in the system.");
+      loadData();
+    } catch (err) {
+      showToast("Failed to delete: " + err.message, "error");
+    }
   };
 
   const filteredUsers = users.filter(u =>
