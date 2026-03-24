@@ -169,6 +169,15 @@ export default function Sidebar({ role, profile, onSignOut, activePath }) {
           ))}
         </nav>
 
+        <a
+          href="https://unitedpro.org"
+          target="_blank"
+          rel="noreferrer"
+          style={styles.backToCrm}
+          onClick={e => { e.preventDefault(); window.open("https://unitedpro.org", "_blank"); }}
+        >
+          ← Back to CRM
+        </a>
         <div style={styles.sidebarFooter} />
       </div>
     </>
@@ -185,5 +194,11 @@ const styles = {
   sidebarLogoImg: { width: "160px", objectFit: "contain", cursor: "pointer" },
   logoAccent: { height: "3px", backgroundColor: "#FFDE00", borderRadius: "2px", width: "160px" },
   nav: { flex: 1, padding: "16px 8px", display: "flex", flexDirection: "column", gap: "2px", overflowY: "auto" },
+  backToCrm: {
+    fontSize: "12px", color: "#767676", textDecoration: "none",
+    display: "flex", alignItems: "center", gap: "6px",
+    padding: "8px 16px", borderTop: "1px solid #E8E8E6", marginTop: "8px",
+    fontFamily: "'DM Sans', sans-serif",
+  },
   sidebarFooter: { padding: "16px", borderTop: "1px solid #E8E8E6" },
 };

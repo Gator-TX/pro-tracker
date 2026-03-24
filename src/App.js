@@ -15,6 +15,7 @@ import RepSettings from './pages/RepSettings'
 import RepHome from './pages/RepHome'
 import RepActivities from './pages/RepActivities'
 import UserManagement from './pages/UserManagement'
+import AuthRedirect from './pages/AuthRedirect'
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/auth" element={<AuthRedirect />} />
         <Route path="/accounts" element={<Accounts />} />
         <Route path="/accounts/:id" element={<AccountDetail />} />
         <Route path="/accounts/:id/log" element={<LogActivity />} />
