@@ -1,5 +1,3 @@
-window.name = "target10-window";
-
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/Login'
 import Accounts from './pages/Accounts'
@@ -18,6 +16,8 @@ import RepHome from './pages/RepHome'
 import RepActivities from './pages/RepActivities'
 import UserManagement from './pages/UserManagement'
 import AuthRedirect from './pages/AuthRedirect'
+
+window.name = "target10-window";
 
 function App() {
   return (
