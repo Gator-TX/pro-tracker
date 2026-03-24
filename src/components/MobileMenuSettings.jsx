@@ -32,7 +32,8 @@ export default function MobileMenuSettings({ items, defaultOrder, storageKey }) 
   const isDefault = orderedItems.every((item, i) => item.key === defaultOrder[i]);
 
   return (
-    <div style={styles.section}>
+    <div className="mobile-menu-settings" style={styles.section}>
+      <style>{`.mobile-menu-settings { display: none; } @media (max-width: 768px) { .mobile-menu-settings { display: flex !important; } }`}</style>
       <div style={styles.card}>
         <div style={styles.titleRow}>
           <p style={styles.title}>Mobile Menu</p>
