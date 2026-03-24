@@ -154,22 +154,6 @@ export default function ManagerBottomNav({ activePath }) {
                 {item.label}
               </button>
             ))}
-            <div style={{ height: "1px", background: "#E8E8E6" }} />
-            <button
-              className="mgr-sheet-item"
-              style={{ color: "#767676" }}
-              onClick={async () => {
-                const { data: { session } } = await supabase.auth.getSession();
-                if (session) {
-                  window.open(`https://unitedpro.org/auth?access_token=${session.access_token}&refresh_token=${session.refresh_token}`, "uat-crm-window");
-                } else {
-                  window.open("https://unitedpro.org", "uat-crm-window");
-                }
-                setShowSheet(false);
-              }}
-            >
-              Open CRM →
-            </button>
             <button className="mgr-sheet-signout" onClick={handleSignOut}>
               Sign Out
             </button>
