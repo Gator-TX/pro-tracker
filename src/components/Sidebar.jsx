@@ -170,24 +170,22 @@ export default function Sidebar({ role, profile, onSignOut, activePath }) {
           ))}
         </nav>
 
-        <div style={styles.crmDivider} />
-        <a
-          href="https://unitedpro.org"
-          target="_blank"
-          rel="noreferrer"
-          style={styles.openCrm}
-          onClick={async (e) => {
-            e.preventDefault();
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-              window.open(`https://unitedpro.org/auth?access_token=${session.access_token}&refresh_token=${session.refresh_token}`, "uat-crm-window");
-            } else {
-              window.open("https://unitedpro.org", "uat-crm-window");
-            }
-          }}
-        >
-          Open CRM →
-        </a>
+        <nav style={{ padding: "0 8px 16px" }}>
+          <button
+            className="sidebar-nav-item"
+            onClick={async () => {
+              const { data: { session } } = await supabase.auth.getSession();
+              if (session) {
+                window.open(`https://unitedpro.org/auth?access_token=${session.access_token}&refresh_token=${session.refresh_token}`, "uat-crm-window");
+              } else {
+                window.open("https://unitedpro.org", "uat-crm-window");
+              }
+            }}
+          >
+            <span className="grip" style={{ visibility: "hidden" }}>⠿</span>
+            Open CRM →
+          </button>
+        </nav>
         <div style={styles.sidebarFooter} />
       </div>
     </>
@@ -204,13 +202,5 @@ const styles = {
   sidebarLogoImg: { width: "160px", objectFit: "contain", cursor: "pointer" },
   logoAccent: { height: "3px", backgroundColor: "#FFDE00", borderRadius: "2px", width: "160px" },
   nav: { flex: 1, padding: "16px 8px", display: "flex", flexDirection: "column", gap: "2px", overflowY: "auto" },
-  crmDivider: { height: "1px", backgroundColor: "#E8E8E6", margin: "8px 16px" },
-  openCrm: {
-    display: "flex", alignItems: "center",
-    padding: "9px 16px", borderRadius: "6px",
-    fontSize: "14px", fontWeight: 500, color: "#767676",
-    textDecoration: "none", fontFamily: "'DM Sans', sans-serif",
-    margin: "0 8px",
-  },
   sidebarFooter: { padding: "16px", borderTop: "1px solid #E8E8E6" },
 };
