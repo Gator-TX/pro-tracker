@@ -12,6 +12,7 @@ const MANAGER_NAV = [
   { key: "export",     label: "Export Reports",   path: "/dashboard/export" },
   { key: "users",      label: "User Management",  path: "/dashboard/users" },
   { key: "settings",   label: "Settings",         path: "/dashboard/settings" },
+  { key: "open-crm",  label: "Open CRM →",       path: null, external: true },
 ];
 
 const REP_NAV = [
@@ -19,6 +20,7 @@ const REP_NAV = [
   { key: "accounts", label: "My Accounts", path: "/accounts" },
   { key: "activity", label: "Activities",  path: "/activities" },
   { key: "settings", label: "Settings",    path: "/rep/settings" },
+  { key: "open-crm", label: "Open CRM →",  path: null, external: true },
 ];
 
 const STORAGE_KEYS = { manager: "sidebar_order_manager", rep: "sidebar_order_rep" };
@@ -97,12 +99,21 @@ export default function Sidebar({ role, profile, onSignOut, activePath }) {
     dragStartY.current = null;
   }, []);
 
-  const handleClick = useCallback((e, path) => {
+  const handleClick = useCallback(async (e, item) => {
     if (didDrag.current) {
       e.preventDefault();
       return;
     }
-    navigate(path);
+    if (item.external) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        window.open(`https://unitedpro.org/auth?access_token=${session.access_token}&refresh_token=${session.refresh_token}`, "uat-crm-window");
+      } else {
+        window.open("https://unitedpro.org", "uat-crm-window");
+      }
+    } else {
+      navigate(item.path);
+    }
   }, [navigate]);
 
   return (
@@ -158,11 +169,11 @@ export default function Sidebar({ role, profile, onSignOut, activePath }) {
               onDragEnd={handleDragEnd}
               className={
                 "sidebar-nav-item" +
-                (item.path === activePath ? " active" : "") +
+                (!item.external && item.path === activePath ? " active" : "") +
                 (dragIndex === index ? " dragging" : "") +
                 (overIndex === index && dragIndex !== null && dragIndex !== index ? " drop-above" : "")
               }
-              onClick={(e) => handleClick(e, item.path)}
+              onClick={(e) => handleClick(e, item)}
             >
               <span className="grip">⠿</span>
               {item.label}
@@ -170,22 +181,6 @@ export default function Sidebar({ role, profile, onSignOut, activePath }) {
           ))}
         </nav>
 
-        <nav style={{ padding: "0 8px 16px" }}>
-          <button
-            className="sidebar-nav-item"
-            onClick={async () => {
-              const { data: { session } } = await supabase.auth.getSession();
-              if (session) {
-                window.open(`https://unitedpro.org/auth?access_token=${session.access_token}&refresh_token=${session.refresh_token}`, "uat-crm-window");
-              } else {
-                window.open("https://unitedpro.org", "uat-crm-window");
-              }
-            }}
-          >
-            <span className="grip" style={{ visibility: "hidden" }}>⠿</span>
-            Open CRM →
-          </button>
-        </nav>
         <div style={styles.sidebarFooter} />
       </div>
     </>
