@@ -6,6 +6,8 @@ import MobileHeader from "../components/MobileHeader";
 import RepBottomNav from "../components/RepBottomNav";
 import TopBar from "../components/TopBar";
 import { subscribeToPush } from "../utils/pushNotifications";
+import MobileMenuSettings from "../components/MobileMenuSettings";
+import { REP_MENU_ITEMS, REP_DEFAULT_ORDER, REP_STORAGE_KEY } from "../config/mobileMenuItems";
 
 export default function RepSettings() {
   const navigate = useNavigate();
@@ -136,6 +138,9 @@ export default function RepSettings() {
           {saveSuccess && (
             <div style={styles.successBanner}>Settings saved successfully</div>
           )}
+
+          {/* Mobile Menu */}
+          <MobileMenuSettings items={REP_MENU_ITEMS} defaultOrder={REP_DEFAULT_ORDER} storageKey={REP_STORAGE_KEY} />
 
           {/* Profile */}
           <div style={styles.section}>

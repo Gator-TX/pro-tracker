@@ -1,64 +1,31 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabase";
+import { MGR_MENU_ITEMS, MGR_DEFAULT_ORDER, MGR_STORAGE_KEY, getOrderedItems } from "../config/mobileMenuItems";
 
-const NAV_ITEMS = [
-  {
-    label: "Home",
-    path: "/dashboard",
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-        <polyline points="9 22 9 12 15 12 15 22"/>
-      </svg>
-    ),
-  },
-  {
-    label: "Accounts",
-    path: "/dashboard/accounts",
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="2" y="7" width="20" height="14" rx="2"/>
-        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-      </svg>
-    ),
-  },
-  {
-    label: "Reps",
-    path: "/dashboard/reps",
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-        <circle cx="9" cy="7" r="4"/>
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-      </svg>
-    ),
-  },
-  {
-    label: "Menu",
-    path: null,
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="3" y1="6" x2="21" y2="6"/>
-        <line x1="3" y1="12" x2="21" y2="12"/>
-        <line x1="3" y1="18" x2="21" y2="18"/>
-      </svg>
-    ),
-  },
-];
-
-const SHEET_ITEMS = [
-  { label: "Activities", path: "/dashboard/activities" },
-  { label: "Manage Accounts", path: "/manage" },
-  { label: "Export Reports", path: "/dashboard/export" },
-  { label: "User Management", path: "/dashboard/users" },
-  { label: "Settings", path: "/dashboard/settings" },
-];
+const MENU_ICON = (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="3" y1="6" x2="21" y2="6"/>
+    <line x1="3" y1="12" x2="21" y2="12"/>
+    <line x1="3" y1="18" x2="21" y2="18"/>
+  </svg>
+);
 
 export default function ManagerBottomNav({ activePath }) {
   const navigate = useNavigate();
   const [showSheet, setShowSheet] = useState(false);
+
+  const getItems = useCallback(() => getOrderedItems(MGR_MENU_ITEMS, MGR_DEFAULT_ORDER, MGR_STORAGE_KEY), []);
+  const [orderedItems, setOrderedItems] = useState(getItems);
+
+  useEffect(() => {
+    const refresh = () => setOrderedItems(getItems());
+    window.addEventListener("mobile-menu-updated", refresh);
+    return () => window.removeEventListener("mobile-menu-updated", refresh);
+  }, [getItems]);
+
+  const navItems = orderedItems.slice(0, 3);
+  const sheetItems = orderedItems.slice(3);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -127,7 +94,8 @@ export default function ManagerBottomNav({ activePath }) {
             margin: 12px auto 16px;
           }
           .mgr-sheet-item {
-            display: block; width: 100%;
+            display: flex; align-items: center; gap: 12px;
+            width: 100%;
             padding: 14px 20px;
             text-align: left;
             background: none; border: none;
@@ -149,17 +117,25 @@ export default function ManagerBottomNav({ activePath }) {
       `}</style>
 
       <nav className="mgr-bottom-nav">
-        {NAV_ITEMS.map(item => (
+        {navItems.map(item => (
           <button
-            key={item.label}
+            key={item.key}
             className="mgr-nav-item"
             style={{ color: item.path === activePath ? "#367C2B" : "#767676" }}
-            onClick={() => item.path ? navigate(item.path) : setShowSheet(true)}
+            onClick={() => navigate(item.path)}
           >
             {item.icon}
             <span className="mgr-nav-label">{item.label}</span>
           </button>
         ))}
+        <button
+          className="mgr-nav-item"
+          style={{ color: showSheet ? "#367C2B" : "#767676" }}
+          onClick={() => setShowSheet(true)}
+        >
+          {MENU_ICON}
+          <span className="mgr-nav-label">Menu</span>
+        </button>
       </nav>
 
       {showSheet && (
@@ -167,13 +143,14 @@ export default function ManagerBottomNav({ activePath }) {
           <div className="mgr-sheet-overlay" onClick={() => setShowSheet(false)} />
           <div className="mgr-sheet">
             <div className="mgr-sheet-handle" />
-            {SHEET_ITEMS.map(item => (
+            {sheetItems.map(item => (
               <button
-                key={item.path}
+                key={item.key}
                 className="mgr-sheet-item"
                 style={{ color: item.path === activePath ? "#367C2B" : "#374151" }}
                 onClick={() => { navigate(item.path); setShowSheet(false); }}
               >
+                {item.icon}
                 {item.label}
               </button>
             ))}

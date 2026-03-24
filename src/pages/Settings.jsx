@@ -6,6 +6,8 @@ import TopBar from "../components/TopBar";
 import MobileManagerHeader from "../components/MobileManagerHeader";
 import ManagerBottomNav from "../components/ManagerBottomNav";
 import { subscribeToPush } from "../utils/pushNotifications";
+import MobileMenuSettings from "../components/MobileMenuSettings";
+import { MGR_MENU_ITEMS, MGR_DEFAULT_ORDER, MGR_STORAGE_KEY } from "../config/mobileMenuItems";
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -157,6 +159,9 @@ export default function Settings() {
           {saveSuccess && (
             <div style={styles.successBanner}>Settings saved successfully</div>
           )}
+
+          {/* Mobile Menu */}
+          <MobileMenuSettings items={MGR_MENU_ITEMS} defaultOrder={MGR_DEFAULT_ORDER} storageKey={MGR_STORAGE_KEY} />
 
           {/* Profile settings */}
           <div style={styles.section}>

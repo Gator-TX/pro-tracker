@@ -1,57 +1,31 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabase";
+import { REP_MENU_ITEMS, REP_DEFAULT_ORDER, REP_STORAGE_KEY, getOrderedItems } from "../config/mobileMenuItems";
 
-const NAV_ITEMS = [
-  {
-    label: "Home",
-    path: "/home",
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-        <polyline points="9 22 9 12 15 12 15 22"/>
-      </svg>
-    ),
-  },
-  {
-    label: "Accounts",
-    path: "/accounts",
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="2" y="7" width="20" height="14" rx="2"/>
-        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-      </svg>
-    ),
-  },
-  {
-    label: "Activity",
-    path: "/activities",
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-      </svg>
-    ),
-  },
-  {
-    label: "Menu",
-    path: null,
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="3" y1="6" x2="21" y2="6"/>
-        <line x1="3" y1="12" x2="21" y2="12"/>
-        <line x1="3" y1="18" x2="21" y2="18"/>
-      </svg>
-    ),
-  },
-];
-
-const SHEET_ITEMS = [
-  { label: "Settings", path: "/rep/settings" },
-];
+const MENU_ICON = (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="3" y1="6" x2="21" y2="6"/>
+    <line x1="3" y1="12" x2="21" y2="12"/>
+    <line x1="3" y1="18" x2="21" y2="18"/>
+  </svg>
+);
 
 export default function RepBottomNav({ activePath }) {
   const navigate = useNavigate();
   const [showSheet, setShowSheet] = useState(false);
+
+  const getItems = useCallback(() => getOrderedItems(REP_MENU_ITEMS, REP_DEFAULT_ORDER, REP_STORAGE_KEY), []);
+  const [orderedItems, setOrderedItems] = useState(getItems);
+
+  useEffect(() => {
+    const refresh = () => setOrderedItems(getItems());
+    window.addEventListener("mobile-menu-updated", refresh);
+    return () => window.removeEventListener("mobile-menu-updated", refresh);
+  }, [getItems]);
+
+  const navItems = orderedItems.slice(0, 3);
+  const sheetItems = orderedItems.slice(3);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -117,7 +91,8 @@ export default function RepBottomNav({ activePath }) {
             margin: 12px auto 16px;
           }
           .rep-sheet-item {
-            display: block; width: 100%;
+            display: flex; align-items: center; gap: 12px;
+            width: 100%;
             padding: 14px 20px;
             text-align: left;
             background: none; border: none;
@@ -139,17 +114,25 @@ export default function RepBottomNav({ activePath }) {
       `}</style>
 
       <nav className="rep-bottom-nav">
-        {NAV_ITEMS.map(item => (
+        {navItems.map(item => (
           <button
-            key={item.label}
+            key={item.key}
             className="rep-nav-item"
             style={{ color: item.path === activePath ? "#367C2B" : "#767676" }}
-            onClick={() => item.path ? navigate(item.path) : setShowSheet(true)}
+            onClick={() => navigate(item.path)}
           >
             {item.icon}
             <span className="rep-nav-label">{item.label}</span>
           </button>
         ))}
+        <button
+          className="rep-nav-item"
+          style={{ color: showSheet ? "#367C2B" : "#767676" }}
+          onClick={() => setShowSheet(true)}
+        >
+          {MENU_ICON}
+          <span className="rep-nav-label">Menu</span>
+        </button>
       </nav>
 
       {showSheet && (
@@ -157,13 +140,14 @@ export default function RepBottomNav({ activePath }) {
           <div className="rep-sheet-overlay" onClick={() => setShowSheet(false)} />
           <div className="rep-sheet">
             <div className="rep-sheet-handle" />
-            {SHEET_ITEMS.map(item => (
+            {sheetItems.map(item => (
               <button
-                key={item.path}
+                key={item.key}
                 className="rep-sheet-item"
                 style={{ color: item.path === activePath ? "#367C2B" : "#374151" }}
                 onClick={() => { navigate(item.path); setShowSheet(false); }}
               >
+                {item.icon}
                 {item.label}
               </button>
             ))}
