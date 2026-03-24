@@ -250,7 +250,7 @@ export default function ManagerAccounts() {
         <div className="main-content" style={styles.main}>
           <PullToRefresh onRefresh={loadData}>
           <TopBar title="Accounts" profile={profile} onSignOut={handleSignOut} />
-          <p className="desktop-only" style={styles.subTitle}>{filtered.length} accounts</p>
+
 
           {/* Filters */}
           <div className="acct-filter-bar" style={styles.filterBar}>

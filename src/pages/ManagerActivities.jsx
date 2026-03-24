@@ -186,7 +186,7 @@ export default function ManagerActivities() {
         <div className="main-content" style={styles.main}>
           <PullToRefresh onRefresh={loadData}>
           <TopBar title="Activities" profile={profile} onSignOut={handleSignOut} />
-          <p className="desktop-only" style={styles.subTitle}>{filtered.length} logs</p>
+
 
           {/* Filters */}
           <div className="filter-bar" style={styles.filterBar}>

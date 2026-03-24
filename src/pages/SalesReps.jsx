@@ -198,7 +198,7 @@ export default function SalesReps() {
         <div className="main-content" style={styles.main}>
           <PullToRefresh onRefresh={loadData}>
           <TopBar title="Sales Reps" profile={profile} onSignOut={handleSignOut} />
-          <p className="desktop-only" style={styles.subTitle}>{sorted.length} rep{sorted.length !== 1 ? "s" : ""}</p>
+
 
           <div className="rep-filter-bar">
             <select className="filter-select" value={filterRisk} onChange={e => setFilterRisk(e.target.value)}>
