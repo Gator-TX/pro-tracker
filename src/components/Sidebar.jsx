@@ -179,9 +179,9 @@ export default function Sidebar({ role, profile, onSignOut, activePath }) {
             e.preventDefault();
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
-              window.open(`https://unitedpro.org/auth?access_token=${session.access_token}&refresh_token=${session.refresh_token}`, "_blank");
+              window.open(`https://unitedpro.org/auth?access_token=${session.access_token}&refresh_token=${session.refresh_token}`, "uat-crm-window");
             } else {
-              window.open("https://unitedpro.org", "_blank");
+              window.open("https://unitedpro.org", "uat-crm-window");
             }
           }}
         >
