@@ -52,7 +52,7 @@ export default function ManagerAccounts() {
     setReps(repsData || []);
 
     const { data: accountsData } = await supabase
-      .from("accounts")
+      .from("target_accounts")
       .select("*, start_date, end_date, activities(activity_date)")
       .order("created_at", { ascending: false });
     setAccounts(accountsData || []);
@@ -82,7 +82,7 @@ export default function ManagerAccounts() {
   const handleDelete = async () => {
     if (!window.confirm(`Delete ${selectedIds.length} account${selectedIds.length > 1 ? "s" : ""}? This cannot be undone.`)) return;
     setDeleting(true);
-    await supabase.from("accounts").delete().in("id", selectedIds);
+    await supabase.from("target_accounts").delete().in("id", selectedIds);
     setSelectedIds([]);
     await loadData();
     setDeleting(false);
@@ -97,9 +97,9 @@ export default function ManagerAccounts() {
     setExpandedAccount(accountId);
     if (!accountDetails[accountId]) {
       const [{ data: acts }, { data: cons }] = await Promise.all([
-        supabase.from("activities").select("*").eq("account_id", accountId)
+        supabase.from("target_activities").select("*").eq("account_id", accountId)
           .order("activity_date", { ascending: false }),
-        supabase.from("contacts").select("*").eq("account_id", accountId)
+        supabase.from("target_contacts").select("*").eq("account_id", accountId)
           .order("is_primary", { ascending: false }),
       ]);
       setAccountDetails(prev => ({ ...prev, [accountId]: { acts: acts || [], cons: cons || [] } }));
@@ -111,7 +111,7 @@ export default function ManagerAccounts() {
   };
 
   const handleUnassign = async (accountId) => {
-    await supabase.from("accounts").update({ rep_id: null }).eq("id", accountId);
+    await supabase.from("target_accounts").update({ rep_id: null }).eq("id", accountId);
     setAccounts(prev => prev.map(a => a.id === accountId ? { ...a, rep_id: null } : a));
     setUnassignMsg(accountId);
     setTimeout(() => setUnassignMsg(null), 3000);
@@ -119,7 +119,7 @@ export default function ManagerAccounts() {
 
   const saveDates = async (accountId) => {
     const edit = sprintEdits[accountId] || {};
-    await supabase.from("accounts")
+    await supabase.from("target_accounts")
       .update({ start_date: edit.start_date, end_date: edit.end_date })
       .eq("id", accountId);
     setAccounts(prev => prev.map(a =>

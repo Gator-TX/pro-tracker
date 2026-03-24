@@ -38,20 +38,20 @@ export default function RepHome() {
     // Sprint
     const today = new Date().toISOString().split("T")[0];
     const { data: sprintData } = await supabase
-      .from("sprints").select("*")
+      .from("target_sprints").select("*")
       .lte("start_date", today).gte("end_date", today).limit(1).single();
     setSprint(sprintData);
 
     // Load configurable thresholds
     const { data: settingsData } = await supabase
-      .from("app_settings").select("setting_key, setting_value");
+      .from("target_app_settings").select("setting_key, setting_value");
     const settingsMap = {};
     (settingsData || []).forEach(s => { settingsMap[s.setting_key] = s.setting_value; });
     const accountAtRiskDays = parseInt(settingsMap["account_at_risk_days"] || "7", 10);
 
     // Accounts with activities
     const { data: accountsData } = await supabase
-      .from("accounts")
+      .from("target_accounts")
       .select("id, name, company, status, created_at, activities(id, activity_date, activity_type, notes, outcome, scheduled_next_date, scheduled_next_type, scheduled_next_time)")
       .eq("rep_id", user.id);
 
@@ -110,7 +110,7 @@ export default function RepHome() {
     (accountsData || []).forEach(a => { accountNameMap[a.id] = a.name || a.company; });
 
     const { data: upcomingData } = await supabase
-      .from("activities")
+      .from("target_activities")
       .select("id, account_id, scheduled_next_date, scheduled_next_type, scheduled_next_time")
       .eq("rep_id", user.id)
       .not("scheduled_next_date", "is", null)

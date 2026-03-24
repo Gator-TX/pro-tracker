@@ -47,7 +47,7 @@ export default function RepDetail() {
 
     // Settings
     const { data: settings } = await supabase
-      .from("app_settings").select("setting_key, setting_value");
+      .from("target_app_settings").select("setting_key, setting_value");
     const repAtRiskDays = parseInt(settings?.find(s => s.setting_key === "rep_at_risk_days")?.setting_value || "2");
     const accountAtRiskDays = parseInt(settings?.find(s => s.setting_key === "account_at_risk_days")?.setting_value || "7"); // eslint-disable-line no-unused-vars
 
@@ -64,7 +64,7 @@ export default function RepDetail() {
 
     // Rep's accounts
     const { data: accountsData } = await supabase
-      .from("accounts").select("*, start_date, end_date").eq("rep_id", repId)
+      .from("target_accounts").select("*, start_date, end_date").eq("rep_id", repId)
       .order("created_at", { ascending: false });
     setAccounts(accountsData || []);
 
@@ -72,7 +72,7 @@ export default function RepDetail() {
     const accountIds = (accountsData || []).map(a => a.id);
     if (accountIds.length > 0) {
       const { data: allActs } = await supabase
-        .from("activities").select("*")
+        .from("target_activities").select("*")
         .in("account_id", accountIds)
         .order("activity_date", { ascending: false });
       const actsByAccount = {};
@@ -87,7 +87,7 @@ export default function RepDetail() {
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
     const { data: weekActs } = await supabase
-      .from("activities").select("id")
+      .from("target_activities").select("id")
       .eq("rep_id", repId)
       .gte("activity_date", weekAgo.toISOString().split("T")[0]);
 
@@ -116,7 +116,7 @@ export default function RepDetail() {
     // Load activities for this account
     if (!accountActivities[accountId]) {
       const { data: acts } = await supabase
-        .from("activities").select("*")
+        .from("target_activities").select("*")
         .eq("account_id", accountId)
         .order("activity_date", { ascending: false });
       setAccountActivities(prev => ({ ...prev, [accountId]: acts || [] }));
@@ -125,7 +125,7 @@ export default function RepDetail() {
     // Load contacts for this account
     if (!accountContacts[accountId]) {
       const { data: cons } = await supabase
-        .from("contacts").select("*")
+        .from("target_contacts").select("*")
         .eq("account_id", accountId)
         .order("is_primary", { ascending: false });
       setAccountContacts(prev => ({ ...prev, [accountId]: cons || [] }));
@@ -147,7 +147,7 @@ export default function RepDetail() {
   };
 
   const handleUnassign = async (accountId) => {
-    await supabase.from("accounts").update({ rep_id: null }).eq("id", accountId);
+    await supabase.from("target_accounts").update({ rep_id: null }).eq("id", accountId);
     const removedAccount = accounts.find(a => a.id === accountId);
     setAccounts(prev => prev.filter(a => a.id !== accountId));
     if (removedAccount && ACTIVE_STATUSES.includes(removedAccount.status || "New")) {

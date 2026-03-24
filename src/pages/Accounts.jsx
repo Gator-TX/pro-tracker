@@ -40,7 +40,7 @@ export default function Accounts() {
     setProfile(profileData);
 
     const { data: accountsData } = await supabase
-      .from("accounts")
+      .from("target_accounts")
       .select("*, start_date, end_date, activities(id, activity_date)")
       .eq("rep_id", user.id)
       .order("created_at", { ascending: false });

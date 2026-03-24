@@ -35,12 +35,12 @@ export default function RepActivities() {
     const today = new Date().toISOString().split("T")[0];
 
     const { data: accountsData } = await supabase
-      .from("accounts").select("id, name, company").eq("rep_id", user.id);
+      .from("target_accounts").select("id, name, company").eq("rep_id", user.id);
     setAccounts(accountsData || []);
 
     // Past logged activities
     const { data: actsData } = await supabase
-      .from("activities").select("*")
+      .from("target_activities").select("*")
       .eq("rep_id", user.id)
       .order("activity_date", { ascending: false })
       .limit(200);
@@ -48,7 +48,7 @@ export default function RepActivities() {
 
     // Upcoming scheduled activities
     const { data: upcomingData } = await supabase
-      .from("activities")
+      .from("target_activities")
       .select("id, account_id, scheduled_next_date, scheduled_next_type, scheduled_next_time, notes")
       .eq("rep_id", user.id)
       .not("scheduled_next_date", "is", null)

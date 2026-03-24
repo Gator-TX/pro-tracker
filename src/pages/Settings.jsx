@@ -48,7 +48,7 @@ export default function Settings() {
     setFullName(profileData?.full_name || "");
 
     const { data: settingsData } = await supabase
-      .from("app_settings").select("setting_key, setting_value");
+      .from("target_app_settings").select("setting_key, setting_value");
     (settingsData || []).forEach(s => {
       if (s.setting_key === "rep_at_risk_days") setRepAtRiskDays(s.setting_value);
       if (s.setting_key === "account_at_risk_days") setAccountAtRiskDays(s.setting_value);
@@ -102,7 +102,7 @@ export default function Settings() {
     await supabase.from("profiles")
       .update({ full_name: fullName })
       .eq("id", profile.id);
-    await supabase.from("app_settings").upsert([
+    await supabase.from("target_app_settings").upsert([
       { setting_key: "rep_at_risk_days", setting_value: String(repAtRiskDays), updated_by: profile.id },
       { setting_key: "account_at_risk_days", setting_value: String(accountAtRiskDays), updated_by: profile.id },
     ], { onConflict: "setting_key" });

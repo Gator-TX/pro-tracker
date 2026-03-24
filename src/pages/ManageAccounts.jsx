@@ -62,7 +62,7 @@ export default function ManageAccounts() {
     setReps(repsData || []);
 
     const { data: accountsData } = await supabase
-      .from("accounts").select("id, name, company, rep_id, start_date, end_date");
+      .from("target_accounts").select("id, name, company, rep_id, start_date, end_date");
     const sorted = (accountsData || []).sort((a, b) =>
       (a.name || a.company || "").toLowerCase().localeCompare((b.name || b.company || "").toLowerCase())
     );
@@ -126,7 +126,7 @@ export default function ManageAccounts() {
       if (!companyName) continue;
 
       const { data: existing } = await supabase
-        .from("accounts")
+        .from("target_accounts")
         .select("id, name")
         .ilike("name", companyName)
         .single();
@@ -141,7 +141,7 @@ export default function ManageAccounts() {
       );
 
       const { data: newAccount } = await supabase
-        .from("accounts")
+        .from("target_accounts")
         .insert({
           name: companyName,
           company: companyName,
@@ -153,7 +153,7 @@ export default function ManageAccounts() {
 
       if (newAccount && contactName) {
         const parts = contactName.split(" ");
-        await supabase.from("contacts").insert({
+        await supabase.from("target_contacts").insert({
           account_id: newAccount.id,
           first_name: parts[0] || "",
           last_name: parts.slice(1).join(" ") || "",
@@ -176,7 +176,7 @@ export default function ManageAccounts() {
   const handleManualSave = async () => {
     setSavingManual(true);
     const { data: newAccount } = await supabase
-      .from("accounts")
+      .from("target_accounts")
       .insert({
         name: manualForm.company,
         company: manualForm.company,
@@ -188,7 +188,7 @@ export default function ManageAccounts() {
 
     if (newAccount && manualForm.contact_name) {
       const parts = manualForm.contact_name.split(" ");
-      await supabase.from("contacts").insert({
+      await supabase.from("target_contacts").insert({
         account_id: newAccount.id,
         first_name: parts[0] || "",
         last_name: parts.slice(1).join(" ") || "",
@@ -215,7 +215,7 @@ export default function ManageAccounts() {
 
     const today = new Date().toISOString().split("T")[0];
     const { data: sprintData } = await supabase
-      .from("sprints").select("*").eq("rep_id", rep.id)
+      .from("target_sprints").select("*").eq("rep_id", rep.id)
       .lte("start_date", today).gte("end_date", today).single();
 
     if (sprintData) {
@@ -239,7 +239,7 @@ export default function ManageAccounts() {
   };
 
   const handleUnassignAccount = async (accountId) => {
-    await supabase.from("accounts").update({ rep_id: null, start_date: null, end_date: null }).eq("id", accountId);
+    await supabase.from("target_accounts").update({ rep_id: null, start_date: null, end_date: null }).eq("id", accountId);
     setAllAccounts(prev => prev.map(a => a.id === accountId ? { ...a, rep_id: null } : a));
     setRepAccounts(prev => prev.filter(id => id !== accountId));
     setUnassignMsg(accountId);
@@ -259,7 +259,7 @@ export default function ManageAccounts() {
     const previouslyAssigned = allAccounts.filter(a => a.rep_id === selectedRep.id).map(a => a.id);
     const toUnassign = previouslyAssigned.filter(id => !repAccounts.includes(id));
     for (const accountId of toUnassign) {
-      await supabase.from("accounts")
+      await supabase.from("target_accounts")
         .update({ rep_id: null, start_date: null, end_date: null })
         .eq("id", accountId);
     }
@@ -270,12 +270,12 @@ export default function ManageAccounts() {
       const alreadyWithThisRep = account?.rep_id === selectedRep.id && account?.start_date;
       if (alreadyWithThisRep) {
         // Keep existing sprint dates — only ensure rep_id is set
-        await supabase.from("accounts")
+        await supabase.from("target_accounts")
           .update({ rep_id: selectedRep.id })
           .eq("id", accountId);
       } else {
         // New assignment or reassignment from another rep — start a fresh sprint
-        await supabase.from("accounts")
+        await supabase.from("target_accounts")
           .update({ rep_id: selectedRep.id, start_date: today, end_date: endDate })
           .eq("id", accountId);
       }
@@ -285,15 +285,15 @@ export default function ManageAccounts() {
     if (sprintStart && sprintEnd) {
       const today = new Date().toISOString().split("T")[0];
       const { data: existing } = await supabase
-        .from("sprints").select("id").eq("rep_id", selectedRep.id)
+        .from("target_sprints").select("id").eq("rep_id", selectedRep.id)
         .lte("start_date", today).gte("end_date", today).single();
 
       if (existing) {
-        await supabase.from("sprints")
+        await supabase.from("target_sprints")
           .update({ start_date: sprintStart, end_date: sprintEnd })
           .eq("id", existing.id);
       } else {
-        await supabase.from("sprints").insert({
+        await supabase.from("target_sprints").insert({
           rep_id: selectedRep.id,
           start_date: sprintStart,
           end_date: sprintEnd,

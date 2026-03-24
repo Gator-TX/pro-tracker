@@ -61,7 +61,7 @@ export default function AccountDetail() {
 
     // Account
     const { data: acc } = await supabase
-      .from("accounts")
+      .from("target_accounts")
       .select("*, start_date, end_date")
       .eq("id", id)
       .single();
@@ -71,7 +71,7 @@ export default function AccountDetail() {
 
     // Contacts
     const { data: cons } = await supabase
-      .from("contacts")
+      .from("target_contacts")
       .select("*")
       .eq("account_id", id)
       .order("is_primary", { ascending: false });
@@ -79,7 +79,7 @@ export default function AccountDetail() {
 
     // Activities
     const { data: acts } = await supabase
-      .from("activities")
+      .from("target_activities")
       .select("*")
       .eq("account_id", id)
       .order("activity_date", { ascending: false });
@@ -95,13 +95,13 @@ export default function AccountDetail() {
 
   // ── Status update ──
   const updateStatus = async (status) => {
-    await supabase.from("accounts").update({ status }).eq("id", id);
+    await supabase.from("target_accounts").update({ status }).eq("id", id);
     setAccount(prev => ({ ...prev, status }));
   };
 
   // ── Save notes ──
   const saveNotes = async () => {
-    await supabase.from("accounts").update({ notes: notesValue }).eq("id", id);
+    await supabase.from("target_accounts").update({ notes: notesValue }).eq("id", id);
     setAccount(prev => ({ ...prev, notes: notesValue }));
     setEditingNotes(false);
     setNotesSaved(true);
@@ -110,7 +110,7 @@ export default function AccountDetail() {
 
   // ── Save company info ──
   const saveCompany = async () => {
-    await supabase.from("accounts")
+    await supabase.from("target_accounts")
       .update({ name: companyForm.name, address: companyForm.address })
       .eq("id", id);
     setAccount(prev => ({ ...prev, name: companyForm.name, address: companyForm.address }));
@@ -139,9 +139,9 @@ export default function AccountDetail() {
 
   const saveContact = async () => {
     if (editingContactId) {
-      await supabase.from("contacts").update(contactForm).eq("id", editingContactId);
+      await supabase.from("target_contacts").update(contactForm).eq("id", editingContactId);
     } else {
-      await supabase.from("contacts").insert({ ...contactForm, account_id: id });
+      await supabase.from("target_contacts").insert({ ...contactForm, account_id: id });
     }
     setShowAddContact(false);
     setEditingContactId(null);

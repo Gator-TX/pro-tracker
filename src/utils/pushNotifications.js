@@ -45,7 +45,7 @@ export async function subscribeToPush(userId) {
     console.log('[Push] Subscription JSON:', JSON.stringify(subscription.toJSON()));
 
     console.log('[Push] Saving subscription to Supabase...');
-    const { data, error } = await supabase.from('push_subscriptions').upsert({
+    const { data, error } = await supabase.from('target_push_subscriptions').upsert({
       user_id: userId,
       subscription: subscription.toJSON()
     }, { onConflict: 'user_id' });
