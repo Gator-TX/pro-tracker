@@ -55,7 +55,7 @@ export default function ManagerAccounts() {
 
     const { data: accountsData } = await supabase
       .from("target_accounts")
-      .select("*, start_date, end_date, activities(activity_date)")
+      .select("*, start_date, end_date, target_activities(activity_date)")
       .order("created_at", { ascending: false });
     setAccounts(accountsData || []);
 
@@ -73,7 +73,7 @@ export default function ManagerAccounts() {
   };
 
   const getLastActivity = (account) => {
-    const acts = account.activities || [];
+    const acts = account.target_activities || [];
     if (!acts.length) return null;
     const latest = acts.reduce((a, b) =>
       new Date(a.activity_date) > new Date(b.activity_date) ? a : b
@@ -419,7 +419,7 @@ export default function ManagerAccounts() {
                       <span className="acct-days" style={styles.cellText}>
                         {account.end_date ? Math.max(0, Math.ceil((new Date(account.end_date) - new Date()) / (1000 * 60 * 60 * 24))) : "—"}
                       </span>
-                      <span className="acct-logs" style={styles.cellText}>{account.activities?.length || 0}</span>
+                      <span className="acct-logs" style={styles.cellText}>{account.target_activities?.length || 0}</span>
                       <span onClick={e => e.stopPropagation()}>
                         {account.rep_id ? (
                           <button
@@ -617,7 +617,7 @@ export default function ManagerAccounts() {
                     {/* Third row: activity info + unassign */}
                     <div className="acct-card-row3">
                       <span className="acct-card-meta">
-                        {getLastActivity(account) ? `Last: ${getLastActivity(account)}` : "No activity"} · {account.activities?.length || 0} logs
+                        {getLastActivity(account) ? `Last: ${getLastActivity(account)}` : "No activity"} · {account.target_activities?.length || 0} logs
                       </span>
                       {account.rep_id && (
                         unassignMsg === account.id

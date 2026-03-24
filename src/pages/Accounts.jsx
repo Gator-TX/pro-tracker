@@ -41,16 +41,16 @@ export default function Accounts() {
 
     const { data: accountsData } = await supabase
       .from("target_accounts")
-      .select("*, start_date, end_date, activities(id, activity_date)")
+      .select("*, start_date, end_date, target_activities(id, activity_date)")
       .eq("rep_id", user.id)
       .order("created_at", { ascending: false });
 
     const sorted = (accountsData || []).sort((a, b) => {
-      const aDate = a.activities?.length
-        ? Math.max(...a.activities.map(x => new Date(x.activity_date)))
+      const aDate = a.target_activities?.length
+        ? Math.max(...a.target_activities.map(x => new Date(x.activity_date)))
         : new Date(a.created_at);
-      const bDate = b.activities?.length
-        ? Math.max(...b.activities.map(x => new Date(x.activity_date)))
+      const bDate = b.target_activities?.length
+        ? Math.max(...b.target_activities.map(x => new Date(x.activity_date)))
         : new Date(b.created_at);
       return bDate - aDate;
     });
@@ -64,7 +64,7 @@ export default function Accounts() {
   };
 
   const getLastContact = (account) => {
-    const acts = account.activities || [];
+    const acts = account.target_activities || [];
     if (!acts.length) return null;
     const latest = new Date(Math.max(...acts.map(a => new Date(a.activity_date))));
     return latest.toLocaleDateString("en-US", { month: "short", day: "numeric" });
@@ -215,7 +215,7 @@ export default function Accounts() {
                         </span>
                         <span style={styles.dtCell}>{daysLeft !== null ? `${daysLeft}d` : "—"}</span>
                         <span style={styles.dtCell}>{lastContact || "—"}</span>
-                        <span style={styles.dtCell}>{account.activities?.length || 0}</span>
+                        <span style={styles.dtCell}>{account.target_activities?.length || 0}</span>
                         <span>
                           <button
                             onClick={e => { e.stopPropagation(); navigate(`/accounts/${account.id}`); }}

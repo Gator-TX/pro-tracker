@@ -52,7 +52,7 @@ export default function RepHome() {
     // Accounts with activities
     const { data: accountsData } = await supabase
       .from("target_accounts")
-      .select("id, name, company, status, created_at, activities(id, activity_date, activity_type, notes, outcome, scheduled_next_date, scheduled_next_type, scheduled_next_time)")
+      .select("id, name, company, status, created_at, target_activities(id, activity_date, activity_type, notes, outcome, scheduled_next_date, scheduled_next_type, scheduled_next_time)")
       .eq("rep_id", user.id);
 
     const ACTIVE = ["New", "Contacted", "Engaged", "Proposal"];
@@ -66,7 +66,7 @@ export default function RepHome() {
     const isAtRisk = (a) => {
       if (!ACTIVE.includes(a.status)) return false;
       if (new Date(a.created_at) >= thresholdDate) return false;
-      const acts = a.activities || [];
+      const acts = a.target_activities || [];
       if (!acts.length) return true;
       const latest = new Date(Math.max(...acts.map(x => new Date(x.activity_date))));
       return latest < thresholdDate;
@@ -79,7 +79,7 @@ export default function RepHome() {
     const attentionList = (accountsData || [])
       .filter(isAtRisk)
       .map(a => {
-        const acts = a.activities || [];
+        const acts = a.target_activities || [];
         const lastDate = acts.length
           ? new Date(Math.max(...acts.map(x => new Date(x.activity_date))))
           : null;
@@ -101,7 +101,7 @@ export default function RepHome() {
     // No activity during sprint
     const noActivity = sprintData ? (accountsData || []).filter(a =>
       ACTIVE.includes(a.status) &&
-      !(a.activities || []).some(act => act.activity_date >= sprintData.start_date)
+      !(a.target_activities || []).some(act => act.activity_date >= sprintData.start_date)
     ).length : 0;
     setNoActivityCount(noActivity);
 
@@ -133,7 +133,7 @@ export default function RepHome() {
 
     const allActs = [];
     (accountsData || []).forEach(acc => {
-      (acc.activities || []).forEach(act => {
+      (acc.target_activities || []).forEach(act => {
         if (act.activity_date >= fortyEightHoursAgoStr) {
           allActs.push({ ...act, accountName: acc.name || acc.company, accountId: acc.id });
         }
