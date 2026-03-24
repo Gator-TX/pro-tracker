@@ -20,6 +20,8 @@ export default function AccountDetail() {
   const [contacts, setContacts] = useState([]);
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [sendingToCrm, setSendingToCrm] = useState(false);
+  const [crmToast, setCrmToast] = useState(null); // { type: "success"|"error", msg }
 
   // Notes
   const [editingNotes, setEditingNotes] = useState(false);
@@ -91,6 +93,65 @@ export default function AccountDetail() {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate("/login");
+  };
+
+  // ── Send to CRM ──
+  const sendToCrm = async () => {
+    if (!window.confirm("Send this account to the CRM? This will move the account and all activity history out of Target10.")) return;
+    setSendingToCrm(true);
+    setCrmToast(null);
+    try {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+
+      const { data: crmContacts } = await supabase
+        .from("target_contacts").select("*").eq("account_id", id);
+
+      const { data: crmActivities } = await supabase
+        .from("target_activities").select("*").eq("account_id", id);
+
+      const { data: crmAccount, error: insertErr } = await supabase
+        .from("accounts").insert({
+          company_name: account.name || account.company,
+          address: account.address,
+          notes: account.notes,
+          user_id: currentUser.id,
+          source: "target10",
+        }).select().single();
+
+      if (insertErr) throw insertErr;
+
+      for (const contact of (crmContacts || [])) {
+        await supabase.from("contacts").insert({
+          customer_id: crmAccount.id,
+          user_id: currentUser.id,
+          first_name: contact.first_name,
+          last_name: contact.last_name,
+          phone: contact.phone,
+          email: contact.email,
+        });
+      }
+
+      for (const activity of (crmActivities || [])) {
+        await supabase.from("activities").insert({
+          user_id: currentUser.id,
+          type: activity.activity_type,
+          description: activity.notes || activity.outcome || activity.activity_type,
+          activity_date: activity.activity_date,
+          related_to: account.name || account.company,
+        });
+      }
+
+      await supabase.from("target_activities").delete().eq("account_id", id);
+      await supabase.from("target_contacts").delete().eq("account_id", id);
+      await supabase.from("target_accounts").delete().eq("id", id);
+
+      setCrmToast({ type: "success", msg: "Account successfully sent to CRM!" });
+      setTimeout(() => navigate("/accounts"), 1500);
+    } catch {
+      setCrmToast({ type: "error", msg: "Failed to send to CRM. Please try again." });
+    } finally {
+      setSendingToCrm(false);
+    }
   };
 
   // ── Status update ──
@@ -250,17 +311,29 @@ export default function AccountDetail() {
 
         <RepTopBar title="Account Detail" profile={profile} onSignOut={handleSignOut} />
 
+        {/* ── TOAST ── */}
+        {crmToast && (
+          <div style={crmToast.type === "success" ? styles.successToast : styles.errorToast}>
+            {crmToast.msg}
+          </div>
+        )}
+
         {/* ── HEADER ── */}
         <div className="desktop-header" style={styles.header}>
           <button onClick={handleBack} style={styles.backBtn}>← Back</button>
-          <span style={{
-            ...styles.statusBadgeSmall,
-            background: statusStyle.bg,
-            color: statusStyle.color,
-            border: `1px solid ${statusStyle.border}`,
-          }}>
-            {account?.status || "New"}
-          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{
+              ...styles.statusBadgeSmall,
+              background: statusStyle.bg,
+              color: statusStyle.color,
+              border: `1px solid ${statusStyle.border}`,
+            }}>
+              {account?.status || "New"}
+            </span>
+            <button onClick={sendToCrm} disabled={sendingToCrm} style={styles.crmBtn}>
+              {sendingToCrm ? "Sending…" : "Send to CRM"}
+            </button>
+          </div>
         </div>
 
         {/* Account name */}
@@ -681,4 +754,22 @@ const styles = {
   activityDate: { fontSize: "12px", color: "#ABABAB" },
   activityOutcome: { fontSize: "13px", color: "#374151", marginBottom: "2px" },
   activityNotes: { fontSize: "13px", color: "#767676" },
+
+  // Send to CRM
+  crmBtn: {
+    border: "1.5px solid #367C2B", color: "#367C2B", background: "#fff",
+    borderRadius: "6px", padding: "8px 16px", fontSize: "13px", fontWeight: 600,
+    fontFamily: "'DM Sans', sans-serif", cursor: "pointer", transition: "all 0.15s",
+    whiteSpace: "nowrap",
+  },
+  successToast: {
+    backgroundColor: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: "6px",
+    padding: "10px 20px", fontSize: "13px", color: "#16A34A", fontWeight: 500,
+    margin: "0 20px",
+  },
+  errorToast: {
+    backgroundColor: "#FEF2F2", border: "1px solid #FECACA", borderRadius: "6px",
+    padding: "10px 20px", fontSize: "13px", color: "#DC2626", fontWeight: 500,
+    margin: "0 20px",
+  },
 };
