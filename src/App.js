@@ -1,3 +1,5 @@
+window.name = "target10-window";
+
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/Login'
 import Accounts from './pages/Accounts'
