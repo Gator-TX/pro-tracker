@@ -139,13 +139,10 @@ export default function RepSettings() {
             <div style={styles.successBanner}>Settings saved successfully</div>
           )}
 
-          {/* Mobile Menu */}
-          <MobileMenuSettings items={REP_MENU_ITEMS} defaultOrder={REP_DEFAULT_ORDER} storageKey={REP_STORAGE_KEY} />
-
           {/* Profile */}
           <div style={styles.section}>
-            <p style={styles.sectionTitle}>Your Profile</p>
             <div style={styles.card}>
+              <p style={styles.cardTitle}>Profile</p>
               <div style={styles.field}>
                 <label style={styles.fieldLabel}>Full Name</label>
                 <input id="full_name" name="full_name" className="field-input" value={fullName}
@@ -161,8 +158,8 @@ export default function RepSettings() {
 
           {/* Change Password */}
           <div style={styles.section}>
-            <p style={styles.sectionTitle}>Change Password</p>
             <div style={styles.card}>
+              <p style={styles.cardTitle}>Change Password</p>
               {passwordError && (
                 <div style={styles.errorBanner}>{passwordError}</div>
               )}
@@ -194,8 +191,8 @@ export default function RepSettings() {
 
           {/* Notifications */}
           <div style={styles.section}>
-            <p style={styles.sectionTitle}>Notifications</p>
             <div style={styles.card}>
+              <p style={styles.cardTitle}>Notifications</p>
               <div style={styles.notifRow}>
                 <div>
                   <p style={styles.notifLabel}>Push Notifications</p>
@@ -219,10 +216,13 @@ export default function RepSettings() {
             </div>
           </div>
 
+          {/* Mobile Menu */}
+          <MobileMenuSettings items={REP_MENU_ITEMS} defaultOrder={REP_DEFAULT_ORDER} storageKey={REP_STORAGE_KEY} />
+
           {/* Session */}
           <div style={styles.section}>
-            <p style={styles.sectionTitle}>Session</p>
             <div style={styles.card}>
+              <p style={styles.cardTitle}>Session</p>
               <div style={styles.signOutRow}>
                 <div>
                   <p style={styles.signOutLabel}>Sign out of Pro-Tracker</p>
@@ -254,6 +254,7 @@ const styles = {
   errorBanner: { backgroundColor: "#FEF2F2", border: "1px solid #FECACA", borderRadius: "6px", padding: "10px 14px", fontSize: "13px", color: "#DC2626", fontWeight: 500 },
   section: { display: "flex", flexDirection: "column", gap: "10px" },
   sectionTitle: { fontSize: "13px", fontWeight: 600, color: "#374151" },
+  cardTitle: { fontSize: "16px", fontWeight: 700, color: "#1A1A1A" },
   card: { backgroundColor: "#ffffff", border: "1px solid #E8E8E6", borderRadius: "8px", padding: "20px", display: "flex", flexDirection: "column", gap: "16px" },
   field: { display: "flex", flexDirection: "column", gap: "6px" },
   fieldLabel: { fontSize: "12px", fontWeight: 600, color: "#374151" },

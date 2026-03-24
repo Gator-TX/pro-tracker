@@ -160,13 +160,10 @@ export default function Settings() {
             <div style={styles.successBanner}>Settings saved successfully</div>
           )}
 
-          {/* Mobile Menu */}
-          <MobileMenuSettings items={MGR_MENU_ITEMS} defaultOrder={MGR_DEFAULT_ORDER} storageKey={MGR_STORAGE_KEY} />
-
           {/* Profile settings */}
           <div style={styles.section}>
-            <p style={styles.sectionTitle}>Your Profile</p>
             <div style={styles.card}>
+              <p style={styles.cardTitle}>Profile</p>
               <div style={styles.field}>
                 <label style={styles.fieldLabel}>Full Name</label>
                 <input id="full_name" name="full_name" className="field-input" value={fullName}
@@ -182,8 +179,8 @@ export default function Settings() {
 
           {/* Sprint settings */}
           <div style={styles.section}>
-            <p style={styles.sectionTitle}>Target Defaults</p>
             <div style={styles.card}>
+              <p style={styles.cardTitle}>Target Defaults</p>
               <div style={styles.field}>
                 <label style={styles.fieldLabel}>Target Length (days)</label>
                 <input id="sprint_length" name="sprint_length" className="field-input" type="number"
@@ -205,8 +202,8 @@ export default function Settings() {
 
           {/* At Risk Thresholds */}
           <div style={styles.section}>
-            <p style={styles.sectionTitle}>At Risk Thresholds</p>
             <div style={styles.card}>
+              <p style={styles.cardTitle}>At Risk Thresholds</p>
               <div style={styles.thresholdRow}>
                 <div style={{ ...styles.field, flex: 1, minWidth: 0 }}>
                   <label style={styles.fieldLabel}>Rep At Risk After</label>
@@ -226,8 +223,8 @@ export default function Settings() {
 
           {/* Account */}
           <div style={styles.section}>
-            <p style={styles.sectionTitle}>Account</p>
             <div style={styles.card}>
+              <p style={styles.cardTitle}>Account</p>
               <div style={styles.infoRow}>
                 <span style={styles.infoLabel}>Organization</span>
                 <span style={styles.infoValue}>United Ag & Turf</span>
@@ -245,8 +242,8 @@ export default function Settings() {
 
           {/* Change Password */}
           <div style={styles.section}>
-            <p style={styles.sectionTitle}>Change Password</p>
             <div style={styles.card}>
+              <p style={styles.cardTitle}>Change Password</p>
               {passwordError && (
                 <div style={styles.errorBanner}>{passwordError}</div>
               )}
@@ -278,8 +275,8 @@ export default function Settings() {
 
           {/* Notifications */}
           <div style={styles.section}>
-            <p style={styles.sectionTitle}>Notifications</p>
             <div style={styles.card}>
+              <p style={styles.cardTitle}>Notifications</p>
               <div style={styles.notifRow}>
                 <div>
                   <p style={styles.notifLabel}>Push Notifications</p>
@@ -297,10 +294,13 @@ export default function Settings() {
             </div>
           </div>
 
+          {/* Mobile Menu */}
+          <MobileMenuSettings items={MGR_MENU_ITEMS} defaultOrder={MGR_DEFAULT_ORDER} storageKey={MGR_STORAGE_KEY} />
+
           {/* Sign out */}
           <div style={styles.section}>
-            <p style={styles.sectionTitle}>Session</p>
             <div style={styles.card}>
+              <p style={styles.cardTitle}>Session</p>
               <div style={styles.signOutRow}>
                 <div>
                   <p style={styles.signOutLabel}>Sign out of Pro-Tracker</p>
@@ -335,6 +335,7 @@ const styles = {
   errorBanner: { backgroundColor: "#FEF2F2", border: "1px solid #FECACA", borderRadius: "6px", padding: "10px 14px", fontSize: "13px", color: "#DC2626", fontWeight: 500 },
   section: { display: "flex", flexDirection: "column", gap: "10px" },
   sectionTitle: { fontSize: "13px", fontWeight: 600, color: "#374151" },
+  cardTitle: { fontSize: "16px", fontWeight: 700, color: "#1A1A1A" },
   card: { backgroundColor: "#ffffff", border: "1px solid #E8E8E6", borderRadius: "8px", padding: "20px", display: "flex", flexDirection: "column", gap: "16px" },
   field: { display: "flex", flexDirection: "column", gap: "6px" },
   thresholdRow: { display: "flex", gap: "16px", flexWrap: "wrap" },
