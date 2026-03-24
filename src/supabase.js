@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = 'https://gnbrcfxaljunjvbnxncw.supabase.co'
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFuemttcGNvdXlrdGVmbGZzZmdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3OTQ5MzYsImV4cCI6MjA4OTM3MDkzNn0.oYDAUhQXYAxtDYdnpYtfT6m4CIDCCfTrwBjIuZ8cl3s'
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL || 'https://gnbrcfxaljunjvbnxncw.supabase.co';
+const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
 
 // Custom storage adapter: uses sessionStorage when "session only" mode is active,
 // otherwise falls back to localStorage (Supabase default behavior).
