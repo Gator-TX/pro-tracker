@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../supabase";
 import logo from "../assets/uatprologo.png";
 
 const MANAGER_NAV = [
@@ -174,7 +175,15 @@ export default function Sidebar({ role, profile, onSignOut, activePath }) {
           target="_blank"
           rel="noreferrer"
           style={styles.backToCrm}
-          onClick={e => { e.preventDefault(); window.open("https://unitedpro.org", "_blank"); }}
+          onClick={async (e) => {
+            e.preventDefault();
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+              window.open(`https://unitedpro.org/auth?access_token=${session.access_token}&refresh_token=${session.refresh_token}`, "_blank");
+            } else {
+              window.open("https://unitedpro.org", "_blank");
+            }
+          }}
         >
           ← Back to CRM
         </a>
