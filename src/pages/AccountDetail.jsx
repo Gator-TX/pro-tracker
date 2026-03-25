@@ -97,6 +97,7 @@ export default function AccountDetail() {
 
   // ── Send to CRM ──
   const sendToCrm = async () => {
+    if (profile?.role !== "manager") return;
     if (!window.confirm("Send this lead to the CRM as an account? This will move the lead and all activity history out of Target10.")) return;
     setSendingToCrm(true);
     setCrmToast(null);
@@ -330,9 +331,11 @@ export default function AccountDetail() {
             }}>
               {account?.status || "New"}
             </span>
-            <button onClick={sendToCrm} disabled={sendingToCrm} style={styles.crmBtn}>
-              {sendingToCrm ? "Sending…" : "Send to CRM as Account"}
-            </button>
+            {profile?.role === "manager" && (
+              <button onClick={sendToCrm} disabled={sendingToCrm} style={styles.crmBtn}>
+                {sendingToCrm ? "Sending…" : "Send to CRM as Account"}
+              </button>
+            )}
           </div>
         </div>
 
