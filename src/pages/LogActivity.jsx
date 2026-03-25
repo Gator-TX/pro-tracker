@@ -197,7 +197,7 @@ export default function LogActivity() {
         <RepBottomNav activePath="/leads" />
         <Sidebar role="rep" profile={profile} onSignOut={handleSignOut} activePath="/leads" />
         <div className="main-content" style={styles.page}>
-        <RepTopBar title="Log Activity" profile={profile} onSignOut={handleSignOut} />
+        <RepTopBar profile={profile} onSignOut={handleSignOut} />
 
         {/* ── HEADER ── */}
         <div style={styles.header}>

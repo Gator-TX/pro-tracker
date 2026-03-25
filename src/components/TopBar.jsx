@@ -4,7 +4,7 @@ export default function TopBar({ profile, onSignOut }) {
       <style>{`@media (max-width: 768px) { .topbar-manager { display: none !important; } }`}</style>
       <div className="topbar-manager" style={{
         display: "flex", alignItems: "center", justifyContent: "flex-end",
-        padding: "0 0 0",
+        padding: "28px 32px 0",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <span style={{ fontSize: "13px", fontWeight: 600, color: "#1A1A1A", fontFamily: "'DM Sans', sans-serif" }}>

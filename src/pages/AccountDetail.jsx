@@ -311,9 +311,8 @@ export default function AccountDetail() {
         <RepBottomNav activePath="/leads" />
         <Sidebar role="rep" profile={profile} onSignOut={handleSignOut} activePath="/leads" />
         <div className="main-content" style={styles.page}>
+          <RepTopBar profile={profile} onSignOut={handleSignOut} />
           <PullToRefresh onRefresh={loadData}>
-
-        <RepTopBar title="Lead Detail" profile={profile} onSignOut={handleSignOut} />
 
         {/* ── TOAST ── */}
         {crmToast && (

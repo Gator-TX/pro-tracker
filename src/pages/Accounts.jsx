@@ -162,8 +162,8 @@ export default function Accounts() {
         <RepBottomNav activePath="/leads" />
         <Sidebar role="rep" profile={profile} onSignOut={handleSignOut} activePath="/leads" />
         <div className="main-content" style={styles.page}>
+          <RepTopBar profile={profile} onSignOut={handleSignOut} />
           <PullToRefresh onRefresh={loadData}>
-            <RepTopBar title="My Leads" profile={profile} onSignOut={handleSignOut} />
 
             {/* Search + status filter */}
             <div style={styles.filterWrap}>
