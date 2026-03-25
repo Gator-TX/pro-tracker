@@ -43,7 +43,7 @@ export default function Settings() {
     const { data: profileData } = await supabase
       .from("profiles").select("*").eq("id", user.id).single();
     setProfile(profileData);
-    if (profileData?.role !== "manager") { navigate("/accounts"); return; }
+    if (profileData?.role !== "manager") { navigate("/leads"); return; }
 
     setFullName(profileData?.full_name || "");
 

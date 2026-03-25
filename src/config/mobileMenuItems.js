@@ -22,7 +22,7 @@ const ICONS = {
 /* ── Rep menu items ───────────────────────────────────────────────── */
 export const REP_MENU_ITEMS = [
   { key: "home",     label: "Home",     path: "/home",         icon: ICONS.home },
-  { key: "accounts", label: "Accounts", path: "/accounts",     icon: ICONS.accounts },
+  { key: "accounts", label: "Leads",    path: "/leads",     icon: ICONS.accounts },
   { key: "activity", label: "Activity", path: "/activities",   icon: ICONS.activity },
   { key: "settings", label: "Settings", path: "/rep/settings", icon: ICONS.settings },
 ];
@@ -33,10 +33,10 @@ export const REP_STORAGE_KEY = "mobile_menu_order_rep";
 /* ── Manager menu items ───────────────────────────────────────────── */
 export const MGR_MENU_ITEMS = [
   { key: "home",       label: "Home",            path: "/dashboard",            icon: ICONS.home },
-  { key: "accounts",   label: "Accounts",        path: "/dashboard/accounts",   icon: ICONS.accounts },
+  { key: "accounts",   label: "Leads",           path: "/dashboard/accounts",   icon: ICONS.accounts },
   { key: "reps",       label: "Reps",            path: "/dashboard/reps",       icon: ICONS.reps },
   { key: "activities", label: "Activities",       path: "/dashboard/activities", icon: ICONS.activity },
-  { key: "manage",     label: "Manage Accounts", path: "/manage",               icon: ICONS.manage },
+  { key: "manage",     label: "Manage Leads",  path: "/manage",               icon: ICONS.manage },
   { key: "export",     label: "Export Reports",   path: "/dashboard/export",     icon: ICONS.export },
   { key: "users",      label: "User Management", path: "/dashboard/users",      icon: ICONS.users },
   { key: "settings",   label: "Settings",        path: "/dashboard/settings",   icon: ICONS.settings },

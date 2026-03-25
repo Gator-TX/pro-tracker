@@ -38,7 +38,7 @@ export default function RepHome() {
     // Sprint
     const today = new Date().toISOString().split("T")[0];
     const { data: sprintData } = await supabase
-      .from("target_sprints").select("*")
+      .from("target_lead_sprints").select("*")
       .lte("start_date", today).gte("end_date", today).limit(1).single();
     setSprint(sprintData);
 
@@ -51,7 +51,7 @@ export default function RepHome() {
 
     // Accounts with activities
     const { data: accountsData } = await supabase
-      .from("target_accounts")
+      .from("target_leads")
       .select("id, name, company, status, created_at, target_activities(id, activity_date, activity_type, notes, outcome, scheduled_next_date, scheduled_next_type, scheduled_next_time)")
       .eq("rep_id", user.id);
 
@@ -66,7 +66,7 @@ export default function RepHome() {
     const isAtRisk = (a) => {
       if (!ACTIVE.includes(a.status)) return false;
       if (new Date(a.created_at) >= thresholdDate) return false;
-      const acts = a.target_activities || [];
+      const acts = a.target_lead_activities || [];
       if (!acts.length) return true;
       const latest = new Date(Math.max(...acts.map(x => new Date(x.activity_date))));
       return latest < thresholdDate;
@@ -79,7 +79,7 @@ export default function RepHome() {
     const attentionList = (accountsData || [])
       .filter(isAtRisk)
       .map(a => {
-        const acts = a.target_activities || [];
+        const acts = a.target_lead_activities || [];
         const lastDate = acts.length
           ? new Date(Math.max(...acts.map(x => new Date(x.activity_date))))
           : null;
@@ -101,7 +101,7 @@ export default function RepHome() {
     // No activity during sprint
     const noActivity = sprintData ? (accountsData || []).filter(a =>
       ACTIVE.includes(a.status) &&
-      !(a.target_activities || []).some(act => act.activity_date >= sprintData.start_date)
+      !(a.target_lead_activities || []).some(act => act.activity_date >= sprintData.start_date)
     ).length : 0;
     setNoActivityCount(noActivity);
 
@@ -110,7 +110,7 @@ export default function RepHome() {
     (accountsData || []).forEach(a => { accountNameMap[a.id] = a.name || a.company; });
 
     const { data: upcomingData } = await supabase
-      .from("target_activities")
+      .from("target_lead_activities")
       .select("id, account_id, scheduled_next_date, scheduled_next_type, scheduled_next_time")
       .eq("rep_id", user.id)
       .not("scheduled_next_date", "is", null)
@@ -133,7 +133,7 @@ export default function RepHome() {
 
     const allActs = [];
     (accountsData || []).forEach(acc => {
-      (acc.target_activities || []).forEach(act => {
+      (acc.target_lead_activities || []).forEach(act => {
         if (act.activity_date >= fortyEightHoursAgoStr) {
           allActs.push({ ...act, accountName: acc.name || acc.company, accountId: acc.id });
         }
@@ -382,7 +382,7 @@ export default function RepHome() {
                 <p className="rh-upcoming-empty">No upcoming activities scheduled</p>
               ) : (
                 upcomingActivities.slice(0, 5).map((act, i) => (
-                  <div key={i} className="rh-upcoming-row" onClick={() => navigate(`/accounts/${act.accountId}`)}>
+                  <div key={i} className="rh-upcoming-row" onClick={() => navigate(`/leads/${act.accountId}`)}>
                     <span className="rh-date-pill" style={{
                       background: isToday(act.date) ? "#F0FDF4" : "#EFF6FF",
                       color: isToday(act.date) ? "#16A34A" : "#2563EB",
@@ -398,16 +398,16 @@ export default function RepHome() {
               )}
             </div>
 
-            {/* At Risk Accounts */}
+            {/* At Risk Leads */}
             <div className="rh-risk-card">
               <div className="rh-risk-header">
-                <span className="rh-risk-label">At Risk Accounts</span>
+                <span className="rh-risk-label">At Risk Leads</span>
               </div>
               {needsAttentionList.length === 0 ? (
                 <p style={{ fontSize: "13px", color: "#16A34A", fontWeight: 600 }}>✓ All accounts on track</p>
               ) : (
                 needsAttentionList.slice(0, 3).map(acc => (
-                  <div key={acc.id} className="rh-risk-row" onClick={() => navigate(`/accounts/${acc.id}`)} style={{ cursor: "pointer" }}>
+                  <div key={acc.id} className="rh-risk-row" onClick={() => navigate(`/leads/${acc.id}`)} style={{ cursor: "pointer" }}>
                     <div>
                       <p className="rh-risk-name">{acc.name}</p>
                       <p className="rh-risk-sub">{acc.status}</p>
@@ -418,7 +418,7 @@ export default function RepHome() {
                   </div>
                 ))
               )}
-              <button className="rh-risk-viewall" onClick={() => navigate("/accounts")}>
+              <button className="rh-risk-viewall" onClick={() => navigate("/leads")}>
                 View all accounts →
               </button>
             </div>
@@ -474,7 +474,7 @@ export default function RepHome() {
             <div style={dt.statGrid}>
               {[
                 { label: "Active Accounts", value: stats.active,        accent: "#367C2B" },
-                { label: "At Risk Accounts", value: stats.needsAttention, accent: "#DC2626" },
+                { label: "At Risk Leads", value: stats.needsAttention, accent: "#DC2626" },
                 { label: "Won This Target",  value: stats.won,           accent: "#367C2B" },
                 { label: "In Proposal",      value: stats.proposal,      accent: "#7C3AED" },
               ].map(c => (
@@ -506,7 +506,7 @@ export default function RepHome() {
                         key={i}
                         className="dt-upcoming-row"
                         style={dt.upcomingRow}
-                        onClick={() => navigate(`/accounts/${act.accountId}`)}
+                        onClick={() => navigate(`/leads/${act.accountId}`)}
                       >
                         <span style={{
                           ...dt.datePill,
@@ -537,7 +537,7 @@ export default function RepHome() {
                       <table style={{ width: "100%", borderCollapse: "collapse" }}>
                         <thead>
                           <tr>
-                            {["Date", "Account", "Type", "Notes"].map(h => (
+                            {["Date", "Company Name", "Type", "Notes"].map(h => (
                               <th key={h} style={dt.th}>{h}</th>
                             ))}
                           </tr>
@@ -549,7 +549,7 @@ export default function RepHome() {
                               <tr
                                 key={act.id}
                                 className="dt-act-tr"
-                                onClick={() => navigate(`/accounts/${act.accountId}`)}
+                                onClick={() => navigate(`/leads/${act.accountId}`)}
                               >
                                 <td style={dt.td}>{formatDate(act.activity_date)}</td>
                                 <td style={{ ...dt.td, fontWeight: 600 }}>{act.accountName}</td>
@@ -593,11 +593,11 @@ export default function RepHome() {
                   })}
                 </div>
 
-                {/* At Risk Accounts card */}
+                {/* At Risk Leads card */}
                 <div style={dt.card}>
                   <div style={dt.cardHeader}>
-                    <span style={dt.cardTitle}>At Risk Accounts</span>
-                    <button style={dt.viewAll} onClick={() => navigate("/accounts")}>View all →</button>
+                    <span style={dt.cardTitle}>At Risk Leads</span>
+                    <button style={dt.viewAll} onClick={() => navigate("/leads")}>View all →</button>
                   </div>
                   {needsAttentionList.length === 0 ? (
                     <p style={{ fontSize: "13px", color: "#16A34A", fontWeight: 600 }}>✓ All accounts on track</p>
@@ -608,7 +608,7 @@ export default function RepHome() {
                           key={acc.id}
                           className="dt-risk-row"
                           style={dt.riskRow}
-                          onClick={() => navigate(`/accounts/${acc.id}`)}
+                          onClick={() => navigate(`/leads/${acc.id}`)}
                         >
                           <div>
                             <p style={dt.riskName}>{acc.name}</p>

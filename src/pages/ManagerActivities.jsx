@@ -29,18 +29,18 @@ export default function ManagerActivities() {
     const { data: profileData } = await supabase
       .from("profiles").select("*").eq("id", user.id).single();
     setProfile(profileData);
-    if (profileData?.role !== "manager") { navigate("/accounts"); return; }
+    if (profileData?.role !== "manager") { navigate("/leads"); return; }
 
     const { data: repsData } = await supabase
       .from("profiles").select("*").eq("role", "rep");
     setReps(repsData || []);
 
     const { data: accountsData } = await supabase
-      .from("target_accounts").select("id, name, company");
+      .from("target_leads").select("id, name, company");
     setAccounts(accountsData || []);
 
     const { data: actsData } = await supabase
-      .from("target_activities").select("*")
+      .from("target_lead_activities").select("*")
       .order("activity_date", { ascending: false })
       .limit(200);
     setActivities(actsData || []);
@@ -62,7 +62,7 @@ export default function ManagerActivities() {
   const handleDelete = async () => {
     if (!window.confirm(`Delete ${selectedIds.length} activit${selectedIds.length > 1 ? "ies" : "y"}? This cannot be undone.`)) return;
     setDeleting(true);
-    await supabase.from("target_activities").delete().in("id", selectedIds);
+    await supabase.from("target_lead_activities").delete().in("id", selectedIds);
     setSelectedIds([]);
     await loadData();
     setDeleting(false);
@@ -241,7 +241,7 @@ export default function ManagerActivities() {
                 style={styles.checkbox}
               />
               <span>Date</span>
-              <span>Account</span>
+              <span>Company Name</span>
               <span>Rep</span>
               <span>Type</span>
               <span>Notes</span>

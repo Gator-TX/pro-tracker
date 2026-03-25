@@ -12,7 +12,7 @@ export default function AccountDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const handleBack = () => {
-    if (window.history.length > 1) { navigate(-1); } else { navigate("/accounts"); }
+    if (window.history.length > 1) { navigate(-1); } else { navigate("/leads"); }
   };
 
   const [profile, setProfile] = useState(null);
@@ -63,7 +63,7 @@ export default function AccountDetail() {
 
     // Account
     const { data: acc } = await supabase
-      .from("target_accounts")
+      .from("target_leads")
       .select("*, start_date, end_date")
       .eq("id", id)
       .single();
@@ -73,7 +73,7 @@ export default function AccountDetail() {
 
     // Contacts
     const { data: cons } = await supabase
-      .from("target_contacts")
+      .from("target_lead_contacts")
       .select("*")
       .eq("account_id", id)
       .order("is_primary", { ascending: false });
@@ -81,7 +81,7 @@ export default function AccountDetail() {
 
     // Activities
     const { data: acts } = await supabase
-      .from("target_activities")
+      .from("target_lead_activities")
       .select("*")
       .eq("account_id", id)
       .order("activity_date", { ascending: false });
@@ -97,17 +97,17 @@ export default function AccountDetail() {
 
   // ── Send to CRM ──
   const sendToCrm = async () => {
-    if (!window.confirm("Send this account to the CRM? This will move the account and all activity history out of Target10.")) return;
+    if (!window.confirm("Send this lead to the CRM as an account? This will move the lead and all activity history out of Target10.")) return;
     setSendingToCrm(true);
     setCrmToast(null);
     try {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
 
       const { data: crmContacts } = await supabase
-        .from("target_contacts").select("*").eq("account_id", id);
+        .from("target_lead_contacts").select("*").eq("account_id", id);
 
       const { data: crmActivities } = await supabase
-        .from("target_activities").select("*").eq("account_id", id);
+        .from("target_lead_activities").select("*").eq("account_id", id);
 
       const { data: crmAccount, error: insertErr } = await supabase
         .from("accounts").insert({
@@ -141,12 +141,12 @@ export default function AccountDetail() {
         });
       }
 
-      await supabase.from("target_activities").delete().eq("account_id", id);
-      await supabase.from("target_contacts").delete().eq("account_id", id);
-      await supabase.from("target_accounts").delete().eq("id", id);
+      await supabase.from("target_lead_activities").delete().eq("account_id", id);
+      await supabase.from("target_lead_contacts").delete().eq("account_id", id);
+      await supabase.from("target_leads").delete().eq("id", id);
 
-      setCrmToast({ type: "success", msg: "Account successfully sent to CRM!" });
-      setTimeout(() => navigate("/accounts"), 1500);
+      setCrmToast({ type: "success", msg: "Lead successfully sent to CRM as account!" });
+      setTimeout(() => navigate("/leads"), 1500);
     } catch {
       setCrmToast({ type: "error", msg: "Failed to send to CRM. Please try again." });
     } finally {
@@ -156,13 +156,13 @@ export default function AccountDetail() {
 
   // ── Status update ──
   const updateStatus = async (status) => {
-    await supabase.from("target_accounts").update({ status }).eq("id", id);
+    await supabase.from("target_leads").update({ status }).eq("id", id);
     setAccount(prev => ({ ...prev, status }));
   };
 
   // ── Save notes ──
   const saveNotes = async () => {
-    await supabase.from("target_accounts").update({ notes: notesValue }).eq("id", id);
+    await supabase.from("target_leads").update({ notes: notesValue }).eq("id", id);
     setAccount(prev => ({ ...prev, notes: notesValue }));
     setEditingNotes(false);
     setNotesSaved(true);
@@ -171,7 +171,7 @@ export default function AccountDetail() {
 
   // ── Save company info ──
   const saveCompany = async () => {
-    await supabase.from("target_accounts")
+    await supabase.from("target_leads")
       .update({ name: companyForm.name, address: companyForm.address })
       .eq("id", id);
     setAccount(prev => ({ ...prev, name: companyForm.name, address: companyForm.address }));
@@ -200,9 +200,9 @@ export default function AccountDetail() {
 
   const saveContact = async () => {
     if (editingContactId) {
-      await supabase.from("target_contacts").update(contactForm).eq("id", editingContactId);
+      await supabase.from("target_lead_contacts").update(contactForm).eq("id", editingContactId);
     } else {
-      await supabase.from("target_contacts").insert({ ...contactForm, account_id: id });
+      await supabase.from("target_lead_contacts").insert({ ...contactForm, account_id: id });
     }
     setShowAddContact(false);
     setEditingContactId(null);
@@ -303,13 +303,13 @@ export default function AccountDetail() {
       `}</style>
 
       <div style={styles.layout}>
-        <MobileHeader activePath="/accounts" profile={profile} />
-        <RepBottomNav activePath="/accounts" />
-        <Sidebar role="rep" profile={profile} onSignOut={handleSignOut} activePath="/accounts" />
+        <MobileHeader activePath="/leads" profile={profile} />
+        <RepBottomNav activePath="/leads" />
+        <Sidebar role="rep" profile={profile} onSignOut={handleSignOut} activePath="/leads" />
         <div className="main-content" style={styles.page}>
           <PullToRefresh onRefresh={loadData}>
 
-        <RepTopBar title="Account Detail" profile={profile} onSignOut={handleSignOut} />
+        <RepTopBar title="Lead Detail" profile={profile} onSignOut={handleSignOut} />
 
         {/* ── TOAST ── */}
         {crmToast && (
@@ -331,7 +331,7 @@ export default function AccountDetail() {
               {account?.status || "New"}
             </span>
             <button onClick={sendToCrm} disabled={sendingToCrm} style={styles.crmBtn}>
-              {sendingToCrm ? "Sending…" : "Send to CRM"}
+              {sendingToCrm ? "Sending…" : "Send to CRM as Account"}
             </button>
           </div>
         </div>
@@ -403,7 +403,7 @@ export default function AccountDetail() {
                   style={{ resize: "vertical" }}
                   value={notesValue}
                   onChange={e => setNotesValue(e.target.value)}
-                  placeholder="Add notes about this account..."
+                  placeholder="Add notes about this lead..."
                 />
                 <div style={styles.rowBtns}>
                   <button className="btn-primary" style={{ flex: 1 }} onClick={saveNotes}>Save</button>
@@ -414,7 +414,7 @@ export default function AccountDetail() {
               <div>
                 {account?.notes
                   ? <p style={{ fontSize: "14px", color: "#374151", whiteSpace: "pre-wrap", lineHeight: 1.6 }}>{account.notes}</p>
-                  : <p style={styles.infoMuted}>Add notes about this account...</p>
+                  : <p style={styles.infoMuted}>Add notes about this lead...</p>
                 }
                 {notesSaved && <p style={{ fontSize: "12px", color: "#16A34A", marginTop: "6px" }}>Notes saved</p>}
               </div>
@@ -506,7 +506,7 @@ export default function AccountDetail() {
 
           {/* ── STATUS SELECTOR ── */}
           <div style={styles.card}>
-            <p style={styles.cardLabel}>Account Status</p>
+            <p style={styles.cardLabel}>Lead Status</p>
             <div style={styles.statusRow}>
               {STATUSES.map(s => {
                 const sc = STATUS_COLORS[s];
@@ -593,7 +593,7 @@ export default function AccountDetail() {
           <button
             className="btn-primary"
             style={{ marginBottom: "95px" }}
-            onClick={() => navigate(`/accounts/${id}/log`)}
+            onClick={() => navigate(`/leads/${id}/log`)}
           >
             + Log Activity
           </button>

@@ -26,9 +26,9 @@ function App() {
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
         <Route path="/auth" element={<AuthRedirect />} />
-        <Route path="/accounts" element={<Accounts />} />
-        <Route path="/accounts/:id" element={<AccountDetail />} />
-        <Route path="/accounts/:id/log" element={<LogActivity />} />
+        <Route path="/leads" element={<Accounts />} />
+        <Route path="/leads/:id" element={<AccountDetail />} />
+        <Route path="/leads/:id/log" element={<LogActivity />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/dashboard/reps/:repId" element={<RepDetail />} />
         <Route path="/manage" element={<ManageAccounts />} />

@@ -40,17 +40,17 @@ export default function Accounts() {
     setProfile(profileData);
 
     const { data: accountsData } = await supabase
-      .from("target_accounts")
+      .from("target_leads")
       .select("*, start_date, end_date, target_activities(id, activity_date)")
       .eq("rep_id", user.id)
       .order("created_at", { ascending: false });
 
     const sorted = (accountsData || []).sort((a, b) => {
-      const aDate = a.target_activities?.length
-        ? Math.max(...a.target_activities.map(x => new Date(x.activity_date)))
+      const aDate = a.target_lead_activities?.length
+        ? Math.max(...a.target_lead_activities.map(x => new Date(x.activity_date)))
         : new Date(a.created_at);
-      const bDate = b.target_activities?.length
-        ? Math.max(...b.target_activities.map(x => new Date(x.activity_date)))
+      const bDate = b.target_lead_activities?.length
+        ? Math.max(...b.target_lead_activities.map(x => new Date(x.activity_date)))
         : new Date(b.created_at);
       return bDate - aDate;
     });
@@ -64,7 +64,7 @@ export default function Accounts() {
   };
 
   const getLastContact = (account) => {
-    const acts = account.target_activities || [];
+    const acts = account.target_lead_activities || [];
     if (!acts.length) return null;
     const latest = new Date(Math.max(...acts.map(a => new Date(a.activity_date))));
     return latest.toLocaleDateString("en-US", { month: "short", day: "numeric" });
@@ -153,19 +153,19 @@ export default function Accounts() {
       `}</style>
 
       <div style={styles.layout}>
-        <MobileHeader activePath="/accounts" profile={profile} />
-        <RepBottomNav activePath="/accounts" />
-        <Sidebar role="rep" profile={profile} onSignOut={handleSignOut} activePath="/accounts" />
+        <MobileHeader activePath="/leads" profile={profile} />
+        <RepBottomNav activePath="/leads" />
+        <Sidebar role="rep" profile={profile} onSignOut={handleSignOut} activePath="/leads" />
         <div className="main-content" style={styles.page}>
           <PullToRefresh onRefresh={loadData}>
-            <RepTopBar title="My Accounts" profile={profile} onSignOut={handleSignOut} />
+            <RepTopBar title="My Leads" profile={profile} onSignOut={handleSignOut} />
 
             {/* Search + status filter */}
             <div style={styles.filterWrap}>
               <input
                 className="acct-search-input"
                 type="text"
-                placeholder="Search accounts..."
+                placeholder="Search leads..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
@@ -185,7 +185,7 @@ export default function Accounts() {
               <div style={styles.dtTableCard}>
                 {/* Header */}
                 <div style={styles.dtHeader}>
-                  {["Account", "Status", "Days Left", "Last Activity", "Logs", "Actions"].map(h => (
+                  {["Company Name", "Status", "Days Left", "Last Activity", "Logs", "Actions"].map(h => (
                     <span key={h} style={styles.dtTh}>{h}</span>
                   ))}
                 </div>
@@ -204,7 +204,7 @@ export default function Accounts() {
                       <div
                         key={account.id}
                         className="acct-dt-row"
-                        onClick={() => navigate(`/accounts/${account.id}`)}
+                        onClick={() => navigate(`/leads/${account.id}`)}
                       >
                         <span style={styles.dtName}>{account.name || account.company}</span>
                         <span style={{
@@ -215,10 +215,10 @@ export default function Accounts() {
                         </span>
                         <span style={styles.dtCell}>{daysLeft !== null ? `${daysLeft}d` : "—"}</span>
                         <span style={styles.dtCell}>{lastContact || "—"}</span>
-                        <span style={styles.dtCell}>{account.target_activities?.length || 0}</span>
+                        <span style={styles.dtCell}>{account.target_lead_activities?.length || 0}</span>
                         <span>
                           <button
-                            onClick={e => { e.stopPropagation(); navigate(`/accounts/${account.id}`); }}
+                            onClick={e => { e.stopPropagation(); navigate(`/leads/${account.id}`); }}
                             style={styles.viewLink}
                           >
                             View
@@ -253,7 +253,7 @@ export default function Accounts() {
                     <div
                       key={account.id}
                       className="account-card"
-                      onClick={() => navigate(`/accounts/${account.id}`)}
+                      onClick={() => navigate(`/leads/${account.id}`)}
                       style={account.status === "Lost" ? { borderLeft: "3px solid #DC2626" } : undefined}
                     >
                       <div style={styles.cardTop}>

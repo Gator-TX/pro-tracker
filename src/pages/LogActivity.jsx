@@ -11,7 +11,7 @@ export default function LogActivity() {
   const { id } = useParams();
   const navigate = useNavigate();
   const handleBack = () => {
-    if (window.history.length > 1) { navigate(-1); } else { navigate(`/accounts/${id}`); }
+    if (window.history.length > 1) { navigate(-1); } else { navigate(`/leads/${id}`); }
   };
 
   const [profile, setProfile] = useState(null);
@@ -53,14 +53,14 @@ export default function LogActivity() {
     setProfile(profileData);
 
     const { data: acc } = await supabase
-      .from("target_accounts")
+      .from("target_leads")
       .select("*")
       .eq("id", id)
       .single();
     setAccount(acc);
 
     const { data: contacts } = await supabase
-      .from("target_contacts")
+      .from("target_lead_contacts")
       .select("*")
       .eq("account_id", id)
       .eq("is_primary", true)
@@ -94,9 +94,9 @@ export default function LogActivity() {
       } : {}),
     };
 
-    await supabase.from("target_activities").insert(record);
+    await supabase.from("target_lead_activities").insert(record);
     setSaving(false);
-    navigate(`/accounts/${id}`);
+    navigate(`/leads/${id}`);
   };
 
   if (loading) {
@@ -193,9 +193,9 @@ export default function LogActivity() {
       `}</style>
 
       <div style={styles.layout}>
-        <MobileHeader activePath="/accounts" profile={profile} />
-        <RepBottomNav activePath="/accounts" />
-        <Sidebar role="rep" profile={profile} onSignOut={handleSignOut} activePath="/accounts" />
+        <MobileHeader activePath="/leads" profile={profile} />
+        <RepBottomNav activePath="/leads" />
+        <Sidebar role="rep" profile={profile} onSignOut={handleSignOut} activePath="/leads" />
         <div className="main-content" style={styles.page}>
         <RepTopBar title="Log Activity" profile={profile} onSignOut={handleSignOut} />
 
@@ -356,7 +356,7 @@ export default function LogActivity() {
 
           <button
             className="btn-secondary"
-            onClick={() => navigate(`/accounts/${id}`)}
+            onClick={() => navigate(`/leads/${id}`)}
           >
             Cancel
           </button>

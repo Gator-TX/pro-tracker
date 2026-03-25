@@ -55,7 +55,7 @@ export default function RepDetail() {
     const { data: profileData } = await supabase
       .from("profiles").select("*").eq("id", user.id).single();
     setProfile(profileData);
-    if (profileData?.role !== "manager") { navigate("/accounts"); return; }
+    if (profileData?.role !== "manager") { navigate("/leads"); return; }
 
     // Rep profile
     const { data: repData } = await supabase
@@ -64,7 +64,7 @@ export default function RepDetail() {
 
     // Rep's accounts
     const { data: accountsData } = await supabase
-      .from("target_accounts").select("*, start_date, end_date").eq("rep_id", repId)
+      .from("target_leads").select("*, start_date, end_date").eq("rep_id", repId)
       .order("created_at", { ascending: false });
     setAccounts(accountsData || []);
 
@@ -72,7 +72,7 @@ export default function RepDetail() {
     const accountIds = (accountsData || []).map(a => a.id);
     if (accountIds.length > 0) {
       const { data: allActs } = await supabase
-        .from("target_activities").select("*")
+        .from("target_lead_activities").select("*")
         .in("account_id", accountIds)
         .order("activity_date", { ascending: false });
       const actsByAccount = {};
@@ -87,7 +87,7 @@ export default function RepDetail() {
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
     const { data: weekActs } = await supabase
-      .from("target_activities").select("id")
+      .from("target_lead_activities").select("id")
       .eq("rep_id", repId)
       .gte("activity_date", weekAgo.toISOString().split("T")[0]);
 
@@ -116,7 +116,7 @@ export default function RepDetail() {
     // Load activities for this account
     if (!accountActivities[accountId]) {
       const { data: acts } = await supabase
-        .from("target_activities").select("*")
+        .from("target_lead_activities").select("*")
         .eq("account_id", accountId)
         .order("activity_date", { ascending: false });
       setAccountActivities(prev => ({ ...prev, [accountId]: acts || [] }));
@@ -125,7 +125,7 @@ export default function RepDetail() {
     // Load contacts for this account
     if (!accountContacts[accountId]) {
       const { data: cons } = await supabase
-        .from("target_contacts").select("*")
+        .from("target_lead_contacts").select("*")
         .eq("account_id", accountId)
         .order("is_primary", { ascending: false });
       setAccountContacts(prev => ({ ...prev, [accountId]: cons || [] }));
@@ -147,7 +147,7 @@ export default function RepDetail() {
   };
 
   const handleUnassign = async (accountId) => {
-    await supabase.from("target_accounts").update({ rep_id: null }).eq("id", accountId);
+    await supabase.from("target_leads").update({ rep_id: null }).eq("id", accountId);
     const removedAccount = accounts.find(a => a.id === accountId);
     setAccounts(prev => prev.filter(a => a.id !== accountId));
     if (removedAccount && ACTIVE_STATUSES.includes(removedAccount.status || "New")) {
@@ -262,7 +262,7 @@ export default function RepDetail() {
           {/* DESKTOP: accounts table inside tableCard */}
           <div className="desktop-only" style={styles.tableCard}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "14px 20px", borderBottom: "1px solid #F0F0ED", flexWrap: "wrap" }}>
-              <p style={{ fontSize: "14px", fontWeight: 600, color: "#1A1A1A", marginRight: "8px" }}>Accounts</p>
+              <p style={{ fontSize: "14px", fontWeight: 600, color: "#1A1A1A", marginRight: "8px" }}>Leads</p>
               {[
                 { key: "active", label: `Active: ${stats.activeAccounts}`, bg: accountFilter === "active" ? "#367C2B" : "#fff", color: accountFilter === "active" ? "#fff" : "#367C2B", border: "#367C2B" },
                 { key: "Won", label: `Won: ${stats.wonThisSprint}`, bg: accountFilter === "Won" ? "#367C2B" : "#F0FDF4", color: accountFilter === "Won" ? "#fff" : "#16A34A", border: "#BBF7D0" },
@@ -282,7 +282,7 @@ export default function RepDetail() {
             </div>
             <div>
               <div style={{ ...styles.accountRowGrid, ...styles.tableHeader, padding: "10px 20px" }}>
-                <span>Account / Contact</span>
+                <span>Company / Contact</span>
                 <span>Status</span>
                 <span>Last Activity</span>
                 <span>Logs</span>
@@ -403,7 +403,7 @@ export default function RepDetail() {
           {/* MOBILE: filter pills + standalone cards */}
           <div className="mobile-only">
             <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", paddingBottom: "8px" }}>
-              <p style={{ fontSize: "14px", fontWeight: 600, color: "#1A1A1A", marginRight: "8px" }}>Accounts</p>
+              <p style={{ fontSize: "14px", fontWeight: 600, color: "#1A1A1A", marginRight: "8px" }}>Leads</p>
               {[
                 { key: "active", label: `Active: ${stats.activeAccounts}`, bg: accountFilter === "active" ? "#367C2B" : "#fff", color: accountFilter === "active" ? "#fff" : "#367C2B", border: "#367C2B" },
                 { key: "Won", label: `Won: ${stats.wonThisSprint}`, bg: accountFilter === "Won" ? "#367C2B" : "#F0FDF4", color: accountFilter === "Won" ? "#fff" : "#16A34A", border: "#BBF7D0" },

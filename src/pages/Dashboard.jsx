@@ -44,7 +44,7 @@ export default function Dashboard() {
     const { data: profileData } = await supabase
       .from("profiles").select("*").eq("id", user.id).single();
     setProfile(profileData);
-    if (profileData?.role !== "manager") { navigate("/accounts"); return; }
+    if (profileData?.role !== "manager") { navigate("/leads"); return; }
 
     // Load configurable thresholds
     const { data: settingsData } = await supabase
@@ -57,7 +57,7 @@ export default function Dashboard() {
     // Fetch sprint first so start_date is available for activity queries
     const today = new Date().toISOString().split("T")[0];
     const { data: sprintData } = await supabase
-      .from("target_sprints").select("*")
+      .from("target_lead_sprints").select("*")
       .lte("start_date", today).gte("end_date", today).limit(1).single();
     setSprint(sprintData);
 
@@ -67,25 +67,25 @@ export default function Dashboard() {
 
     const repsWithData = await Promise.all((repsData || []).map(async (rep) => {
       const { data: accounts } = await supabase
-        .from("target_accounts").select("id, status").eq("rep_id", rep.id);
+        .from("target_leads").select("id, status").eq("rep_id", rep.id);
 
       const weekAgo = new Date();
       weekAgo.setDate(weekAgo.getDate() - 7);
       const weekAgoStr = weekAgo.toISOString().split("T")[0];
 
       const { data: acts } = await supabase
-        .from("target_activities").select("id").eq("rep_id", rep.id).gte("activity_date", weekAgoStr);
+        .from("target_lead_activities").select("id").eq("rep_id", rep.id).gte("activity_date", weekAgoStr);
       const { data: allActs } = await supabase
-        .from("target_activities").select("id").eq("rep_id", rep.id);
+        .from("target_lead_activities").select("id").eq("rep_id", rep.id);
 
       const repAtRiskCutoff = new Date();
       repAtRiskCutoff.setDate(repAtRiskCutoff.getDate() - repAtRiskDays);
       const { data: recentActs } = await supabase
-        .from("target_activities").select("id").eq("rep_id", rep.id)
+        .from("target_lead_activities").select("id").eq("rep_id", rep.id)
         .gte("created_at", repAtRiskCutoff.toISOString()).limit(1);
 
       const { data: lastActRow } = await supabase
-        .from("target_activities").select("activity_date")
+        .from("target_lead_activities").select("activity_date")
         .eq("rep_id", rep.id).order("activity_date", { ascending: false }).limit(1);
       const lastActDate = lastActRow?.[0]?.activity_date || null;
 
@@ -133,7 +133,7 @@ export default function Dashboard() {
 
     // All accounts — health counts + name map
     const { data: allAccountsData } = await supabase
-      .from("target_accounts").select("id, name, company, status, rep_id, created_at");
+      .from("target_leads").select("id, name, company, status, rep_id, created_at");
 
     const health = { New: 0, Contacted: 0, Engaged: 0, Proposal: 0, Won: 0, Lost: 0 };
     const accountNameMap = {};
@@ -153,7 +153,7 @@ export default function Dashboard() {
     let lastActMap = {};
     if (activeAccIds.length > 0) {
       const { data: lastActs } = await supabase
-        .from("target_activities").select("account_id, activity_date")
+        .from("target_lead_activities").select("account_id, activity_date")
         .in("account_id", activeAccIds).order("activity_date", { ascending: false });
       (lastActs || []).forEach(act => {
         if (!lastActMap[act.account_id]) lastActMap[act.account_id] = act.activity_date;
@@ -180,7 +180,7 @@ export default function Dashboard() {
     const fortyEightHoursAgoAct = new Date();
     fortyEightHoursAgoAct.setHours(fortyEightHoursAgoAct.getHours() - 48);
     const { data: recentActsData } = await supabase
-      .from("target_activities").select("id, activity_type, activity_date, outcome, notes, account_id, rep_id")
+      .from("target_lead_activities").select("id, activity_type, activity_date, outcome, notes, account_id, rep_id")
       .gte("created_at", fortyEightHoursAgoAct.toISOString())
       .order("activity_date", { ascending: false }).limit(20);
     setRecentActivities((recentActsData || []).slice(0, 5).map(act => ({
@@ -192,7 +192,7 @@ export default function Dashboard() {
     // Sprint rep stats: reps who logged at least once since sprint start
     if (sprintData) {
       const { data: sprintActs } = await supabase
-        .from("target_activities").select("rep_id").gte("activity_date", sprintData.start_date);
+        .from("target_lead_activities").select("rep_id").gte("activity_date", sprintData.start_date);
       const repsWithActSet = new Set((sprintActs || []).map(a => a.rep_id).filter(id => repNameMap[id]));
       const withActivity = repsWithActSet.size;
       setSprintRepStats({ withActivity, withoutActivity: repsWithData.length - withActivity });
@@ -521,7 +521,7 @@ export default function Dashboard() {
             <div style={styles.dtStatGrid}>
               {[
                 { label: "Active Accounts", value: activeAccountCount, accent: "#367C2B" },
-                { label: "At Risk Accounts", value: atRiskAccountsList.length, accent: "#DC2626" },
+                { label: "At Risk Leads", value: atRiskAccountsList.length, accent: "#DC2626" },
                 { label: "Won This Target",  value: accountHealth.Won,  accent: "#367C2B" },
                 { label: "Lost This Target", value: accountHealth.Lost, accent: "#CA8A04" },
               ].map(card => (
@@ -536,10 +536,10 @@ export default function Dashboard() {
             {/* 3. Middle two-column row */}
             <div style={styles.dtMidRow}>
 
-              {/* LEFT: Account Health + Target Overview */}
+              {/* LEFT: Lead Health + Target Overview */}
               <div style={styles.dtMidCol}>
                 <div style={styles.dtCard}>
-                  <div style={styles.dtCardHeader}><span style={styles.dtCardTitle}>Account Health</span></div>
+                  <div style={styles.dtCardHeader}><span style={styles.dtCardTitle}>Lead Health</span></div>
                   {HEALTH_BARS.map(bar => (
                     <div key={bar.key} style={styles.dtHealthRow}>
                       <span style={styles.dtHealthName}>{bar.key}</span>
@@ -576,15 +576,15 @@ export default function Dashboard() {
                 )}
               </div>
 
-              {/* RIGHT: At Risk Accounts + At Risk Reps */}
+              {/* RIGHT: At Risk Leads + At Risk Reps */}
               <div style={styles.dtMidCol}>
                 <div style={styles.dtCard}>
                   <div style={styles.dtCardHeader}>
-                    <span style={styles.dtCardTitle}>At Risk Accounts</span>
+                    <span style={styles.dtCardTitle}>At Risk Leads</span>
                     <button style={styles.dtViewAll} onClick={() => navigate("/dashboard/accounts")}>View all {atRiskAccountsList.length} →</button>
                   </div>
                   {atRiskAccountsList.length === 0 ? (
-                    <p style={{ fontSize: "13px", color: "#16A34A", fontWeight: 600 }}>✓ All accounts on track</p>
+                    <p style={{ fontSize: "13px", color: "#16A34A", fontWeight: 600 }}>✓ All leads on track</p>
                   ) : (
                     <div style={styles.dtRiskScroll}>
                       {atRiskAccountsList.map(acc => (
@@ -637,7 +637,7 @@ export default function Dashboard() {
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
                     <tr>
-                      {["Date", "Account", "Rep", "Notes", "Type"].map(h => (
+                      {["Date", "Company Name", "Rep", "Notes", "Type"].map(h => (
                         <th key={h} style={styles.dtTh}>{h}</th>
                       ))}
                     </tr>
@@ -696,10 +696,10 @@ export default function Dashboard() {
               ))}
             </div>
 
-            {/* 3. Account Health */}
+            {/* 3. Lead Health */}
             <div className="dm-card">
               <div className="dm-card-header">
-                <span className="dm-card-title">Account Health</span>
+                <span className="dm-card-title">Lead Health</span>
               </div>
                 {HEALTH_BARS.map(bar => (
                   <div key={bar.key} className="dm-health-row">
@@ -745,11 +745,11 @@ export default function Dashboard() {
               </div>
             )}
 
-            {/* 5. At Risk Accounts */}
+            {/* 5. At Risk Leads */}
             <div>
               <div className="dm-risk-card">
                 <div className="dm-risk-header">
-                  <span className="dm-risk-label">At Risk Accounts</span>
+                  <span className="dm-risk-label">At Risk Leads</span>
                   {atRiskAccountsList.length > 3 && (
                     <button className="dm-viewall" style={{ paddingTop: 0 }} onClick={() => navigate("/dashboard/accounts")}>
                       View all {atRiskAccountsList.length} →
@@ -757,7 +757,7 @@ export default function Dashboard() {
                   )}
                 </div>
                 {atRiskAccountsList.length === 0 ? (
-                  <p style={{ fontSize: "13px", color: "#16A34A", fontWeight: 600 }}>✓ All accounts on track</p>
+                  <p style={{ fontSize: "13px", color: "#16A34A", fontWeight: 600 }}>✓ All leads on track</p>
                 ) : (
                   <>
                     {atRiskAccountsList.slice(0, 3).map(acc => (

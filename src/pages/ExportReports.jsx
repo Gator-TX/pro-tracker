@@ -45,7 +45,7 @@ export default function ExportReports() {
     const { data: profileData } = await supabase
       .from("profiles").select("*").eq("id", user.id).single();
     setProfile(profileData);
-    if (profileData?.role !== "manager") { navigate("/accounts"); return; }
+    if (profileData?.role !== "manager") { navigate("/leads"); return; }
 
     const { data: repsData } = await supabase
       .from("profiles").select("*").eq("role", "rep");
@@ -93,12 +93,12 @@ export default function ExportReports() {
 
     // Query 1: accounts for selected reps
     const { data: allAccounts } = await supabase
-      .from("target_accounts").select("*").in("rep_id", selectedReps);
+      .from("target_leads").select("*").in("rep_id", selectedReps);
 
     const accountIds = (allAccounts || []).map(a => a.id);
 
     // Queries 2-4 in parallel using account ids and rep ids
-    let actsQuery = supabase.from("target_activities").select("*")
+    let actsQuery = supabase.from("target_lead_activities").select("*")
       .in("account_id", accountIds).order("activity_date", { ascending: false });
     if (dateRange?.start) actsQuery = actsQuery.gte("activity_date", dateRange.start);
     if (dateRange?.end) actsQuery = actsQuery.lte("activity_date", dateRange.end);
@@ -109,8 +109,8 @@ export default function ExportReports() {
       { data: allSprints },
     ] = await Promise.all([
       actsQuery,
-      supabase.from("target_contacts").select("*").in("account_id", accountIds),
-      supabase.from("target_sprints").select("*").in("rep_id", selectedReps)
+      supabase.from("target_lead_contacts").select("*").in("account_id", accountIds),
+      supabase.from("target_lead_sprints").select("*").in("rep_id", selectedReps)
         .lte("start_date", today).gte("end_date", today),
     ]);
 

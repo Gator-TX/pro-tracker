@@ -35,12 +35,12 @@ export default function RepActivities() {
     const today = new Date().toISOString().split("T")[0];
 
     const { data: accountsData } = await supabase
-      .from("target_accounts").select("id, name, company").eq("rep_id", user.id);
+      .from("target_leads").select("id, name, company").eq("rep_id", user.id);
     setAccounts(accountsData || []);
 
     // Past logged activities
     const { data: actsData } = await supabase
-      .from("target_activities").select("*")
+      .from("target_lead_activities").select("*")
       .eq("rep_id", user.id)
       .order("activity_date", { ascending: false })
       .limit(200);
@@ -48,7 +48,7 @@ export default function RepActivities() {
 
     // Upcoming scheduled activities
     const { data: upcomingData } = await supabase
-      .from("target_activities")
+      .from("target_lead_activities")
       .select("id, account_id, scheduled_next_date, scheduled_next_type, scheduled_next_time, notes")
       .eq("rep_id", user.id)
       .not("scheduled_next_date", "is", null)
@@ -201,7 +201,7 @@ export default function RepActivities() {
                       <div
                         key={act.id}
                         className="ra-card-upcoming"
-                        onClick={() => navigate(`/accounts/${act.account_id}`)}
+                        onClick={() => navigate(`/leads/${act.account_id}`)}
                       >
                         <div className="ra-card-top">
                           <span className="ra-badge" style={{ background: tc.bg, color: tc.color }}>
@@ -234,7 +234,7 @@ export default function RepActivities() {
                     {activities.map(act => {
                       const tc = TYPE_COLORS[act.activity_type] || TYPE_COLORS.Call;
                       return (
-                        <div key={act.id} className="ra-card" onClick={() => navigate(`/accounts/${act.account_id}`)}>
+                        <div key={act.id} className="ra-card" onClick={() => navigate(`/leads/${act.account_id}`)}>
                           <div className="ra-card-top">
                             <span className="ra-badge" style={{ background: tc.bg, color: tc.color }}>
                               {act.activity_type}
@@ -276,7 +276,7 @@ export default function RepActivities() {
                 <p style={dt.sectionLabel}>UPCOMING</p>
                 <div style={dt.tableCard}>
                   <div style={{ ...dt.headerRow, gridTemplateColumns: "120px 2fr 120px 1fr" }}>
-                    {["Date", "Account", "Type", "Notes"].map(h => (
+                    {["Date", "Company Name", "Type", "Notes"].map(h => (
                       <span key={h} style={dt.th}>{h}</span>
                     ))}
                   </div>
@@ -288,7 +288,7 @@ export default function RepActivities() {
                         key={act.id}
                         className="ra-dt-row"
                         style={{ gridTemplateColumns: "120px 2fr 120px 1fr" }}
-                        onClick={() => navigate(`/accounts/${act.account_id}`)}
+                        onClick={() => navigate(`/leads/${act.account_id}`)}
                       >
                         <span style={{ ...dt.cell, color: today ? "#16A34A" : "#2563EB", fontWeight: 600 }}>
                           {today ? "Today" : formatShortDate(act.scheduled_next_date)}
@@ -315,7 +315,7 @@ export default function RepActivities() {
                 <p style={dt.sectionLabel}>PAST ACTIVITY</p>
                 <div style={dt.tableCard}>
                   <div style={dt.headerRow}>
-                    {["Date", "Account", "Type", "Outcome", "Notes"].map(h => (
+                    {["Date", "Company Name", "Type", "Outcome", "Notes"].map(h => (
                       <span key={h} style={dt.th}>{h}</span>
                     ))}
                   </div>
@@ -328,7 +328,7 @@ export default function RepActivities() {
                         <div
                           key={act.id}
                           className="ra-dt-row"
-                          onClick={() => navigate(`/accounts/${act.account_id}`)}
+                          onClick={() => navigate(`/leads/${act.account_id}`)}
                         >
                           <span style={dt.cell}>{formatShortDate(act.activity_date)}</span>
                           <span style={dt.nameCell}>{getAccountName(act.account_id)}</span>

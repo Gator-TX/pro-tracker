@@ -5,10 +5,10 @@ import logo from "../assets/uatprologo.png";
 
 const MANAGER_NAV = [
   { key: "home",       label: "Home",            path: "/dashboard" },
-  { key: "accounts",   label: "Accounts",        path: "/dashboard/accounts" },
+  { key: "accounts",   label: "Leads",           path: "/dashboard/accounts" },
   { key: "activities", label: "Activities",       path: "/dashboard/activities" },
   { key: "reps",       label: "Sales Reps",       path: "/dashboard/reps" },
-  { key: "manage",     label: "Manage Accounts",  path: "/manage" },
+  { key: "manage",     label: "Manage Leads",  path: "/manage" },
   { key: "export",     label: "Export Reports",   path: "/dashboard/export" },
   { key: "users",      label: "User Management",  path: "/dashboard/users" },
   { key: "settings",   label: "Settings",         path: "/dashboard/settings" },
@@ -17,7 +17,7 @@ const MANAGER_NAV = [
 
 const REP_NAV = [
   { key: "home",     label: "Home",        path: "/home" },
-  { key: "accounts", label: "My Accounts", path: "/accounts" },
+  { key: "accounts", label: "My Leads",    path: "/leads" },
   { key: "activity", label: "Activities",  path: "/activities" },
   { key: "settings", label: "Settings",    path: "/rep/settings" },
   { key: "open-crm", label: "Open CRM →",  path: null, external: true },
@@ -153,7 +153,7 @@ export default function Sidebar({ role, profile, onSignOut, activePath }) {
             src={logo}
             alt="United Ag & Turf"
             style={styles.sidebarLogoImg}
-            onClick={() => navigate(role === "rep" ? "/accounts" : "/dashboard")}
+            onClick={() => navigate(role === "rep" ? "/leads" : "/dashboard")}
           />
           <div style={styles.logoAccent} />
         </div>

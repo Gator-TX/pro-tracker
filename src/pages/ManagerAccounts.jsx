@@ -47,14 +47,14 @@ export default function ManagerAccounts() {
     const { data: profileData } = await supabase
       .from("profiles").select("*").eq("id", user.id).single();
     setProfile(profileData);
-    if (profileData?.role !== "manager") { navigate("/accounts"); return; }
+    if (profileData?.role !== "manager") { navigate("/leads"); return; }
 
     const { data: repsData } = await supabase
       .from("profiles").select("*").eq("role", "rep");
     setReps(repsData || []);
 
     const { data: accountsData } = await supabase
-      .from("target_accounts")
+      .from("target_leads")
       .select("*, start_date, end_date, target_activities(activity_date)")
       .order("created_at", { ascending: false });
     setAccounts(accountsData || []);
@@ -73,7 +73,7 @@ export default function ManagerAccounts() {
   };
 
   const getLastActivity = (account) => {
-    const acts = account.target_activities || [];
+    const acts = account.target_lead_activities || [];
     if (!acts.length) return null;
     const latest = acts.reduce((a, b) =>
       new Date(a.activity_date) > new Date(b.activity_date) ? a : b
@@ -84,7 +84,7 @@ export default function ManagerAccounts() {
   const handleDelete = async () => {
     if (!window.confirm(`Delete ${selectedIds.length} account${selectedIds.length > 1 ? "s" : ""}? This cannot be undone.`)) return;
     setDeleting(true);
-    await supabase.from("target_accounts").delete().in("id", selectedIds);
+    await supabase.from("target_leads").delete().in("id", selectedIds);
     setSelectedIds([]);
     await loadData();
     setDeleting(false);
@@ -99,9 +99,9 @@ export default function ManagerAccounts() {
     setExpandedAccount(accountId);
     if (!accountDetails[accountId]) {
       const [{ data: acts }, { data: cons }] = await Promise.all([
-        supabase.from("target_activities").select("*").eq("account_id", accountId)
+        supabase.from("target_lead_activities").select("*").eq("account_id", accountId)
           .order("activity_date", { ascending: false }),
-        supabase.from("target_contacts").select("*").eq("account_id", accountId)
+        supabase.from("target_lead_contacts").select("*").eq("account_id", accountId)
           .order("is_primary", { ascending: false }),
       ]);
       setAccountDetails(prev => ({ ...prev, [accountId]: { acts: acts || [], cons: cons || [] } }));
@@ -113,7 +113,7 @@ export default function ManagerAccounts() {
   };
 
   const handleUnassign = async (accountId) => {
-    await supabase.from("target_accounts").update({ rep_id: null }).eq("id", accountId);
+    await supabase.from("target_leads").update({ rep_id: null }).eq("id", accountId);
     setAccounts(prev => prev.map(a => a.id === accountId ? { ...a, rep_id: null } : a));
     setUnassignMsg(accountId);
     setTimeout(() => setUnassignMsg(null), 3000);
@@ -121,7 +121,7 @@ export default function ManagerAccounts() {
 
   const saveDates = async (accountId) => {
     const edit = sprintEdits[accountId] || {};
-    await supabase.from("target_accounts")
+    await supabase.from("target_leads")
       .update({ start_date: edit.start_date, end_date: edit.end_date })
       .eq("id", accountId);
     setAccounts(prev => prev.map(a =>
@@ -139,10 +139,10 @@ export default function ManagerAccounts() {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
 
       const { data: crmContacts } = await supabase
-        .from("target_contacts").select("*").eq("account_id", account.id);
+        .from("target_lead_contacts").select("*").eq("account_id", account.id);
 
       const { data: crmActivities } = await supabase
-        .from("target_activities").select("*").eq("account_id", account.id);
+        .from("target_lead_activities").select("*").eq("account_id", account.id);
 
       const { data: crmAccount, error: insertErr } = await supabase
         .from("accounts").insert({
@@ -176,11 +176,11 @@ export default function ManagerAccounts() {
         });
       }
 
-      await supabase.from("target_activities").delete().eq("account_id", account.id);
-      await supabase.from("target_contacts").delete().eq("account_id", account.id);
-      await supabase.from("target_accounts").delete().eq("id", account.id);
+      await supabase.from("target_lead_activities").delete().eq("account_id", account.id);
+      await supabase.from("target_lead_contacts").delete().eq("account_id", account.id);
+      await supabase.from("target_leads").delete().eq("id", account.id);
 
-      setCrmToast({ type: "success", msg: "Account successfully sent to CRM!" });
+      setCrmToast({ type: "success", msg: "Lead successfully sent to CRM as account!" });
       setExpandedAccount(null);
       await loadData();
     } catch {
@@ -311,14 +311,14 @@ export default function ManagerAccounts() {
         {/* MAIN */}
         <div className="main-content" style={styles.main}>
           <PullToRefresh onRefresh={loadData}>
-          <TopBar title="Accounts" profile={profile} onSignOut={handleSignOut} />
+          <TopBar title="Leads" profile={profile} onSignOut={handleSignOut} />
 
 
           {/* Filters */}
           <div className="acct-filter-bar" style={styles.filterBar}>
             <input
               className="search-input"
-              placeholder="Search accounts..."
+              placeholder="Search leads..."
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
@@ -419,7 +419,7 @@ export default function ManagerAccounts() {
                       <span className="acct-days" style={styles.cellText}>
                         {account.end_date ? Math.max(0, Math.ceil((new Date(account.end_date) - new Date()) / (1000 * 60 * 60 * 24))) : "—"}
                       </span>
-                      <span className="acct-logs" style={styles.cellText}>{account.target_activities?.length || 0}</span>
+                      <span className="acct-logs" style={styles.cellText}>{account.target_lead_activities?.length || 0}</span>
                       <span onClick={e => e.stopPropagation()}>
                         {account.rep_id ? (
                           <button
@@ -617,7 +617,7 @@ export default function ManagerAccounts() {
                     {/* Third row: activity info + unassign */}
                     <div className="acct-card-row3">
                       <span className="acct-card-meta">
-                        {getLastActivity(account) ? `Last: ${getLastActivity(account)}` : "No activity"} · {account.target_activities?.length || 0} logs
+                        {getLastActivity(account) ? `Last: ${getLastActivity(account)}` : "No activity"} · {account.target_lead_activities?.length || 0} logs
                       </span>
                       {account.rep_id && (
                         unassignMsg === account.id
