@@ -105,6 +105,7 @@ export default function AccountDetail() {
 
       const { data: { session } } = await supabase.auth.getSession();
       console.log("Step 2 - Session:", session?.user?.id, session?.user?.email);
+      console.log("Full session user:", JSON.stringify(session?.user));
 
       if (!session) {
         console.error("No session found!");
