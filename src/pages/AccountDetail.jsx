@@ -638,7 +638,7 @@ const styles = {
     flexDirection: "column",
     backgroundColor: "#F5F5F3",
     fontFamily: "'DM Sans', sans-serif",
-    paddingBottom: "40px",
+    padding: "28px 32px 40px",
   },
   loadingPage: {
     minHeight: "100vh", display: "flex",

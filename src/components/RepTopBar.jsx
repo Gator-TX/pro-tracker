@@ -4,7 +4,6 @@ export default function RepTopBar({ profile, onSignOut }) {
       <style>{`@media (max-width: 768px) { .topbar-rep { display: none !important; } }`}</style>
       <div className="topbar-rep" style={{
         display: "flex", alignItems: "center", justifyContent: "flex-end",
-        padding: "28px 32px 0",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <span style={{ fontSize: "13px", fontWeight: 600, color: "#1A1A1A", fontFamily: "'DM Sans', sans-serif" }}>

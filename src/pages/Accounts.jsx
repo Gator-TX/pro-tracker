@@ -308,7 +308,7 @@ const styles = {
     marginLeft: "220px", flex: 1, minHeight: "100vh",
     display: "flex", flexDirection: "column",
     backgroundColor: "#F5F5F3", fontFamily: "'DM Sans', sans-serif",
-    paddingBottom: "40px", overflowX: "hidden",
+    padding: "28px 32px 40px", overflowX: "hidden",
   },
 
   loadingPage: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#F5F5F3" },

@@ -167,7 +167,7 @@ export default function RepActivities() {
         .ra-dt-row:last-child { border-bottom: none; }
 
         @media (min-width: 769px) {
-          .ra-main-content { margin-left: 220px; padding: 24px; background: #F5F5F3; min-height: 100vh; }
+          .ra-main-content { margin-left: 220px; padding: 28px 32px; background: #F5F5F3; min-height: 100vh; }
           .ra-page { display: none !important; }
           .ra-desktop { display: block; }
         }
