@@ -4,6 +4,7 @@ import { supabase } from "../supabase";
 import MobileHeader from "../components/MobileHeader";
 import RepBottomNav from "../components/RepBottomNav";
 import Sidebar from "../components/Sidebar";
+import RepTopBar from "../components/RepTopBar";
 import PullToRefresh from "../components/PullToRefresh";
 
 export default function RepActivities() {
@@ -177,6 +178,7 @@ export default function RepActivities() {
       <RepBottomNav activePath="/activities" />
 
       <div className="ra-main-content">
+        <RepTopBar profile={profile} onSignOut={handleSignOut} />
         <PullToRefresh onRefresh={loadData}>
 
           {/* ══════════ MOBILE LAYOUT ══════════ */}

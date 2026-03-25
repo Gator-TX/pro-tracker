@@ -4,7 +4,7 @@ import { supabase } from "../supabase";
 import Sidebar from "../components/Sidebar";
 import MobileHeader from "../components/MobileHeader";
 import RepBottomNav from "../components/RepBottomNav";
-import TopBar from "../components/TopBar";
+import RepTopBar from "../components/RepTopBar";
 import { subscribeToPush } from "../utils/pushNotifications";
 import MobileMenuSettings from "../components/MobileMenuSettings";
 import { REP_MENU_ITEMS, REP_DEFAULT_ORDER, REP_STORAGE_KEY } from "../config/mobileMenuItems";
@@ -133,7 +133,7 @@ export default function RepSettings() {
         <Sidebar role="rep" profile={profile} onSignOut={handleSignOut} activePath="/rep/settings" />
 
         <div className="main-content" style={styles.main}>
-          <TopBar title="Settings" profile={profile} onSignOut={handleSignOut} />
+          <RepTopBar profile={profile} onSignOut={handleSignOut} />
 
           {saveSuccess && (
             <div style={styles.successBanner}>Settings saved successfully</div>
