@@ -112,14 +112,15 @@ export default function AccountDetail() {
 
       const { data: crmAccount, error: accountError } = await supabase
         .from("accounts").insert({
-          company_name: account.name || account.company,
+          company_name: account.name || account.company || null,
           address: account.address || null,
           notes: account.notes || null,
           user_id: currentUser.id,
         }).select().single();
 
       if (accountError) {
-        console.error("CRM accounts insert error:", accountError);
+        console.error("CRM accounts insert error:", JSON.stringify(accountError));
+        console.error("Error details:", accountError.message, accountError.details, accountError.hint);
         throw accountError;
       }
 
