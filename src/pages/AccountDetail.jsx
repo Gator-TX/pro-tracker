@@ -124,6 +124,20 @@ export default function AccountDetail() {
       console.log("Full lead object:", JSON.stringify(account));
       console.log("currentUser:", JSON.stringify(currentUser));
 
+      // Debug auth state
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log("Session user ID:", session?.user?.id);
+      console.log("Session role:", session?.user?.role);
+      console.log("Session JWT:", session?.access_token?.substring(0, 50));
+
+      // Test a simple select first
+      const { data: testData, error: testError } = await supabase
+        .from("accounts")
+        .select("id")
+        .limit(1);
+      console.log("Test select result:", JSON.stringify(testData));
+      console.log("Test select error:", JSON.stringify(testError));
+
       const { data: crmAccount, error: accountError } = await supabase
         .from("accounts").insert({
           company_name: account.name || account.company || null,
