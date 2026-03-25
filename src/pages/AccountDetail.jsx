@@ -115,6 +115,15 @@ export default function AccountDetail() {
         .from("target_lead_activities").select("*").eq("account_id", id);
       console.log("Activities fetched:", activities?.length);
 
+      console.log("Inserting into CRM accounts with data:", {
+        company_name: account.name || account.company || null,
+        address: account.address || null,
+        notes: account.notes || null,
+        user_id: currentUser?.id,
+      });
+      console.log("Full lead object:", JSON.stringify(account));
+      console.log("currentUser:", JSON.stringify(currentUser));
+
       const { data: crmAccount, error: accountError } = await supabase
         .from("accounts").insert({
           company_name: account.name || account.company || null,
