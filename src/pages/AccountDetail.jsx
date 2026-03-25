@@ -102,13 +102,18 @@ export default function AccountDetail() {
     setSendingToCrm(true);
     setCrmToast(null);
     try {
+      console.log("Starting sendToCRM...");
       const { data: { user: currentUser } } = await supabase.auth.getUser();
+      console.log("Current user:", currentUser?.id);
+      console.log("Lead data:", JSON.stringify(account));
 
       const { data: contacts } = await supabase
         .from("target_lead_contacts").select("*").eq("account_id", id);
+      console.log("Contacts fetched:", contacts?.length);
 
       const { data: activities } = await supabase
         .from("target_lead_activities").select("*").eq("account_id", id);
+      console.log("Activities fetched:", activities?.length);
 
       const { data: crmAccount, error: accountError } = await supabase
         .from("accounts").insert({
@@ -118,11 +123,10 @@ export default function AccountDetail() {
           user_id: currentUser.id,
         }).select().single();
 
-      if (accountError) {
-        console.error("CRM accounts insert error:", JSON.stringify(accountError));
-        console.error("Error details:", accountError.message, accountError.details, accountError.hint);
-        throw accountError;
-      }
+      console.log("CRM account result:", JSON.stringify(crmAccount));
+      console.log("CRM account error:", JSON.stringify(accountError));
+
+      if (accountError) throw accountError;
 
       if (contacts && contacts.length > 0) {
         const primary = contacts.find(c => c.is_primary) || contacts[0];
@@ -132,27 +136,35 @@ export default function AccountDetail() {
             contact_name: `${primary.first_name || ""} ${primary.last_name || ""}`.trim(),
           })
           .eq("id", crmAccount.id);
+        console.log("Contact name updated on CRM account");
       }
 
       for (const activity of (activities || [])) {
-        await supabase.from("activities").insert({
+        const { error: actErr } = await supabase.from("activities").insert({
           user_id: currentUser.id,
           type: activity.activity_type || null,
           description: activity.notes || activity.outcome || null,
           activity_date: activity.activity_date || null,
           related_to: account.name || account.company || null,
         });
+        if (actErr) console.error("Activity insert error:", JSON.stringify(actErr));
       }
+      console.log("Activities inserted");
 
       await supabase.from("target_lead_activities").delete().eq("account_id", id);
       await supabase.from("target_lead_contacts").delete().eq("account_id", id);
       const { error: deleteError } = await supabase.from("target_leads").delete().eq("id", id);
       if (deleteError) throw deleteError;
+      console.log("Target10 records deleted");
 
       setCrmToast({ type: "success", msg: "Lead successfully sent to CRM as account!" });
       setTimeout(() => navigate("/leads"), 1500);
     } catch (err) {
-      console.error("Send to CRM failed:", err);
+      console.error("sendToCRM caught error:", JSON.stringify(err));
+      console.error("message:", err?.message);
+      console.error("details:", err?.details);
+      console.error("hint:", err?.hint);
+      console.error("code:", err?.code);
       setCrmToast({ type: "error", msg: "Failed to send to CRM. Please try again." });
     } finally {
       setSendingToCrm(false);
