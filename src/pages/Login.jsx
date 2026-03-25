@@ -16,13 +16,6 @@ export default function Login() {
     setLoading(true);
     setError("");
 
-    // Set storage mode before sign-in so Supabase writes to the right store
-    if (keepLoggedIn) {
-      sessionStorage.removeItem('supabase_session_only');
-    } else {
-      sessionStorage.setItem('supabase_session_only', 'true');
-    }
-
     const { data, error: authError } = await supabase.auth.signInWithPassword({
       email,
       password,
