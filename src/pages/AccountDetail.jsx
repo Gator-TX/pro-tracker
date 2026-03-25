@@ -329,8 +329,12 @@ export default function AccountDetail() {
               {account?.status || "New"}
             </span>
             {profile?.role === "manager" && (
-              <button onClick={sendToCrm} disabled={sendingToCrm} style={styles.crmBtn}>
-                {sendingToCrm ? "Sending…" : "Send to CRM as Account"}
+              <button onClick={() => {
+                console.log("BUTTON CLICKED DIRECTLY");
+                alert("Button clicked!");
+                sendToCrm();
+              }} style={styles.crmBtn}>
+                Send to CRM as Account
               </button>
             )}
           </div>
