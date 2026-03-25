@@ -39,11 +39,16 @@ export default function Accounts() {
       .from("profiles").select("*").eq("id", user.id).single();
     setProfile(profileData);
 
-    const { data: accountsData } = await supabase
+    let query = supabase
       .from("target_leads")
-      .select("*, start_date, end_date, target_activities(id, activity_date)")
-      .eq("rep_id", user.id)
+      .select("*, start_date, end_date, target_lead_activities(id, activity_date)")
       .order("created_at", { ascending: false });
+
+    if (profileData?.role === "rep") {
+      query = query.eq("rep_id", user.id);
+    }
+
+    const { data: accountsData } = await query;
 
     const sorted = (accountsData || []).sort((a, b) => {
       const aDate = a.target_lead_activities?.length
