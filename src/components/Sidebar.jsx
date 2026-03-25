@@ -105,11 +105,11 @@ export default function Sidebar({ role, profile, onSignOut, activePath }) {
       return;
     }
     if (item.external) {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.refreshSession();
       if (session) {
         window.open(`https://unitedpro.org/auth?access_token=${session.access_token}&refresh_token=${session.refresh_token}`, "uat-crm-window");
       } else {
-        window.open("https://unitedpro.org", "uat-crm-window");
+        window.open("https://unitedpro.org/login", "uat-crm-window");
       }
     } else {
       navigate(item.path);
