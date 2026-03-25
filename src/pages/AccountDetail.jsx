@@ -1,3 +1,4 @@
+// Last updated: 2026-03-25-sendToCRM-debug
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../supabase";
@@ -100,7 +101,7 @@ export default function AccountDetail() {
     if (profile?.role !== "manager") return;
 
     try {
-      console.log("Step 1 - Starting sendToCRM");
+      console.log("SEND TO CRM v2 - LOADED CORRECTLY");
       console.log("account:", JSON.stringify(account));
 
       const { data: { session } } = await supabase.auth.getSession();
