@@ -25,9 +25,6 @@ export default function ManagerAccounts() {
   const [sprintSaved, setSprintSaved] = useState({});
   const [sortDirection, setSortDirection] = useState("asc");
   const [unassignMsg, setUnassignMsg] = useState(null);
-  const [sendingCrmId, setSendingCrmId] = useState(null);
-  const [crmToast, setCrmToast] = useState(null);
-
   const STATUS_COLORS = {
     New:       { bg: "#EFF6FF", color: "#2563EB", border: "#BFDBFE" },
     Contacted: { bg: "#FEFCE8", color: "#CA8A04", border: "#FDE68A" },
@@ -131,65 +128,6 @@ export default function ManagerAccounts() {
     setTimeout(() => setSprintSaved(prev => ({ ...prev, [accountId]: false })), 3000);
   };
 
-  const sendToCrm = async (account) => {
-    if (!window.confirm("Send this account to the CRM? This will move the account and all activity history out of Target10.")) return;
-    setSendingCrmId(account.id);
-    setCrmToast(null);
-    try {
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-
-      const { data: crmContacts } = await supabase
-        .from("target_lead_contacts").select("*").eq("account_id", account.id);
-
-      const { data: crmActivities } = await supabase
-        .from("target_lead_activities").select("*").eq("account_id", account.id);
-
-      const { data: crmAccount, error: insertErr } = await supabase
-        .from("accounts").insert({
-          company_name: account.name || account.company,
-          address: account.address,
-          notes: account.notes,
-          user_id: currentUser.id,
-          source: "target10",
-        }).select().single();
-
-      if (insertErr) throw insertErr;
-
-      for (const contact of (crmContacts || [])) {
-        await supabase.from("contacts").insert({
-          customer_id: crmAccount.id,
-          user_id: currentUser.id,
-          first_name: contact.first_name,
-          last_name: contact.last_name,
-          phone: contact.phone,
-          email: contact.email,
-        });
-      }
-
-      for (const activity of (crmActivities || [])) {
-        await supabase.from("activities").insert({
-          user_id: currentUser.id,
-          type: activity.activity_type,
-          description: activity.notes || activity.outcome || activity.activity_type,
-          activity_date: activity.activity_date,
-          related_to: account.name || account.company,
-        });
-      }
-
-      await supabase.from("target_lead_activities").delete().eq("account_id", account.id);
-      await supabase.from("target_lead_contacts").delete().eq("account_id", account.id);
-      await supabase.from("target_leads").delete().eq("id", account.id);
-
-      setCrmToast({ type: "success", msg: "Lead successfully sent to CRM as account!" });
-      setExpandedAccount(null);
-      await loadData();
-    } catch {
-      setCrmToast({ type: "error", msg: "Failed to send to CRM. Please try again." });
-    } finally {
-      setSendingCrmId(null);
-      setTimeout(() => setCrmToast(null), 4000);
-    }
-  };
 
   const formatDate = (d) => d
     ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" })
@@ -337,16 +275,6 @@ export default function ManagerAccounts() {
               <option value="all">All</option>
             </select>
           </div>
-
-          {/* CRM Toast */}
-          {crmToast && (
-            <div style={crmToast.type === "success"
-              ? { backgroundColor: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: "6px", padding: "10px 14px", fontSize: "13px", color: "#16A34A", fontWeight: 500 }
-              : { backgroundColor: "#FEF2F2", border: "1px solid #FECACA", borderRadius: "6px", padding: "10px 14px", fontSize: "13px", color: "#DC2626", fontWeight: 500 }
-            }>
-              {crmToast.msg}
-            </div>
-          )}
 
           {/* Delete button */}
           {selectedIds.length > 0 && (
@@ -553,17 +481,6 @@ export default function ManagerAccounts() {
                           }
                         </div>
 
-                        {/* Send to CRM */}
-                        <div style={{ paddingTop: "4px" }}>
-                          <button
-                            onClick={e => { e.stopPropagation(); sendToCrm(account); }}
-                            disabled={sendingCrmId === account.id}
-                            style={styles.crmBtn}
-                          >
-                            {sendingCrmId === account.id ? "Sending…" : "Send to CRM"}
-                          </button>
-                        </div>
-
                       </div>
                     )}
                   </div>
@@ -685,15 +602,6 @@ export default function ManagerAccounts() {
                             <p style={{ fontSize: "13px", color: "#374151", whiteSpace: "pre-wrap", lineHeight: 1.6 }}>{account.notes}</p>
                           </div>
                         )}
-                        <div style={{ paddingTop: "4px" }}>
-                          <button
-                            onClick={e => { e.stopPropagation(); sendToCrm(account); }}
-                            disabled={sendingCrmId === account.id}
-                            style={styles.crmBtn}
-                          >
-                            {sendingCrmId === account.id ? "Sending…" : "Send to CRM"}
-                          </button>
-                        </div>
                       </div>
                     )}
                   </div>
@@ -761,10 +669,4 @@ const styles = {
   saveDatesBtn: { padding: "7px 14px", backgroundColor: "#367C2B", color: "#fff", border: "none", borderRadius: "6px", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" },
   savedMsg: { fontSize: "12px", color: "#16A34A", fontWeight: 500 },
   unassignLink: { background: "none", border: "none", fontSize: "12px", color: "#DC2626", cursor: "pointer", textDecoration: "underline", fontFamily: "'DM Sans', sans-serif", padding: 0 },
-  crmBtn: {
-    border: "1.5px solid #367C2B", color: "#367C2B", background: "#fff",
-    borderRadius: "6px", padding: "8px 16px", fontSize: "13px", fontWeight: 600,
-    fontFamily: "'DM Sans', sans-serif", cursor: "pointer", transition: "all 0.15s",
-    whiteSpace: "nowrap",
-  },
 };

@@ -1,4 +1,3 @@
-// Last updated: 2026-03-25-sendToCRM-debug
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../supabase";
@@ -21,9 +20,6 @@ export default function AccountDetail() {
   const [contacts, setContacts] = useState([]);
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [sendingToCrm, setSendingToCrm] = useState(false);
-  const [crmToast, setCrmToast] = useState(null); // { type: "success"|"error", msg }
-
   // Notes
   const [editingNotes, setEditingNotes] = useState(false);
   const [notesValue, setNotesValue] = useState("");
@@ -94,63 +90,6 @@ export default function AccountDetail() {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate("/login");
-  };
-
-  // ── Send to CRM ──
-  const sendToCrm = async () => {
-    if (profile?.role !== "manager") return;
-
-    try {
-      console.log("SEND TO CRM v2 - LOADED CORRECTLY");
-      console.log("account:", JSON.stringify(account));
-
-      const { data: { session } } = await supabase.auth.getSession();
-      console.log("Step 2 - Session:", session?.user?.id, session?.user?.email);
-      console.log("Full session user:", JSON.stringify(session?.user));
-
-      if (!session) {
-        console.error("No session found!");
-        return;
-      }
-
-      console.log("Step 3 - Testing read from accounts table");
-      const { data: readTest, error: readError } = await supabase
-        .from("accounts")
-        .select("id")
-        .limit(1);
-      console.log("Read test result:", JSON.stringify(readTest));
-      console.log("Read test error:", JSON.stringify(readError));
-
-      console.log("Step 4 - Attempting insert into accounts");
-      const insertData = {
-        company_name: account?.name || account?.company || "Unknown",
-        user_id: session.user.id,
-      };
-      console.log("Insert data:", JSON.stringify(insertData));
-
-      const { data: crmAccount, error: insertError } = await supabase
-        .from("accounts")
-        .insert(insertData)
-        .select()
-        .single();
-
-      console.log("Insert result:", JSON.stringify(crmAccount));
-      console.log("Insert error:", JSON.stringify(insertError));
-
-      if (insertError) throw insertError;
-
-      console.log("Step 5 - Success! CRM account created:", crmAccount.id);
-      alert("Success! Account sent to CRM: " + crmAccount.id);
-
-    } catch (err) {
-      console.error("CAUGHT ERROR:", JSON.stringify(err));
-      console.error("message:", err?.message);
-      console.error("details:", err?.details);
-      console.error("hint:", err?.hint);
-      console.error("code:", err?.code);
-      console.error("status:", err?.status);
-      alert("Error: " + err?.message);
-    }
   };
 
   // ── Status update ──
@@ -309,35 +248,17 @@ export default function AccountDetail() {
           <RepTopBar profile={profile} onSignOut={handleSignOut} />
           <PullToRefresh onRefresh={loadData}>
 
-        {/* ── TOAST ── */}
-        {crmToast && (
-          <div style={crmToast.type === "success" ? styles.successToast : styles.errorToast}>
-            {crmToast.msg}
-          </div>
-        )}
-
         {/* ── HEADER ── */}
         <div className="desktop-header" style={styles.header}>
           <button onClick={handleBack} style={styles.backBtn}>← Back</button>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{
-              ...styles.statusBadgeSmall,
-              background: statusStyle.bg,
-              color: statusStyle.color,
-              border: `1px solid ${statusStyle.border}`,
-            }}>
-              {account?.status || "New"}
-            </span>
-            {profile?.role === "manager" && (
-              <button onClick={() => {
-                console.log("BUTTON CLICKED DIRECTLY");
-                alert("Button clicked!");
-                sendToCrm();
-              }} style={styles.crmBtn}>
-                Send to CRM as Account
-              </button>
-            )}
-          </div>
+          <span style={{
+            ...styles.statusBadgeSmall,
+            background: statusStyle.bg,
+            color: statusStyle.color,
+            border: `1px solid ${statusStyle.border}`,
+          }}>
+            {account?.status || "New"}
+          </span>
         </div>
 
         {/* Account name */}
@@ -759,21 +680,4 @@ const styles = {
   activityOutcome: { fontSize: "13px", color: "#374151", marginBottom: "2px" },
   activityNotes: { fontSize: "13px", color: "#767676" },
 
-  // Send to CRM
-  crmBtn: {
-    border: "1.5px solid #367C2B", color: "#367C2B", background: "#fff",
-    borderRadius: "6px", padding: "8px 16px", fontSize: "13px", fontWeight: 600,
-    fontFamily: "'DM Sans', sans-serif", cursor: "pointer", transition: "all 0.15s",
-    whiteSpace: "nowrap",
-  },
-  successToast: {
-    backgroundColor: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: "6px",
-    padding: "10px 20px", fontSize: "13px", color: "#16A34A", fontWeight: 500,
-    margin: "0 20px",
-  },
-  errorToast: {
-    backgroundColor: "#FEF2F2", border: "1px solid #FECACA", borderRadius: "6px",
-    padding: "10px 20px", fontSize: "13px", color: "#DC2626", fontWeight: 500,
-    margin: "0 20px",
-  },
 };
