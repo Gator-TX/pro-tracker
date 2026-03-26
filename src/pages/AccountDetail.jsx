@@ -102,45 +102,50 @@ export default function AccountDetail() {
   const sendToCRM = async () => {
     if (profile?.role !== "manager") return;
     setSendingToCRM(true);
+
     try {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
 
-      const { data: contactsList } = await supabase
+      // Step 1 - Get fresh contacts and activities
+      const { data: freshContacts } = await supabase
         .from("target_lead_contacts").select("*").eq("account_id", id);
 
-      const { data: activitiesList } = await supabase
+      const { data: freshActivities } = await supabase
         .from("target_lead_activities").select("*").eq("account_id", id);
 
-      console.log("Contacts to send:", contactsList?.length);
-      console.log("Activities to send:", activitiesList?.length);
-
+      // Step 2 - Insert into CRM accounts with rep assignment
       const { data: crmAccount, error: accountError } = await supabase
         .from("accounts")
         .insert({
           company_name: account?.name || account?.company || "Unknown",
           address: account?.address || null,
           notes: account?.notes || null,
-          user_id: currentUser?.id,
+          user_id: account?.rep_id || currentUser?.id,
         })
         .select()
         .single();
 
       if (accountError) throw accountError;
 
-      if (contactsList && contactsList.length > 0) {
-        for (const contact of contactsList) {
-          await supabase.from("contacts").insert({
-            account_id: crmAccount.id,
-            user_id: currentUser?.id,
-            first_name: contact.first_name || "",
-            last_name: contact.last_name || null,
-            email: contact.email || null,
-            phone: contact.phone || null,
-            is_primary: contact.is_primary || false,
-          });
+      // Step 3 - Insert contacts into CRM contacts table
+      if (freshContacts && freshContacts.length > 0) {
+        for (const contact of freshContacts) {
+          const { error: contactError } = await supabase
+            .from("contacts")
+            .insert({
+              account_id: crmAccount.id,
+              user_id: account?.rep_id || currentUser?.id,
+              first_name: contact.first_name || "",
+              last_name: contact.last_name || null,
+              email: contact.email || null,
+              phone: contact.phone || null,
+              is_primary: contact.is_primary || false,
+            });
+          if (contactError) console.error("Contact insert error:", contactError);
         }
 
-        const primary = contactsList.find(c => c.is_primary) || contactsList[0];
+        // Update contact_name on account from primary contact
+        const primary = freshContacts.find(c => c.is_primary) || freshContacts[0];
         const contactName = `${primary.first_name || ""} ${primary.last_name || ""}`.trim();
         if (contactName) {
           await supabase
@@ -150,29 +155,38 @@ export default function AccountDetail() {
         }
       }
 
-      if (activitiesList && activitiesList.length > 0) {
-        for (const activity of activitiesList) {
-          await supabase.from("activities").insert({
-            account_id: crmAccount.id,
-            user_id: currentUser?.id,
-            activity_type: activity.activity_type || null,
-            outcome: activity.outcome || null,
-            notes: activity.notes || null,
-            activity_date: activity.activity_date || null,
-            scheduled_next_type: activity.scheduled_next_type || null,
-            scheduled_next_date: activity.scheduled_next_date || null,
-            scheduled_next_time: activity.scheduled_next_time || null,
-            scheduled_next_notes: activity.scheduled_next_notes || null,
-          });
+      // Step 4 - Insert activities into CRM activities table
+      if (freshActivities && freshActivities.length > 0) {
+        for (const activity of freshActivities) {
+          const { error: activityError } = await supabase
+            .from("activities")
+            .insert({
+              account_id: crmAccount.id,
+              user_id: account?.rep_id || currentUser?.id,
+              activity_type: activity.activity_type || null,
+              outcome: activity.outcome || null,
+              notes: activity.notes || null,
+              activity_date: activity.activity_date || null,
+              scheduled_next_type: activity.scheduled_next_type || null,
+              scheduled_next_date: activity.scheduled_next_date || null,
+              scheduled_next_time: activity.scheduled_next_time || null,
+              scheduled_next_notes: activity.scheduled_next_notes || null,
+            });
+          if (activityError) console.error("Activity insert error:", activityError);
         }
       }
 
+      // Step 5 - Delete from Target10
       await supabase.from("target_lead_activities").delete().eq("account_id", id);
       await supabase.from("target_lead_contacts").delete().eq("account_id", id);
-      await supabase.from("target_leads").delete().eq("id", id);
+      const { error: deleteError } = await supabase
+        .from("target_leads").delete().eq("id", id);
+
+      if (deleteError) throw deleteError;
 
       setShowCrmModal(false);
       setCrmSuccess(true);
+
       setTimeout(() => {
         if (profile?.role === "manager") {
           navigate("/dashboard/accounts");
@@ -180,6 +194,7 @@ export default function AccountDetail() {
           navigate("/leads");
         }
       }, 1500);
+
     } catch (err) {
       console.error("Send to CRM error:", err);
       alert("Failed to send to CRM: " + err.message);
