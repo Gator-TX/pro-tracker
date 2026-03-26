@@ -120,7 +120,7 @@ export default function AccountDetail() {
           company_name: account?.name || account?.company || "Unknown",
           address: account?.address || null,
           notes: account?.notes || null,
-          user_id: account?.rep_id || currentUser?.id,
+          user_id: currentUser?.id,
         })
         .select()
         .single();
@@ -134,7 +134,7 @@ export default function AccountDetail() {
             .from("contacts")
             .insert({
               account_id: crmAccount.id,
-              user_id: account?.rep_id || currentUser?.id,
+              user_id: currentUser?.id,
               first_name: contact.first_name || "",
               last_name: contact.last_name || null,
               email: contact.email || null,
@@ -162,7 +162,7 @@ export default function AccountDetail() {
             .from("activities")
             .insert({
               account_id: crmAccount.id,
-              user_id: account?.rep_id || currentUser?.id,
+              user_id: currentUser?.id,
               activity_type: activity.activity_type || null,
               outcome: activity.outcome || null,
               notes: activity.notes || null,
