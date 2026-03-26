@@ -105,6 +105,12 @@ export default function AccountDetail() {
     try {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
 
+      const { data: contactsList } = await supabase
+        .from("target_lead_contacts").select("*").eq("account_id", id);
+
+      const { data: activitiesList } = await supabase
+        .from("target_lead_activities").select("*").eq("account_id", id);
+
       const { data: crmAccount, error: accountError } = await supabase
         .from("accounts")
         .insert({
@@ -118,8 +124,20 @@ export default function AccountDetail() {
 
       if (accountError) throw accountError;
 
-      if (contacts && contacts.length > 0) {
-        const primary = contacts.find(c => c.is_primary) || contacts[0];
+      if (contactsList && contactsList.length > 0) {
+        for (const contact of contactsList) {
+          await supabase.from("contacts").insert({
+            account_id: crmAccount.id,
+            user_id: currentUser?.id,
+            first_name: contact.first_name || "",
+            last_name: contact.last_name || null,
+            email: contact.email || null,
+            phone: contact.phone || null,
+            is_primary: contact.is_primary || false,
+          });
+        }
+
+        const primary = contactsList.find(c => c.is_primary) || contactsList[0];
         const contactName = `${primary.first_name || ""} ${primary.last_name || ""}`.trim();
         if (contactName) {
           await supabase
@@ -129,14 +147,19 @@ export default function AccountDetail() {
         }
       }
 
-      if (activities && activities.length > 0) {
-        for (const activity of activities) {
+      if (activitiesList && activitiesList.length > 0) {
+        for (const activity of activitiesList) {
           await supabase.from("activities").insert({
+            account_id: crmAccount.id,
             user_id: currentUser?.id,
-            type: activity.activity_type || null,
-            description: activity.notes || activity.outcome || null,
+            activity_type: activity.activity_type || null,
+            outcome: activity.outcome || null,
+            notes: activity.notes || null,
             activity_date: activity.activity_date || null,
-            related_to: account?.name || account?.company || null,
+            scheduled_next_type: activity.scheduled_next_type || null,
+            scheduled_next_date: activity.scheduled_next_date || null,
+            scheduled_next_time: activity.scheduled_next_time || null,
+            scheduled_next_notes: activity.scheduled_next_notes || null,
           });
         }
       }
