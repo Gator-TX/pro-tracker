@@ -51,6 +51,7 @@ export default function LogActivity() {
     const { data: profileData } = await supabase
       .from("profiles").select("*").eq("id", user.id).single();
     setProfile(profileData);
+    if (profileData?.role === "manager") { navigate(`/leads/${id}`); return; }
 
     const { data: acc } = await supabase
       .from("target_leads")

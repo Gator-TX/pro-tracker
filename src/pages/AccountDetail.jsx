@@ -663,13 +663,15 @@ export default function AccountDetail() {
           </div>
 
           {/* ── LOG ACTIVITY BUTTON ── */}
-          <button
-            className="btn-primary"
-            style={{ marginBottom: "95px" }}
-            onClick={() => navigate(`/leads/${id}/log`)}
-          >
-            + Log Activity
-          </button>
+          {profile?.role === "rep" && (
+            <button
+              className="btn-primary"
+              style={{ marginBottom: "95px" }}
+              onClick={() => navigate(`/leads/${id}/log`)}
+            >
+              + Log Activity
+            </button>
+          )}
 
         </div>
                   </PullToRefresh>
