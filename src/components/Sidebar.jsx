@@ -45,6 +45,8 @@ function saveNavOrder(role, keys) {
   localStorage.setItem(STORAGE_KEYS[role], JSON.stringify(keys));
 }
 
+const isPWA = window.matchMedia("(display-mode: standalone)").matches;
+
 export default function Sidebar({ role, profile, onSignOut, activePath }) {
   const navigate = useNavigate();
   const [navItems, setNavItems] = useState(() => getOrderedNav(role));
@@ -159,7 +161,7 @@ export default function Sidebar({ role, profile, onSignOut, activePath }) {
         </div>
 
         <nav style={styles.nav}>
-          {navItems.map((item, index) => (
+          {navItems.filter(item => !(isPWA && item.external)).map((item, index) => (
             <button
               key={item.key}
               draggable
