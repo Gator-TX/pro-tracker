@@ -111,6 +111,9 @@ export default function AccountDetail() {
       const { data: activitiesList } = await supabase
         .from("target_lead_activities").select("*").eq("account_id", id);
 
+      console.log("Contacts to send:", contactsList?.length);
+      console.log("Activities to send:", activitiesList?.length);
+
       const { data: crmAccount, error: accountError } = await supabase
         .from("accounts")
         .insert({
