@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../supabase";
-import logo from "../assets/uatprologo.png";
 import Sidebar from "../components/Sidebar";
 import MobileHeader from "../components/MobileHeader";
+import MobileManagerHeader from "../components/MobileManagerHeader";
 import RepBottomNav from "../components/RepBottomNav";
+import ManagerBottomNav from "../components/ManagerBottomNav";
 import RepTopBar from "../components/RepTopBar";
+import TopBar from "../components/TopBar";
 import PullToRefresh from "../components/PullToRefresh";
 
 export default function AccountDetail() {
@@ -303,11 +305,24 @@ export default function AccountDetail() {
       `}</style>
 
       <div style={styles.layout}>
-        <MobileHeader activePath="/leads" profile={profile} />
-        <RepBottomNav activePath="/leads" />
-        <Sidebar role="rep" profile={profile} onSignOut={handleSignOut} activePath="/leads" />
+        {profile?.role === "manager" ? (
+          <>
+            <MobileManagerHeader activePath="/dashboard/accounts" profile={profile} />
+            <ManagerBottomNav activePath="/dashboard/accounts" />
+            <Sidebar role="manager" profile={profile} onSignOut={handleSignOut} activePath="/dashboard/accounts" />
+          </>
+        ) : (
+          <>
+            <MobileHeader activePath="/leads" profile={profile} />
+            <RepBottomNav activePath="/leads" />
+            <Sidebar role="rep" profile={profile} onSignOut={handleSignOut} activePath="/leads" />
+          </>
+        )}
         <div className="main-content" style={styles.page}>
-          <RepTopBar profile={profile} onSignOut={handleSignOut} />
+          {profile?.role === "manager"
+            ? <TopBar profile={profile} onSignOut={handleSignOut} />
+            : <RepTopBar profile={profile} onSignOut={handleSignOut} />
+          }
           <PullToRefresh onRefresh={loadData}>
 
         {/* ── HEADER ── */}

@@ -19,10 +19,6 @@ export default function ManagerAccounts() {
   const [filterStatus, setFilterStatus] = useState(location.state?.filterStatus || "active");
   const [selectedIds, setSelectedIds] = useState([]);
   const [deleting, setDeleting] = useState(false);
-  const [expandedAccount, setExpandedAccount] = useState(null);
-  const [accountDetails, setAccountDetails] = useState({});
-  const [sprintEdits, setSprintEdits] = useState({});
-  const [sprintSaved, setSprintSaved] = useState({});
   const [sortDirection, setSortDirection] = useState("asc");
   const [unassignMsg, setUnassignMsg] = useState(null);
   const STATUS_COLORS = {
@@ -91,43 +87,12 @@ export default function ManagerAccounts() {
     setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   };
 
-  const toggleAccount = async (accountId) => {
-    if (expandedAccount === accountId) { setExpandedAccount(null); return; }
-    setExpandedAccount(accountId);
-    if (!accountDetails[accountId]) {
-      const [{ data: acts }, { data: cons }] = await Promise.all([
-        supabase.from("target_lead_activities").select("*").eq("account_id", accountId)
-          .order("activity_date", { ascending: false }),
-        supabase.from("target_lead_contacts").select("*").eq("account_id", accountId)
-          .order("is_primary", { ascending: false }),
-      ]);
-      setAccountDetails(prev => ({ ...prev, [accountId]: { acts: acts || [], cons: cons || [] } }));
-    }
-    const acct = accounts.find(a => a.id === accountId);
-    if (acct && !sprintEdits[accountId]) {
-      setSprintEdits(prev => ({ ...prev, [accountId]: { start_date: acct.start_date || "", end_date: acct.end_date || "" } }));
-    }
-  };
-
   const handleUnassign = async (accountId) => {
     await supabase.from("target_leads").update({ rep_id: null }).eq("id", accountId);
     setAccounts(prev => prev.map(a => a.id === accountId ? { ...a, rep_id: null } : a));
     setUnassignMsg(accountId);
     setTimeout(() => setUnassignMsg(null), 3000);
   };
-
-  const saveDates = async (accountId) => {
-    const edit = sprintEdits[accountId] || {};
-    await supabase.from("target_leads")
-      .update({ start_date: edit.start_date, end_date: edit.end_date })
-      .eq("id", accountId);
-    setAccounts(prev => prev.map(a =>
-      a.id === accountId ? { ...a, start_date: edit.start_date, end_date: edit.end_date } : a
-    ));
-    setSprintSaved(prev => ({ ...prev, [accountId]: true }));
-    setTimeout(() => setSprintSaved(prev => ({ ...prev, [accountId]: false })), 3000);
-  };
-
 
   const formatDate = (d) => d
     ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" })
@@ -237,7 +202,6 @@ export default function ManagerAccounts() {
           .acct-card-days { font-size: 12px; color: #ABABAB; }
           .acct-card-row3 { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
           .acct-card-meta { font-size: 12px; color: #ABABAB; }
-          .acct-card-expanded { border-top: 1px solid #F0F0ED; padding-top: 12px; margin-top: 0; display: flex; flex-direction: column; gap: 14px; }
         }
       `}</style>
 
@@ -309,25 +273,10 @@ export default function ManagerAccounts() {
             ) : (
               filtered.map(account => {
                 const sc = STATUS_COLORS[account.status] || STATUS_COLORS.New;
-                const isExpanded = expandedAccount === account.id;
-                const acts = accountDetails[account.id]?.acts || [];
-                const cons = accountDetails[account.id]?.cons || [];
-
-                const daysLeft = account.end_date
-                  ? Math.max(0, Math.ceil((new Date(account.end_date) - new Date()) / (1000 * 60 * 60 * 24)))
-                  : null;
-                const progress = (account.start_date && account.end_date)
-                  ? Math.min(100, Math.max(0, Math.round(
-                      ((new Date() - new Date(account.start_date)) /
-                      (new Date(account.end_date) - new Date(account.start_date))) * 100
-                    )))
-                  : 0;
-
                 return (
-                  <div key={account.id} style={{ borderBottom: "1px solid #F0F0ED" }}>
-                    {/* Main row */}
-                    <div className="account-row" style={{ borderBottom: "none" }}
-                      onClick={() => toggleAccount(account.id)}>
+                  <div key={account.id}>
+                    <div className="account-row"
+                      onClick={() => navigate(`/leads/${account.id}`)}>
                       <input
                         type="checkbox"
                         checked={selectedIds.includes(account.id)}
@@ -360,129 +309,6 @@ export default function ManagerAccounts() {
                         )}
                       </span>
                     </div>
-
-                    {/* Expanded detail */}
-                    {isExpanded && (
-                      <div style={styles.expandedDetail}>
-
-                        {/* Company */}
-                        <div style={styles.detailSection}>
-                          <p style={styles.detailLabel}>Company</p>
-                          <p style={styles.detailValue}>{account.name || account.company}</p>
-                          {account.address && (
-                            <a
-                              href={`https://maps.google.com/?q=${encodeURIComponent(account.address)}`}
-                              target="_blank" rel="noreferrer"
-                              style={styles.addressLink}
-                            >
-                              {account.address}
-                            </a>
-                          )}
-                        </div>
-
-                        {/* Contacts */}
-                        {cons.length > 0 && (
-                          <div style={styles.detailSection}>
-                            <p style={styles.detailLabel}>Contacts</p>
-                            {cons.map(c => (
-                              <div key={c.id} style={styles.contactRow}>
-                                <span style={styles.contactName}>
-                                  {c.first_name} {c.last_name}
-                                  {c.title ? ` · ${c.title}` : ""}
-                                </span>
-                                <div style={styles.contactLinks}>
-                                  {c.phone && <a href={`tel:${c.phone}`} style={styles.contactLink}>{c.phone}</a>}
-                                  {c.email && <a href={`mailto:${c.email}`} style={styles.contactLink}>{c.email}</a>}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Sprint progress */}
-                        {account.end_date && (
-                          <div style={styles.detailSection}>
-                            <p style={styles.detailLabel}>Target Progress</p>
-                            <div style={styles.progressTrack}>
-                              <div style={{ ...styles.progressFill, width: `${progress}%` }} />
-                            </div>
-                            <p style={styles.progressNote}>{daysLeft} days left</p>
-                          </div>
-                        )}
-
-                        {/* Sprint Dates */}
-                        <div style={styles.detailSection}>
-                          <p style={styles.detailLabel}>Target Dates</p>
-                          <div style={styles.sprintDateRow}>
-                            <div style={styles.sprintDateField}>
-                              <label style={styles.sprintDateLabel}>Start Date</label>
-                              <input
-                                type="date"
-                                className="field-input"
-                                style={styles.sprintDateInput}
-                                value={sprintEdits[account.id]?.start_date || ""}
-                                onChange={e => setSprintEdits(prev => ({ ...prev, [account.id]: { ...prev[account.id], start_date: e.target.value } }))}
-                              />
-                            </div>
-                            <div style={styles.sprintDateField}>
-                              <label style={styles.sprintDateLabel}>End Date</label>
-                              <input
-                                type="date"
-                                className="field-input"
-                                style={styles.sprintDateInput}
-                                value={sprintEdits[account.id]?.end_date || ""}
-                                onChange={e => setSprintEdits(prev => ({ ...prev, [account.id]: { ...prev[account.id], end_date: e.target.value } }))}
-                              />
-                            </div>
-                            <div style={styles.sprintSaveWrap}>
-                              <button style={styles.saveDatesBtn} onClick={() => saveDates(account.id)}>
-                                Save Dates
-                              </button>
-                              {sprintSaved[account.id] && (
-                                <span style={styles.savedMsg}>Dates saved</span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Activity log */}
-                        <div style={styles.detailSection}>
-                          <p style={styles.detailLabel}>Activity Log</p>
-                          {acts.length === 0 ? (
-                            <p style={styles.emptySmall}>No activity logged</p>
-                          ) : (
-                            <div style={styles.timeline}>
-                              {acts.map((act, i) => (
-                                <div key={act.id} style={styles.timelineItem}>
-                                  <div style={styles.timelineDotWrap}>
-                                    <div style={styles.timelineDot} />
-                                    {i < acts.length - 1 && <div style={styles.timelineLine} />}
-                                  </div>
-                                  <div style={styles.timelineContent}>
-                                    <div style={styles.timelineHeader}>
-                                      <span style={styles.actType}>{act.activity_type}</span>
-                                      <span style={styles.actDate}>{formatDate(act.activity_date)}</span>
-                                    </div>
-                                    {act.outcome && <p style={styles.actOutcome}>{act.outcome}</p>}
-                                    {act.notes && <p style={styles.actNotes}>{act.notes}</p>}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Notes */}
-                        <div style={styles.detailSection}>
-                          <p style={styles.detailLabel}>Notes</p>
-                          {account.notes
-                            ? <p style={{ fontSize: "13px", color: "#374151", whiteSpace: "pre-wrap", lineHeight: 1.6 }}>{account.notes}</p>
-                            : <p style={styles.emptySmall}>No notes added</p>
-                          }
-                        </div>
-
-                      </div>
-                    )}
                   </div>
                 );
               })
@@ -497,18 +323,9 @@ export default function ManagerAccounts() {
             ) : (
               filtered.map(account => {
                 const sc = STATUS_COLORS[account.status] || STATUS_COLORS.New;
-                const isExpanded = expandedAccount === account.id;
-                const acts = accountDetails[account.id]?.acts || [];
-                const cons = accountDetails[account.id]?.cons || [];
                 const daysLeft = account.end_date
                   ? Math.max(0, Math.ceil((new Date(account.end_date) - new Date()) / (1000 * 60 * 60 * 24)))
                   : null;
-                const progress = (account.start_date && account.end_date)
-                  ? Math.min(100, Math.max(0, Math.round(
-                      ((new Date() - new Date(account.start_date)) /
-                      (new Date(account.end_date) - new Date(account.start_date))) * 100
-                    )))
-                  : 0;
                 const status = account.status || "New";
                 const isActive = ["New", "Contacted", "Engaged", "Proposal"].includes(status);
                 const leftBorder = isActive ? "3px solid #367C2B" : status === "Lost" ? "3px solid #DC2626" : "1px solid #E8E8E6";
@@ -517,21 +334,18 @@ export default function ManagerAccounts() {
                     key={`m-${account.id}`}
                     className="acct-mobile-card"
                     style={{ borderLeft: leftBorder }}
-                    onClick={() => toggleAccount(account.id)}
+                    onClick={() => navigate(`/leads/${account.id}`)}
                   >
-                    {/* Top row: name + status badge */}
                     <div className="acct-card-top">
                       <span className="acct-card-name">{account.name || account.company}</span>
                       <span style={{ ...styles.statusBadge, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}`, flexShrink: 0 }}>
                         {status}
                       </span>
                     </div>
-                    {/* Second row: rep left, days right */}
                     <div className="acct-card-row2">
                       <span className="acct-card-rep">{getRepName(account.rep_id)}</span>
                       <span className="acct-card-days">{daysLeft !== null ? `${daysLeft}d left` : "—"}</span>
                     </div>
-                    {/* Third row: activity info + unassign */}
                     <div className="acct-card-row3">
                       <span className="acct-card-meta">
                         {getLastActivity(account) ? `Last: ${getLastActivity(account)}` : "No activity"} · {account.target_lead_activities?.length || 0} logs
@@ -542,68 +356,6 @@ export default function ManagerAccounts() {
                           : <button onClick={e => { e.stopPropagation(); handleUnassign(account.id); }} style={styles.unassignLink}>Unassign</button>
                       )}
                     </div>
-                    {isExpanded && (
-                      <div className="acct-card-expanded">
-                        {account.address && (
-                          <div style={styles.detailSection}>
-                            <p style={styles.detailLabel}>Address</p>
-                            <a href={`https://maps.google.com/?q=${encodeURIComponent(account.address)}`}
-                              target="_blank" rel="noreferrer" style={styles.addressLink}
-                              onClick={e => e.stopPropagation()}>{account.address}</a>
-                          </div>
-                        )}
-                        {cons.length > 0 && (
-                          <div style={styles.detailSection}>
-                            <p style={styles.detailLabel}>Contacts</p>
-                            {cons.map(c => (
-                              <div key={c.id} style={styles.contactRow}>
-                                <span style={styles.contactName}>{c.first_name} {c.last_name}{c.title ? ` · ${c.title}` : ""}</span>
-                                <div style={styles.contactLinks}>
-                                  {c.phone && <a href={`tel:${c.phone}`} style={styles.contactLink} onClick={e => e.stopPropagation()}>{c.phone}</a>}
-                                  {c.email && <a href={`mailto:${c.email}`} style={styles.contactLink} onClick={e => e.stopPropagation()}>{c.email}</a>}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        {account.end_date && (
-                          <div style={styles.detailSection}>
-                            <p style={styles.detailLabel}>Target Progress</p>
-                            <div style={styles.progressTrack}><div style={{ ...styles.progressFill, width: `${progress}%` }} /></div>
-                            <p style={styles.progressNote}>{daysLeft} days left</p>
-                          </div>
-                        )}
-                        <div style={styles.detailSection}>
-                          <p style={styles.detailLabel}>Activity Log</p>
-                          {acts.length === 0 ? <p style={styles.emptySmall}>No activity logged</p> : (
-                            <div style={styles.timeline}>
-                              {acts.map((act, i) => (
-                                <div key={act.id} style={styles.timelineItem}>
-                                  <div style={styles.timelineDotWrap}>
-                                    <div style={styles.timelineDot} />
-                                    {i < acts.length - 1 && <div style={styles.timelineLine} />}
-                                  </div>
-                                  <div style={styles.timelineContent}>
-                                    <div style={styles.timelineHeader}>
-                                      <span style={styles.actType}>{act.activity_type}</span>
-                                      <span style={styles.actDate}>{formatDate(act.activity_date)}</span>
-                                    </div>
-                                    {act.outcome && <p style={styles.actOutcome}>{act.outcome}</p>}
-                                    {act.notes && <p style={styles.actNotes}>{act.notes}</p>}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        {account.notes && (
-                          <div style={styles.detailSection}>
-                            <p style={styles.detailLabel}>Notes</p>
-                            <p style={{ fontSize: "13px", color: "#374151", whiteSpace: "pre-wrap", lineHeight: 1.6 }}>{account.notes}</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
                   </div>
                 );
               })
@@ -636,37 +388,5 @@ const styles = {
   cellText: { fontSize: "13px", color: "#374151" },
   emptyText: { fontSize: "14px", color: "#ABABAB", padding: "24px 20px" },
 
-  // Expanded detail
-  expandedDetail: { backgroundColor: "#F9F9F8", borderTop: "1px solid #F0F0ED", padding: "16px 20px", display: "flex", flexDirection: "column", gap: "16px" },
-  detailSection: { display: "flex", flexDirection: "column", gap: "6px" },
-  detailLabel: { fontSize: "11px", fontWeight: 600, color: "#ABABAB", textTransform: "uppercase", letterSpacing: "0.06em" },
-  detailValue: { fontSize: "14px", color: "#1A1A1A", fontWeight: 500 },
-  addressLink: { fontSize: "13px", color: "#367C2B", fontWeight: 500 },
-  contactRow: { display: "flex", flexDirection: "column", gap: "4px", paddingBottom: "8px" },
-  contactName: { fontSize: "13px", fontWeight: 500, color: "#1A1A1A" },
-  contactLinks: { display: "flex", gap: "16px" },
-  contactLink: { fontSize: "12px", color: "#367C2B" },
-  progressTrack: { height: "5px", backgroundColor: "#F0F0ED", borderRadius: "3px", overflow: "hidden" },
-  progressFill: { height: "100%", backgroundColor: "#367C2B", borderRadius: "3px" },
-  progressNote: { fontSize: "12px", color: "#ABABAB" },
-  timeline: { display: "flex", flexDirection: "column" },
-  timelineItem: { display: "flex", gap: "10px", paddingBottom: "12px" },
-  timelineDotWrap: { display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 },
-  timelineDot: { width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#367C2B", marginTop: "4px" },
-  timelineLine: { flex: 1, width: "1px", backgroundColor: "#E8E8E6", marginTop: "4px" },
-  timelineContent: { flex: 1 },
-  timelineHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2px" },
-  actType: { fontSize: "13px", fontWeight: 600, color: "#1A1A1A" },
-  actDate: { fontSize: "11px", color: "#ABABAB" },
-  actOutcome: { fontSize: "12px", color: "#374151" },
-  actNotes: { fontSize: "12px", color: "#767676" },
-  emptySmall: { fontSize: "13px", color: "#ABABAB" },
-  sprintDateRow: { display: "flex", alignItems: "flex-end", gap: "12px", flexWrap: "wrap" },
-  sprintDateField: { display: "flex", flexDirection: "column", gap: "4px" },
-  sprintDateLabel: { fontSize: "11px", fontWeight: 600, color: "#374151" },
-  sprintDateInput: { width: "150px" },
-  sprintSaveWrap: { display: "flex", alignItems: "center", gap: "10px" },
-  saveDatesBtn: { padding: "7px 14px", backgroundColor: "#367C2B", color: "#fff", border: "none", borderRadius: "6px", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" },
-  savedMsg: { fontSize: "12px", color: "#16A34A", fontWeight: 500 },
   unassignLink: { background: "none", border: "none", fontSize: "12px", color: "#DC2626", cursor: "pointer", textDecoration: "underline", fontFamily: "'DM Sans', sans-serif", padding: 0 },
 };
