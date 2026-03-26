@@ -20,6 +20,10 @@ export default function AccountDetail() {
   const [contacts, setContacts] = useState([]);
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showCrmModal, setShowCrmModal] = useState(false);
+  const [sendingToCRM, setSendingToCRM] = useState(false);
+  const [crmSuccess, setCrmSuccess] = useState(false);
+
   // Notes
   const [editingNotes, setEditingNotes] = useState(false);
   const [notesValue, setNotesValue] = useState("");
@@ -90,6 +94,64 @@ export default function AccountDetail() {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate("/login");
+  };
+
+  // ── Send to CRM ──
+  const sendToCRM = async () => {
+    if (profile?.role !== "manager") return;
+    setSendingToCRM(true);
+    try {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+
+      const { data: crmAccount, error: accountError } = await supabase
+        .from("accounts")
+        .insert({
+          company_name: account?.name || account?.company || "Unknown",
+          address: account?.address || null,
+          notes: account?.notes || null,
+          user_id: currentUser?.id,
+        })
+        .select()
+        .single();
+
+      if (accountError) throw accountError;
+
+      if (contacts && contacts.length > 0) {
+        const primary = contacts.find(c => c.is_primary) || contacts[0];
+        const contactName = `${primary.first_name || ""} ${primary.last_name || ""}`.trim();
+        if (contactName) {
+          await supabase
+            .from("accounts")
+            .update({ contact_name: contactName })
+            .eq("id", crmAccount.id);
+        }
+      }
+
+      if (activities && activities.length > 0) {
+        for (const activity of activities) {
+          await supabase.from("activities").insert({
+            user_id: currentUser?.id,
+            type: activity.activity_type || null,
+            description: activity.notes || activity.outcome || null,
+            activity_date: activity.activity_date || null,
+            related_to: account?.name || account?.company || null,
+          });
+        }
+      }
+
+      await supabase.from("target_lead_activities").delete().eq("account_id", id);
+      await supabase.from("target_lead_contacts").delete().eq("account_id", id);
+      await supabase.from("target_leads").delete().eq("id", id);
+
+      setShowCrmModal(false);
+      setCrmSuccess(true);
+      setTimeout(() => navigate("/leads"), 1500);
+    } catch (err) {
+      console.error("Send to CRM error:", err);
+      alert("Failed to send to CRM: " + err.message);
+    } finally {
+      setSendingToCRM(false);
+    }
   };
 
   // ── Status update ──
@@ -251,14 +313,28 @@ export default function AccountDetail() {
         {/* ── HEADER ── */}
         <div className="desktop-header" style={styles.header}>
           <button onClick={handleBack} style={styles.backBtn}>← Back</button>
-          <span style={{
-            ...styles.statusBadgeSmall,
-            background: statusStyle.bg,
-            color: statusStyle.color,
-            border: `1px solid ${statusStyle.border}`,
-          }}>
-            {account?.status || "New"}
-          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{
+              ...styles.statusBadgeSmall,
+              background: statusStyle.bg,
+              color: statusStyle.color,
+              border: `1px solid ${statusStyle.border}`,
+            }}>
+              {account?.status || "New"}
+            </span>
+            {profile?.role === "manager" && (
+              <button
+                onClick={() => setShowCrmModal(true)}
+                style={{
+                  background: "#fff", border: "1.5px solid #367C2B", color: "#367C2B",
+                  borderRadius: "6px", padding: "8px 16px", fontSize: "13px", fontWeight: 600,
+                  cursor: "pointer", fontFamily: "'DM Sans', sans-serif", whiteSpace: "nowrap",
+                }}
+              >
+                Send to CRM as Account
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Account name */}
@@ -527,6 +603,42 @@ export default function AccountDetail() {
                   </PullToRefresh>
         </div>
       </div>
+
+      {/* ── CRM Confirmation Modal ── */}
+      {showCrmModal && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ background: "#fff", borderRadius: "8px", padding: "24px", maxWidth: "420px", width: "90%", fontFamily: "'DM Sans', sans-serif" }}>
+            <div style={{ fontSize: "16px", fontWeight: 600, marginBottom: "8px", color: "#1A1A1A" }}>
+              Send to CRM as Account?
+            </div>
+            <div style={{ fontSize: "13px", color: "#767676", marginBottom: "20px", lineHeight: 1.5 }}>
+              This lead and all its activity will be moved to the CRM accounts and removed from Target10.
+            </div>
+            <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+              <button
+                onClick={() => setShowCrmModal(false)}
+                style={{ background: "#fff", border: "1.5px solid #E0E0DC", color: "#767676", borderRadius: "6px", padding: "8px 16px", fontSize: "13px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={sendToCRM}
+                disabled={sendingToCRM}
+                style={{ background: "#367C2B", border: "none", color: "#fff", borderRadius: "6px", padding: "8px 16px", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}
+              >
+                {sendingToCRM ? "Sending..." : "Confirm"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── CRM Success Toast ── */}
+      {crmSuccess && (
+        <div style={{ position: "fixed", bottom: "24px", right: "24px", background: "#367C2B", color: "#fff", padding: "12px 20px", borderRadius: "6px", fontSize: "13px", fontWeight: 600, zIndex: 1000, fontFamily: "'DM Sans', sans-serif" }}>
+          Successfully sent to CRM!
+        </div>
+      )}
     </>
   );
 }
