@@ -147,7 +147,13 @@ export default function AccountDetail() {
 
       setShowCrmModal(false);
       setCrmSuccess(true);
-      setTimeout(() => navigate("/leads"), 1500);
+      setTimeout(() => {
+        if (profile?.role === "manager") {
+          navigate("/dashboard/accounts");
+        } else {
+          navigate("/leads");
+        }
+      }, 1500);
     } catch (err) {
       console.error("Send to CRM error:", err);
       alert("Failed to send to CRM: " + err.message);
