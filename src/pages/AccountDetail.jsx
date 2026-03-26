@@ -106,6 +106,16 @@ export default function AccountDetail() {
     try {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
 
+      console.log("sendToCRM - currentUser.id:", currentUser?.id);
+      console.log("sendToCRM - profile.role:", profile?.role);
+
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log("sendToCRM - session user id:", session?.user?.id);
+      console.log("sendToCRM - session email:", session?.user?.email);
+
+      const insertUserId = session?.user?.id;
+      console.log("sendToCRM - insertUserId:", insertUserId);
+
       // Step 1 - Get fresh contacts and activities
       const { data: freshContacts } = await supabase
         .from("target_lead_contacts").select("*").eq("account_id", id);
@@ -120,7 +130,7 @@ export default function AccountDetail() {
           company_name: account?.name || account?.company || "Unknown",
           address: account?.address || null,
           notes: account?.notes || null,
-          user_id: currentUser?.id,
+          user_id: insertUserId,
         })
         .select()
         .single();
@@ -134,7 +144,7 @@ export default function AccountDetail() {
             .from("contacts")
             .insert({
               account_id: crmAccount.id,
-              user_id: currentUser?.id,
+              user_id: insertUserId,
               first_name: contact.first_name || "",
               last_name: contact.last_name || null,
               email: contact.email || null,
@@ -162,7 +172,7 @@ export default function AccountDetail() {
             .from("activities")
             .insert({
               account_id: crmAccount.id,
-              user_id: currentUser?.id,
+              user_id: insertUserId,
               activity_type: activity.activity_type || null,
               outcome: activity.outcome || null,
               notes: activity.notes || null,
