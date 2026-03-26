@@ -66,13 +66,9 @@ export default function RepActivities() {
     return acc?.name || acc?.company || "—";
   };
 
-  const formatDate = (d) => d
-    ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-    : "—";
-
-  const formatShortDate = (d) => d
-    ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" })
-    : "—";
+  const safeDate = (d) => { const [y, m, day] = d.split("-"); return new Date(y, m - 1, day); };
+  const formatDate = (d) => d ? safeDate(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—";
+  const formatShortDate = (d) => d ? safeDate(d).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—";
 
   const isToday = (dateStr) => new Date().toISOString().split("T")[0] === dateStr;
 

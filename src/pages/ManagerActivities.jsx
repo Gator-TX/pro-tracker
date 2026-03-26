@@ -71,9 +71,11 @@ export default function ManagerActivities() {
   const toggleSelect = (id) =>
     setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
 
-  const formatDate = (d) => d
-    ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-    : "—";
+  const formatDate = (d) => {
+    if (!d) return "—";
+    const [y, m, day] = d.split("-");
+    return new Date(y, m - 1, day).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  };
 
   const filtered = activities.filter(a => {
     const matchRep = filterRep === "all" || a.rep_id === filterRep;

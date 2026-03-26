@@ -71,8 +71,11 @@ export default function Accounts() {
   const getLastContact = (account) => {
     const acts = account.target_lead_activities || [];
     if (!acts.length) return null;
-    const latest = new Date(Math.max(...acts.map(a => new Date(a.activity_date))));
-    return latest.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    const sorted = acts.sort((a, b) => a.activity_date > b.activity_date ? -1 : 1);
+    const d = sorted[0].activity_date;
+    if (!d) return null;
+    const [y, m, day] = d.split("-");
+    return new Date(y, m - 1, day).toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
   const filteredAccounts = accounts.filter(a => {

@@ -173,9 +173,11 @@ export default function RepHome() {
 
   const isToday = (dateStr) => new Date().toISOString().split("T")[0] === dateStr;
 
-  const formatDate = (d) => d
-    ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" })
-    : "—";
+  const formatDate = (d) => {
+    if (!d) return "—";
+    const [y, m, day] = d.split("-");
+    return new Date(y, m - 1, day).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  };
 
   const TYPE_COLORS = {
     Call:    { bg: "#EFF6FF", color: "#2563EB" },

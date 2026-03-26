@@ -216,9 +216,11 @@ export default function Dashboard() {
     return Math.min(100, Math.max(0, Math.round((elapsed / total) * 100)));
   };
 
-  const formatDate = (d) => d
-    ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" })
-    : "—";
+  const formatDate = (d) => {
+    if (!d) return "—";
+    const [y, m, day] = d.split("-");
+    return new Date(y, m - 1, day).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  };
 
   const todayLabel = () => new Date().toLocaleDateString("en-US", {
     weekday: "long", month: "long", day: "numeric",

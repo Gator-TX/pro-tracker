@@ -286,8 +286,9 @@ export default function AccountDetail() {
   // ── Scheduled next activity ──
   const nextActivity = activities.find(a => a.scheduled_next_date);
 
-  const formatDate = (d) => d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
-  const formatActivityDate = (d) => d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
+  const safeDate = (d) => { const [y, m, day] = d.split("-"); return new Date(y, m - 1, day); };
+  const formatDate = (d) => d ? safeDate(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
+  const formatActivityDate = (d) => d ? safeDate(d).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
 
   if (loading) {
     return (

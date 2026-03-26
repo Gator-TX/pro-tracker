@@ -71,7 +71,8 @@ export default function ManagerAccounts() {
     const latest = acts.reduce((a, b) =>
       new Date(a.activity_date) > new Date(b.activity_date) ? a : b
     );
-    return new Date(latest.activity_date).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    const [y, m, day] = latest.activity_date.split("-");
+    return new Date(y, m - 1, day).toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
   const handleDelete = async () => {
@@ -94,9 +95,11 @@ export default function ManagerAccounts() {
     setTimeout(() => setUnassignMsg(null), 3000);
   };
 
-  const formatDate = (d) => d
-    ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" })
-    : "—";
+  const formatDate = (d) => {
+    if (!d) return "—";
+    const [y, m, day] = d.split("-");
+    return new Date(y, m - 1, day).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  };
 
   const ACTIVE_STATUSES = ["New", "Contacted", "Engaged", "Proposal"];
 
