@@ -137,6 +137,15 @@ export default function AccountDetail() {
 
       if (accountError) throw accountError;
 
+      // Step 2b - Update user_id to rep ID if account is assigned to a rep
+      if (account?.rep_id) {
+        const { error: assignError } = await supabase
+          .from("accounts")
+          .update({ user_id: account.rep_id })
+          .eq("id", crmAccount.id);
+        if (assignError) console.error("Rep assignment error:", assignError);
+      }
+
       // Step 3 - Insert contacts into CRM contacts table
       if (freshContacts && freshContacts.length > 0) {
         for (const contact of freshContacts) {
@@ -144,7 +153,7 @@ export default function AccountDetail() {
             .from("contacts")
             .insert({
               account_id: crmAccount.id,
-              user_id: insertUserId,
+              user_id: account?.rep_id || insertUserId,
               first_name: contact.first_name || "",
               last_name: contact.last_name || null,
               email: contact.email || null,
@@ -172,7 +181,7 @@ export default function AccountDetail() {
             .from("activities")
             .insert({
               account_id: crmAccount.id,
-              user_id: insertUserId,
+              user_id: account?.rep_id || insertUserId,
               activity_type: activity.activity_type || null,
               outcome: activity.outcome || null,
               notes: activity.notes || null,
