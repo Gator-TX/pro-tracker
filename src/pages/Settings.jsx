@@ -52,6 +52,8 @@ export default function Settings() {
     (settingsData || []).forEach(s => {
       if (s.setting_key === "rep_at_risk_days") setRepAtRiskDays(s.setting_value);
       if (s.setting_key === "account_at_risk_days") setAccountAtRiskDays(s.setting_value);
+      if (s.setting_key === "sprint_length") setSprintLength(s.setting_value);
+      if (s.setting_key === "accounts_per_rep") setAccountsPerRep(s.setting_value);
     });
 
     setLoading(false);
@@ -105,6 +107,8 @@ export default function Settings() {
     await supabase.from("target_app_settings").upsert([
       { setting_key: "rep_at_risk_days", setting_value: String(repAtRiskDays), updated_by: profile.id },
       { setting_key: "account_at_risk_days", setting_value: String(accountAtRiskDays), updated_by: profile.id },
+      { setting_key: "sprint_length", setting_value: String(sprintLength), updated_by: profile.id },
+      { setting_key: "accounts_per_rep", setting_value: String(accountsPerRep), updated_by: profile.id },
     ], { onConflict: "setting_key" });
     setSaving(false);
     setSaveSuccess(true);

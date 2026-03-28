@@ -21,6 +21,10 @@ export default function ManagerAccounts() {
   const [deleting, setDeleting] = useState(false);
   const [sortDirection, setSortDirection] = useState("asc");
   const [unassignMsg, setUnassignMsg] = useState(null);
+  const [sprintLength, setSprintLength] = useState(60);
+  const [showDateModal, setShowDateModal] = useState(false);
+  const [targetStartDate, setTargetStartDate] = useState("");
+  const [settingDates, setSettingDates] = useState(false);
   const STATUS_COLORS = {
     New:       { bg: "#EFF6FF", color: "#2563EB", border: "#BFDBFE" },
     Contacted: { bg: "#FEFCE8", color: "#CA8A04", border: "#FDE68A" },
@@ -45,6 +49,11 @@ export default function ManagerAccounts() {
     const { data: repsData } = await supabase
       .from("profiles").select("*").eq("role", "rep");
     setReps(repsData || []);
+
+    const { data: settingsData } = await supabase
+      .from("target_app_settings").select("setting_key, setting_value");
+    const sprintSetting = (settingsData || []).find(s => s.setting_key === "sprint_length");
+    if (sprintSetting) setSprintLength(parseInt(sprintSetting.setting_value) || 60);
 
     const { data: accountsData } = await supabase
       .from("target_leads")
@@ -86,6 +95,34 @@ export default function ManagerAccounts() {
 
   const toggleSelect = (id) => {
     setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
+  const openDateModal = () => {
+    const d = new Date();
+    const today = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+    setTargetStartDate(today);
+    setShowDateModal(true);
+  };
+
+  const handleSetTargetDates = async () => {
+    if (!targetStartDate || selectedIds.length === 0) return;
+    setSettingDates(true);
+    const [y, m, day] = targetStartDate.split("-");
+    const start = new Date(y, m - 1, day);
+    const end = new Date(start);
+    end.setDate(end.getDate() + sprintLength);
+    const endStr = end.getFullYear() + "-" + String(end.getMonth() + 1).padStart(2, "0") + "-" + String(end.getDate()).padStart(2, "0");
+
+    await supabase.from("target_leads")
+      .update({ start_date: targetStartDate, end_date: endStr })
+      .in("id", selectedIds);
+
+    setAccounts(prev => prev.map(a =>
+      selectedIds.includes(a.id) ? { ...a, start_date: targetStartDate, end_date: endStr } : a
+    ));
+    setSettingDates(false);
+    setShowDateModal(false);
+    setSelectedIds([]);
   };
 
   const handleUnassign = async (accountId) => {
@@ -243,11 +280,19 @@ export default function ManagerAccounts() {
             </select>
           </div>
 
-          {/* Delete button */}
+          {/* Bulk actions */}
           {selectedIds.length > 0 && (
-            <button onClick={handleDelete} disabled={deleting} style={styles.deleteBtn}>
-              {deleting ? "Deleting…" : `Delete selected (${selectedIds.length})`}
-            </button>
+            <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+              <span style={{ fontSize: "13px", color: "#374151", fontWeight: 500 }}>
+                {selectedIds.length} selected:
+              </span>
+              <button onClick={openDateModal} style={styles.setDatesBtn}>
+                Set Target Dates
+              </button>
+              <button onClick={handleDelete} disabled={deleting} style={styles.deleteBtn}>
+                {deleting ? "Deleting…" : "Delete"}
+              </button>
+            </div>
           )}
 
           {/* Table */}
@@ -368,6 +413,57 @@ export default function ManagerAccounts() {
                   </PullToRefresh>
         </div>
       </div>
+
+      {/* ── Set Target Dates Modal ── */}
+      {showDateModal && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ background: "#fff", borderRadius: "8px", padding: "24px", maxWidth: "420px", width: "90%", fontFamily: "'DM Sans', sans-serif" }}>
+            <div style={{ fontSize: "16px", fontWeight: 600, marginBottom: "4px", color: "#1A1A1A" }}>
+              Set Target Dates
+            </div>
+            <div style={{ fontSize: "13px", color: "#767676", marginBottom: "20px", lineHeight: 1.5 }}>
+              Set start date for {selectedIds.length} lead{selectedIds.length !== 1 ? "s" : ""}. End date will be calculated as start + {sprintLength} days (from Target Defaults).
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "20px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                <label style={{ fontSize: "12px", fontWeight: 600, color: "#374151" }}>Start Date</label>
+                <input
+                  type="date"
+                  className="field-input"
+                  value={targetStartDate}
+                  onChange={e => setTargetStartDate(e.target.value)}
+                  style={{ padding: "8px 12px", fontSize: "14px", border: "1.5px solid #E0E0DC", borderRadius: "6px", fontFamily: "'DM Sans', sans-serif" }}
+                />
+              </div>
+              {targetStartDate && (
+                <div style={{ fontSize: "13px", color: "#374151" }}>
+                  End date: <strong>{(() => {
+                    const [y, m, d] = targetStartDate.split("-");
+                    const end = new Date(y, m - 1, d);
+                    end.setDate(end.getDate() + sprintLength);
+                    return end.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+                  })()}</strong>
+                </div>
+              )}
+            </div>
+            <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+              <button
+                onClick={() => setShowDateModal(false)}
+                style={{ background: "#fff", border: "1.5px solid #E0E0DC", color: "#767676", borderRadius: "6px", padding: "8px 16px", fontSize: "13px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSetTargetDates}
+                disabled={settingDates || !targetStartDate}
+                style={{ background: "#367C2B", border: "none", color: "#fff", borderRadius: "6px", padding: "8px 16px", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}
+              >
+                {settingDates ? "Saving..." : "Apply Dates"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
@@ -384,7 +480,8 @@ const styles = {
   tableCard: { backgroundColor: "#ffffff", border: "1px solid #E8E8E6", borderRadius: "8px", overflowX: "auto", WebkitOverflowScrolling: "touch" },
   accountRow: { display: "grid", gridTemplateColumns: "32px 2fr 120px 120px 110px 80px 80px 90px", gap: "12px", alignItems: "center", padding: "13px 20px", borderBottom: "1px solid #F0F0ED" },
   checkbox: { width: "16px", height: "16px", cursor: "pointer", accentColor: "#367C2B" },
-  deleteBtn: { alignSelf: "flex-start", padding: "8px 16px", backgroundColor: "#DC2626", color: "#fff", border: "none", borderRadius: "6px", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" },
+  deleteBtn: { padding: "8px 16px", backgroundColor: "#DC2626", color: "#fff", border: "none", borderRadius: "6px", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" },
+  setDatesBtn: { padding: "8px 16px", backgroundColor: "#367C2B", color: "#fff", border: "none", borderRadius: "6px", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" },
   tableHeader: { fontSize: "11px", fontWeight: 600, color: "#ABABAB", textTransform: "uppercase", letterSpacing: "0.06em", cursor: "default" },
   accountName: { fontSize: "14px", fontWeight: 500, color: "#1A1A1A" },
   statusBadge: { fontSize: "11px", fontWeight: 600, padding: "4px 10px", borderRadius: "100px", whiteSpace: "nowrap", textAlign: "center", display: "inline-block" },
