@@ -128,30 +128,9 @@ export default function SalesReps() {
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #F5F5F3; font-family: 'DM Sans', sans-serif; }
 
-        .rep-row {
-          display: grid;
-          grid-template-columns: 32px 1.8fr 70px 70px 70px 110px 90px 100px;
-          gap: 12px; align-items: center;
-          padding: 13px 20px;
-          border-bottom: 1px solid #F0F0ED;
-          cursor: pointer; transition: background 0.15s;
-        }
-        .rep-row:hover { background: #F9F9F8; }
-        .rep-row:last-child { border-bottom: none; }
-        .rep-checkbox { width: 16px; height: 16px; cursor: pointer; accent-color: #367C2B; flex-shrink: 0; }
+        .data-row:hover { background: #F9F9F8; }
+        .data-row:last-child td { border-bottom: none; }
 
-        .table-scroll {
-          max-height: 600px; overflow-y: auto; min-width: 720px;
-          scrollbar-width: thin; scrollbar-color: #E0E0DC transparent;
-        }
-        .rep-row { min-width: 720px; }
-
-        .rep-mobile-kanban { display: none; }
-        .desktop-only { display: block; }
-        .rep-filter-bar {
-          display: flex; align-items: center; gap: 12px;
-          margin-bottom: 16px; flex-wrap: wrap;
-        }
         .filter-select {
           padding: 8px 12px; font-size: 13px;
           font-family: 'DM Sans', sans-serif;
@@ -159,24 +138,20 @@ export default function SalesReps() {
           background: #fff; color: #1A1A1A; outline: none; cursor: pointer;
         }
         .filter-select:focus { border-color: #367C2B; }
+
+        .rep-mobile-kanban { display: none; }
+        .desktop-only { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 86px !important; padding-left: 16px !important; padding-right: 16px !important; }
           .desktop-only { display: none !important; }
-          .rep-table-card { display: none !important; }
-          .rep-filter-bar { margin-bottom: 8px; }
           .rep-mobile-kanban { display: flex !important; flex-direction: column; gap: 8px; }
           .rep-kanban-card {
-            background: #fff;
-            width: 100%;
-            box-sizing: border-box;
-            border: 1px solid #E8E8E6;
-            border-radius: 8px;
-            padding: 14px 16px;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+            background: #fff; width: 100%; box-sizing: border-box;
+            border: 1px solid #E8E8E6; border-radius: 8px;
+            padding: 14px 16px; cursor: pointer;
+            display: flex; flex-direction: column; gap: 10px;
             transition: background 0.15s;
           }
           .rep-kanban-card:active { background: #F9F9F8; }
@@ -200,7 +175,7 @@ export default function SalesReps() {
           <TopBar title="Sales Reps" profile={profile} onSignOut={handleSignOut} />
 
 
-          <div className="rep-filter-bar">
+          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
             <select className="filter-select" value={filterRisk} onChange={e => setFilterRisk(e.target.value)}>
               <option value="all">All Reps</option>
               <option value="onTrack">On Track</option>
@@ -209,80 +184,72 @@ export default function SalesReps() {
           </div>
 
           {selectedIds.length > 0 && (
-            <button onClick={handleDelete} disabled={deleting} style={styles.deleteBtn}>
-              {deleting ? "Deleting…" : `Delete selected (${selectedIds.length})`}
-            </button>
+            <div style={{ backgroundColor: "#ffffff", border: "0.5px solid #E0E0DC", borderRadius: "6px", padding: "10px 16px", display: "flex", alignItems: "center", gap: "12px" }}>
+              <span style={{ fontSize: "13px", fontWeight: 600, color: "#1A1A1A" }}>{selectedIds.length} selected</span>
+              <button onClick={handleDelete} disabled={deleting} style={{ padding: "6px 14px", borderRadius: "6px", fontSize: "13px", fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", backgroundColor: "#FEF2F2", color: "#DC2626", border: "1px solid #FECACA" }}>
+                {deleting ? "Deleting…" : "Delete"}
+              </button>
+              <button onClick={() => setSelectedIds([])} style={{ background: "none", border: "none", color: "#767676", fontSize: "13px", cursor: "pointer", marginLeft: "auto", fontFamily: "'DM Sans', sans-serif" }}>Clear selection</button>
+            </div>
           )}
 
-          <div className="rep-table-card" style={styles.tableCard}>
-            {/* Desktop header */}
-            <div className="rep-row rep-table-header" style={{ ...styles.tableHeader, boxShadow: "0 2px 4px rgba(0,0,0,0.06)", position: "relative", zIndex: 1, minWidth: "700px" }}>
-              <input
-                type="checkbox"
-                className="rep-checkbox"
-                checked={sorted.length > 0 && sorted.every(r => selectedIds.includes(r.id))}
-                onChange={e => setSelectedIds(e.target.checked ? sorted.map(r => r.id) : [])}
-              />
-              <span style={{ cursor: "pointer" }} onClick={() => setSortDirection(d => d === "asc" ? "desc" : "asc")}>
-                Rep {sortDirection === "asc" ? "↑" : "↓"}
-              </span>
-              <span>Active</span>
-              <span>Won</span>
-              <span>Lost</span>
-              <span>Logs This Week</span>
-              <span>Total Logs</span>
-              <span>Status</span>
-            </div>
-
-            <div className="table-scroll">
+          <div className="desktop-only">
+          <div style={{ backgroundColor: "#ffffff", border: "0.5px solid #E8E8E6", borderRadius: "8px", flex: 1, overflowY: "auto", minHeight: 0 }}>
             {sorted.length === 0 ? (
-              <p style={styles.emptyText}>No reps found</p>
+              <div style={{ fontSize: "14px", color: "#ABABAB", padding: "40px 0", textAlign: "center" }}>No reps found</div>
             ) : (
-              sorted.map(rep => {
-                const badgeStyle = {
-                  ...styles.statusBadge,
-                  background: rep.atRisk ? "#FEF2F2" : "#F0FDF4",
-                  color: rep.atRisk ? "#DC2626" : "#16A34A",
-                  border: `1px solid ${rep.atRisk ? "#FECACA" : "#BBF7D0"}`,
-                };
-                return (
-                  <div key={rep.id} className="rep-row"
-                    onClick={() => navigate(`/dashboard/reps/${rep.id}`)}>
-
-                    <input
-                      type="checkbox"
-                      className="rep-checkbox"
-                      checked={selectedIds.includes(rep.id)}
-                      onChange={() => toggleSelect(rep.id)}
-                      onClick={e => e.stopPropagation()}
-                    />
-
-                    <div className="rep-row-left">
-                      <p style={styles.repName}>{rep.full_name}</p>
-                      <p style={styles.repEmail}>{rep.email || "—"}</p>
-                      <div className="rep-mobile-stats">
-                        <p style={styles.mobileStats}>
-                          Active: {rep.activeCount} · Won: {rep.wonCount} · Lost: {rep.lostCount} · {rep.logsThisWeek} this week · {rep.totalLogs} total
-                        </p>
-                      </div>
-                    </div>
-
-                    <span className="rep-desktop-stats" style={styles.statVal}>{rep.activeCount}</span>
-                    <span className="rep-desktop-stats" style={styles.statVal}>{rep.wonCount}</span>
-                    <span className="rep-desktop-stats" style={styles.statVal}>{rep.lostCount}</span>
-                    <span className="rep-desktop-stats" style={styles.statVal}>{rep.logsThisWeek}</span>
-                    <span className="rep-desktop-stats" style={styles.statVal}>{rep.totalLogs}</span>
-                    <span className="rep-desktop-stats" style={badgeStyle}>{rep.atRisk ? "At Risk" : "On Track"}</span>
-
-                    <div className="rep-row-right rep-mobile-stats">
-                      <span style={badgeStyle}>{rep.atRisk ? "At Risk" : "On Track"}</span>
-                    </div>
-
-                  </div>
-                );
-              })
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr>
+                    <th style={{ ...styles.th, width: "40px", padding: "10px 12px" }}>
+                      <input type="checkbox"
+                        checked={sorted.length > 0 && sorted.every(r => selectedIds.includes(r.id))}
+                        onChange={e => setSelectedIds(e.target.checked ? sorted.map(r => r.id) : [])}
+                        style={styles.checkbox}
+                      />
+                    </th>
+                    <th style={{ ...styles.th, cursor: "pointer", userSelect: "none" }} onClick={() => setSortDirection(d => d === "asc" ? "desc" : "asc")}>
+                      Rep {sortDirection === "asc" ? "↑" : "↓"}
+                    </th>
+                    <th style={styles.th}>Active</th>
+                    <th style={styles.th}>Won</th>
+                    <th style={styles.th}>Lost</th>
+                    <th style={styles.th}>Logs/Week</th>
+                    <th style={styles.th}>Total Logs</th>
+                    <th style={styles.th}>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sorted.map(rep => (
+                    <tr key={rep.id} className="data-row" style={{ cursor: "pointer" }} onClick={() => navigate(`/dashboard/reps/${rep.id}`)}>
+                      <td style={{ ...styles.td, padding: "12px 12px", width: "40px" }} onClick={e => { e.stopPropagation(); toggleSelect(rep.id); }}>
+                        <input type="checkbox" checked={selectedIds.includes(rep.id)} readOnly style={styles.checkbox} />
+                      </td>
+                      <td style={styles.td} onClick={() => navigate(`/dashboard/reps/${rep.id}`)}>
+                        <div style={{ fontSize: "14px", fontWeight: 600, color: "#1A1A1A" }}>{rep.full_name}</div>
+                        <div style={{ fontSize: "12px", color: "#767676", marginTop: "2px" }}>{rep.email || "—"}</div>
+                      </td>
+                      <td style={styles.td}>{rep.activeCount}</td>
+                      <td style={styles.td}>{rep.wonCount}</td>
+                      <td style={styles.td}>{rep.lostCount}</td>
+                      <td style={styles.td}>{rep.logsThisWeek}</td>
+                      <td style={styles.td}>{rep.totalLogs}</td>
+                      <td style={styles.td}>
+                        <span style={{
+                          fontSize: "12px", fontWeight: 500, padding: "2px 10px", borderRadius: "999px",
+                          background: rep.atRisk ? "#FEF2F2" : "#F0FDF4",
+                          color: rep.atRisk ? "#DC2626" : "#16A34A",
+                          border: `1px solid ${rep.atRisk ? "#FECACA" : "#BBF7D0"}`,
+                        }}>
+                          {rep.atRisk ? "At Risk" : "On Track"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             )}
-            </div>
+          </div>
           </div>
           {/* MOBILE: Rep Kanban Cards */}
           <div className="rep-mobile-kanban">
@@ -340,15 +307,12 @@ const styles = {
   layout: { display: "flex", minHeight: "100vh", backgroundColor: "#F5F5F3" },
   loadingPage: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#F5F5F3" },
   spinner: { width: "32px", height: "32px", borderRadius: "50%", border: "3px solid #E0E0DC", borderTopColor: "#367C2B", animation: "spin 0.8s linear infinite" },
-  main: { marginLeft: "220px", flex: 1, padding: "28px 32px", display: "flex", flexDirection: "column", gap: "20px", minHeight: "100vh" },
-  subTitle: { fontSize: "13px", color: "#767676" },
-  tableCard: { backgroundColor: "#ffffff", border: "1px solid #E8E8E6", borderRadius: "8px", overflowX: "auto", WebkitOverflowScrolling: "touch" },
-  tableHeader: { fontSize: "11px", fontWeight: 600, color: "#ABABAB", textTransform: "uppercase", letterSpacing: "0.06em" },
-  deleteBtn: { alignSelf: "flex-start", padding: "8px 16px", backgroundColor: "#DC2626", color: "#fff", border: "none", borderRadius: "6px", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" },
-  repName: { fontSize: "14px", fontWeight: 600, color: "#1A1A1A" },
-  repEmail: { fontSize: "12px", color: "#767676", marginTop: "2px" },
-  statVal: { fontSize: "14px", color: "#374151" },
-  statusBadge: { fontSize: "11px", fontWeight: 600, padding: "4px 10px", borderRadius: "100px", whiteSpace: "nowrap", textAlign: "center", display: "inline-block" },
-  mobileStats: { fontSize: "12px", color: "#767676", marginTop: "3px" },
-  emptyText: { fontSize: "14px", color: "#ABABAB", padding: "24px 20px" },
+  main: { marginLeft: "220px", flex: 1, padding: "28px 32px", display: "flex", flexDirection: "column", gap: "14px", minHeight: "100vh", fontFamily: "'DM Sans', sans-serif" },
+  checkbox: { width: "16px", height: "16px", cursor: "pointer", accentColor: "#367C2B" },
+  th: {
+    backgroundColor: "#ffffff", fontSize: "11px", fontWeight: 600, color: "#ABABAB",
+    position: "sticky", top: 0, zIndex: 1, padding: "10px 20px", textAlign: "left",
+    borderBottom: "1px solid #E8E8E6", textTransform: "uppercase", letterSpacing: "0.06em",
+  },
+  td: { fontSize: "13px", color: "#374151", padding: "12px 20px", borderBottom: "1px solid #F0F0ED" },
 };

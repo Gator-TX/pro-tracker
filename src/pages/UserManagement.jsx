@@ -138,9 +138,11 @@ export default function UserManagement() {
         }
         @media (min-width: 769px) {
           .um-mobile-only { display: none !important; }
+          .um-desktop-only { display: flex; flex-direction: column; flex: 1; min-height: 0; }
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .um-tr:hover { background: #F9F9F8; }
+        .data-row:hover { background: #F9F9F8; }
+        .data-row:last-child td { border-bottom: none; }
         .um-search {
           width: 100%; max-width: 320px; padding: 8px 12px; font-size: 13px;
           font-family: 'DM Sans', sans-serif; border: 1.5px solid #E0E0DC;
@@ -180,55 +182,63 @@ export default function UserManagement() {
             </div>
 
             {/* ── DESKTOP TABLE ── */}
-            <div className="um-desktop-only" style={styles.tableCard}>
-              {/* Header */}
-              <div style={styles.thead}>
-                {["Name", "Email", "Role", "Status", "Joined", "Actions"].map(h => (
-                  <span key={h} style={styles.th}>{h}</span>
-                ))}
-              </div>
-
+            <div className="um-desktop-only">
+            <div style={{ backgroundColor: "#ffffff", border: "0.5px solid #E8E8E6", borderRadius: "8px", flex: 1, overflowY: "auto", minHeight: 0 }}>
               {filteredUsers.length === 0 ? (
-                <p style={styles.empty}>No users found.</p>
+                <div style={{ fontSize: "14px", color: "#ABABAB", padding: "40px 0", textAlign: "center" }}>No users found.</div>
               ) : (
-                filteredUsers.map(u => (
-                  <div key={u.id} className="um-tr" style={styles.tr}>
-                    <span style={styles.tdName}>{u.full_name || "—"}</span>
-                    <span style={styles.td}>{u.email || "—"}</span>
-                    <span>
-                      <span style={{
-                        ...styles.badge,
-                        background: u.role === "manager" ? "#F0FDF4" : "#EFF6FF",
-                        color: u.role === "manager" ? "#16A34A" : "#2563EB",
-                        border: `1px solid ${u.role === "manager" ? "#BBF7D0" : "#BFDBFE"}`,
-                      }}>
-                        {u.role === "manager" ? "Manager" : "Rep"}
-                      </span>
-                    </span>
-                    <span>
-                      <span style={{
-                        ...styles.badge,
-                        background: u.is_active === false ? "#FEF2F2" : "#F0FDF4",
-                        color: u.is_active === false ? "#DC2626" : "#16A34A",
-                        border: `1px solid ${u.is_active === false ? "#FECACA" : "#BBF7D0"}`,
-                      }}>
-                        {u.is_active === false ? "Inactive" : "Active"}
-                      </span>
-                    </span>
-                    <span style={styles.td}>
-                      {u.created_at ? new Date(u.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—"}
-                    </span>
-                    <span style={styles.actions}>
-                      <button style={styles.actionGreen} onClick={() => openEdit(u)}>Edit</button>
-                      <button style={styles.actionGreen} onClick={() => handleResetPassword(u)}>Reset Password</button>
-                      <button style={styles.actionRed} onClick={() => handleToggleActive(u)}>
-                        {u.is_active === false ? "Activate" : "Deactivate"}
-                      </button>
-                      <button style={styles.actionRed} onClick={() => handleDelete(u)}>Delete</button>
-                    </span>
-                  </div>
-                ))
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr>
+                      {["Name", "Email", "Role", "Status", "Joined", "Actions"].map(h => (
+                        <th key={h} style={styles.thStyle}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredUsers.map(u => (
+                      <tr key={u.id} className="data-row">
+                        <td style={{ ...styles.tdStyle, fontWeight: 600, color: "#1A1A1A" }}>{u.full_name || "—"}</td>
+                        <td style={styles.tdStyle}>{u.email || "—"}</td>
+                        <td style={styles.tdStyle}>
+                          <span style={{
+                            ...styles.badge,
+                            background: u.role === "manager" ? "#F0FDF4" : "#EFF6FF",
+                            color: u.role === "manager" ? "#16A34A" : "#2563EB",
+                            border: `1px solid ${u.role === "manager" ? "#BBF7D0" : "#BFDBFE"}`,
+                          }}>
+                            {u.role === "manager" ? "Manager" : "Rep"}
+                          </span>
+                        </td>
+                        <td style={styles.tdStyle}>
+                          <span style={{
+                            ...styles.badge,
+                            background: u.is_active === false ? "#FEF2F2" : "#F0FDF4",
+                            color: u.is_active === false ? "#DC2626" : "#16A34A",
+                            border: `1px solid ${u.is_active === false ? "#FECACA" : "#BBF7D0"}`,
+                          }}>
+                            {u.is_active === false ? "Inactive" : "Active"}
+                          </span>
+                        </td>
+                        <td style={styles.tdStyle}>
+                          {u.created_at ? new Date(u.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—"}
+                        </td>
+                        <td style={styles.tdStyle}>
+                          <div style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
+                            <button style={styles.actionGreen} onClick={() => openEdit(u)}>Edit</button>
+                            <button style={styles.actionGreen} onClick={() => handleResetPassword(u)}>Reset Password</button>
+                            <button style={styles.actionRed} onClick={() => handleToggleActive(u)}>
+                              {u.is_active === false ? "Activate" : "Deactivate"}
+                            </button>
+                            <button style={styles.actionRed} onClick={() => handleDelete(u)}>Delete</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               )}
+            </div>
             </div>
 
             {/* ── MOBILE CARD LIST ── */}
@@ -326,40 +336,17 @@ const styles = {
   layout: { display: "flex", minHeight: "100vh", backgroundColor: "#F5F5F3" },
   main: {
     marginLeft: "220px", flex: 1, minHeight: "100vh",
-    padding: "28px 32px", display: "flex", flexDirection: "column", gap: "16px",
+    padding: "28px 32px", display: "flex", flexDirection: "column", gap: "14px",
+    fontFamily: "'DM Sans', sans-serif",
   },
   spinner: { width: "32px", height: "32px", borderRadius: "50%", border: "3px solid #E0E0DC", borderTopColor: "#367C2B", animation: "spin 0.8s linear infinite" },
-
-  banner: {
-    background: "#FFF9E6", border: "1px solid #FFDE00",
-    borderRadius: "6px", padding: "10px 16px",
-    fontSize: "13px", color: "#92400E", lineHeight: "1.5",
+  thStyle: {
+    backgroundColor: "#ffffff", fontSize: "11px", fontWeight: 600, color: "#ABABAB",
+    position: "sticky", top: 0, zIndex: 1, padding: "10px 20px", textAlign: "left",
+    borderBottom: "1px solid #E8E8E6", textTransform: "uppercase", letterSpacing: "0.06em",
   },
-
-  tableCard: {
-    background: "#fff", border: "0.5px solid #E8E8E6",
-    borderRadius: "8px", overflow: "hidden",
-  },
-  thead: {
-    display: "grid",
-    gridTemplateColumns: "1.5fr 2fr 90px 80px 120px 2fr",
-    gap: "12px", alignItems: "center",
-    padding: "10px 20px",
-    background: "#FAFAFA", borderBottom: "1px solid #E8E8E6",
-  },
-  tr: {
-    display: "grid",
-    gridTemplateColumns: "1.5fr 2fr 90px 80px 120px 2fr",
-    gap: "12px", alignItems: "center",
-    padding: "12px 20px",
-    borderBottom: "1px solid #F0F0ED",
-    transition: "background 0.15s",
-  },
-  th: { fontSize: "11px", fontWeight: 600, color: "#ABABAB", textTransform: "uppercase", letterSpacing: "0.06em" },
-  tdName: { fontSize: "14px", fontWeight: 600, color: "#1A1A1A" },
-  td: { fontSize: "13px", color: "#374151" },
-  badge: { fontSize: "11px", fontWeight: 600, padding: "3px 10px", borderRadius: "100px", whiteSpace: "nowrap" },
-  actions: { display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" },
+  tdStyle: { fontSize: "13px", color: "#374151", padding: "12px 20px", borderBottom: "1px solid #F0F0ED" },
+  badge: { fontSize: "12px", fontWeight: 500, padding: "2px 10px", borderRadius: "999px", whiteSpace: "nowrap" },
   actionGreen: {
     background: "none", border: "none", padding: 0,
     fontSize: "13px", fontWeight: 600, color: "#367C2B",

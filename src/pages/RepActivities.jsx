@@ -151,16 +151,8 @@ export default function RepActivities() {
         /* ── DESKTOP ── */
         .ra-desktop { display: none; }
 
-        .ra-dt-row {
-          display: grid;
-          grid-template-columns: 120px 2fr 120px 160px 1fr;
-          gap: 12px; align-items: center;
-          padding: 12px 20px;
-          border-bottom: 1px solid #F0F0ED;
-          cursor: pointer; transition: background 0.15s;
-        }
-        .ra-dt-row:hover { background: #F9F9F8; }
-        .ra-dt-row:last-child { border-bottom: none; }
+        .data-row:hover { background: #F9F9F8; }
+        .data-row:last-child td { border-bottom: none; }
 
         @media (min-width: 769px) {
           .ra-main-content { margin-left: 220px; padding: 28px 32px; background: #F5F5F3; min-height: 100vh; }
@@ -272,37 +264,36 @@ export default function RepActivities() {
             {showUpcoming && upcoming.length > 0 && (
               <div style={{ marginBottom: "24px" }}>
                 <p style={dt.sectionLabel}>UPCOMING</p>
-                <div style={dt.tableCard}>
-                  <div style={{ ...dt.headerRow, gridTemplateColumns: "120px 2fr 120px 1fr" }}>
-                    {["Date", "Company Name", "Type", "Notes"].map(h => (
-                      <span key={h} style={dt.th}>{h}</span>
-                    ))}
-                  </div>
-                  {upcoming.map(act => {
-                    const tc = TYPE_COLORS[act.scheduled_next_type] || TYPE_COLORS.Call;
-                    const today = isToday(act.scheduled_next_date);
-                    return (
-                      <div
-                        key={act.id}
-                        className="ra-dt-row"
-                        style={{ gridTemplateColumns: "120px 2fr 120px 1fr" }}
-                        onClick={() => navigate(`/leads/${act.account_id}`)}
-                      >
-                        <span style={{ ...dt.cell, color: today ? "#16A34A" : "#2563EB", fontWeight: 600 }}>
-                          {today ? "Today" : formatShortDate(act.scheduled_next_date)}
-                        </span>
-                        <span style={dt.nameCell}>{getAccountName(act.account_id)}</span>
-                        <span>
-                          <span style={{ background: tc.bg, color: tc.color, padding: "2px 8px", borderRadius: "100px", fontSize: "11px", fontWeight: 600, whiteSpace: "nowrap" }}>
-                            {act.scheduled_next_type || "Activity"}
-                          </span>
-                        </span>
-                        <span style={{ ...dt.cell, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {act.notes || "—"}
-                        </span>
-                      </div>
-                    );
-                  })}
+                <div style={{ backgroundColor: "#ffffff", border: "0.5px solid #E8E8E6", borderRadius: "8px", overflow: "hidden" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr>
+                        {["Date", "Company Name", "Type", "Notes"].map(h => (
+                          <th key={h} style={dt.thStyle}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {upcoming.map(act => {
+                        const tc = TYPE_COLORS[act.scheduled_next_type] || TYPE_COLORS.Call;
+                        const today = isToday(act.scheduled_next_date);
+                        return (
+                          <tr key={act.id} className="data-row" style={{ cursor: "pointer" }} onClick={() => navigate(`/leads/${act.account_id}`)}>
+                            <td style={{ ...dt.tdStyle, color: today ? "#16A34A" : "#2563EB", fontWeight: 600 }}>
+                              {today ? "Today" : formatShortDate(act.scheduled_next_date)}
+                            </td>
+                            <td style={{ ...dt.tdStyle, fontWeight: 600, color: "#1A1A1A" }}>{getAccountName(act.account_id)}</td>
+                            <td style={dt.tdStyle}>
+                              <span style={{ background: tc.bg, color: tc.color, padding: "2px 10px", borderRadius: "999px", fontSize: "12px", fontWeight: 500 }}>
+                                {act.scheduled_next_type || "Activity"}
+                              </span>
+                            </td>
+                            <td style={{ ...dt.tdStyle, maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{act.notes || "—"}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             )}
@@ -311,39 +302,37 @@ export default function RepActivities() {
             {showPast && (
               <div>
                 <p style={dt.sectionLabel}>PAST ACTIVITY</p>
-                <div style={dt.tableCard}>
-                  <div style={dt.headerRow}>
-                    {["Date", "Company Name", "Type", "Outcome", "Notes"].map(h => (
-                      <span key={h} style={dt.th}>{h}</span>
-                    ))}
-                  </div>
+                <div style={{ backgroundColor: "#ffffff", border: "0.5px solid #E8E8E6", borderRadius: "8px", overflow: "hidden" }}>
                   {activities.length === 0 ? (
-                    <p style={dt.emptyText}>No activity logged yet</p>
+                    <div style={{ fontSize: "14px", color: "#ABABAB", padding: "40px 0", textAlign: "center" }}>No activity logged yet</div>
                   ) : (
-                    activities.map(act => {
-                      const tc = TYPE_COLORS[act.activity_type] || TYPE_COLORS.Call;
-                      return (
-                        <div
-                          key={act.id}
-                          className="ra-dt-row"
-                          onClick={() => navigate(`/leads/${act.account_id}`)}
-                        >
-                          <span style={dt.cell}>{formatShortDate(act.activity_date)}</span>
-                          <span style={dt.nameCell}>{getAccountName(act.account_id)}</span>
-                          <span>
-                            <span style={{ background: tc.bg, color: tc.color, padding: "2px 8px", borderRadius: "100px", fontSize: "11px", fontWeight: 600, whiteSpace: "nowrap" }}>
-                              {act.activity_type}
-                            </span>
-                          </span>
-                          <span style={{ ...dt.cell, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            {act.outcome || "—"}
-                          </span>
-                          <span style={{ ...dt.cell, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            {act.notes || "—"}
-                          </span>
-                        </div>
-                      );
-                    })
+                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                      <thead>
+                        <tr>
+                          {["Date", "Company Name", "Type", "Outcome", "Notes"].map(h => (
+                            <th key={h} style={dt.thStyle}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {activities.map(act => {
+                          const tc = TYPE_COLORS[act.activity_type] || TYPE_COLORS.Call;
+                          return (
+                            <tr key={act.id} className="data-row" style={{ cursor: "pointer" }} onClick={() => navigate(`/leads/${act.account_id}`)}>
+                              <td style={dt.tdStyle}>{formatShortDate(act.activity_date)}</td>
+                              <td style={{ ...dt.tdStyle, fontWeight: 600, color: "#1A1A1A" }}>{getAccountName(act.account_id)}</td>
+                              <td style={dt.tdStyle}>
+                                <span style={{ background: tc.bg, color: tc.color, padding: "2px 10px", borderRadius: "999px", fontSize: "12px", fontWeight: 500 }}>
+                                  {act.activity_type}
+                                </span>
+                              </td>
+                              <td style={{ ...dt.tdStyle, maxWidth: "160px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{act.outcome || "—"}</td>
+                              <td style={{ ...dt.tdStyle, maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{act.notes || "—"}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
                   )}
                 </div>
               </div>
@@ -372,19 +361,10 @@ const dt = {
     cursor: "pointer", appearance: "none",
   },
   sectionLabel: { fontSize: "11px", fontWeight: 700, color: "#ABABAB", letterSpacing: "0.06em", marginBottom: "8px" },
-  tableCard: {
-    background: "#ffffff", border: "0.5px solid #E8E8E6",
-    borderRadius: "8px", overflow: "hidden",
+  thStyle: {
+    backgroundColor: "#ffffff", fontSize: "11px", fontWeight: 600, color: "#ABABAB",
+    position: "sticky", top: 0, zIndex: 1, padding: "10px 20px", textAlign: "left",
+    borderBottom: "1px solid #E8E8E6", textTransform: "uppercase", letterSpacing: "0.06em",
   },
-  headerRow: {
-    display: "grid",
-    gridTemplateColumns: "120px 2fr 120px 160px 1fr",
-    gap: "12px", alignItems: "center",
-    padding: "10px 20px",
-    background: "#FAFAFA", borderBottom: "1px solid #E8E8E6",
-  },
-  th:       { fontSize: "11px", fontWeight: 600, color: "#ABABAB", textTransform: "uppercase", letterSpacing: "0.06em" },
-  nameCell: { fontSize: "14px", fontWeight: 600, color: "#1A1A1A" },
-  cell:     { fontSize: "13px", color: "#374151" },
-  emptyText: { fontSize: "14px", color: "#ABABAB", padding: "24px 20px" },
+  tdStyle: { fontSize: "13px", color: "#374151", padding: "12px 20px", borderBottom: "1px solid #F0F0ED" },
 };

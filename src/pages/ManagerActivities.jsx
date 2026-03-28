@@ -83,6 +83,12 @@ export default function ManagerActivities() {
     return matchRep && matchType;
   });
 
+  const TYPE_COLORS = {
+    Call:    { bg: "#EFF6FF", color: "#2563EB" },
+    Meeting: { bg: "#F0FDF4", color: "#16A34A" },
+    Email:   { bg: "#FAF5FF", color: "#7C3AED" },
+  };
+
   if (loading) {
     return <div style={styles.loadingPage}><div style={styles.spinner} /></div>;
   }
@@ -94,14 +100,8 @@ export default function ManagerActivities() {
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #F5F5F3; font-family: 'DM Sans', sans-serif; }
 
-        .act-row {
-          display: grid;
-          grid-template-columns: 32px 130px 1.2fr 1fr 100px 1.5fr;
-          gap: 12px; align-items: start;
-          padding: 13px 20px;
-          border-bottom: 1px solid #F0F0ED;
-        }
-        .act-row:last-child { border-bottom: none; }
+        .data-row:hover { background: #F9F9F8; }
+        .data-row:last-child td { border-bottom: none; }
 
         .filter-select {
           padding: 8px 12px; font-size: 13px;
@@ -111,71 +111,41 @@ export default function ManagerActivities() {
         }
         .filter-select:focus { border-color: #367C2B; }
 
-        .type-badge {
-          display: inline-block;
-          padding: 3px 10px; border-radius: 100px;
-          font-size: 11px; font-weight: 600;
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
         .mobile-select-all { display: none; }
         .act-mobile-list { display: none; }
-        .desktop-only { display: block; }
-        .mobile-only { display: none; }
+        .desktop-only { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 
-        .table-scroll {
-          max-height: 600px; overflow-y: auto; min-width: 650px;
-          scrollbar-width: thin; scrollbar-color: #E0E0DC transparent;
-        }
-        .act-row { min-width: 650px; }
-
+        @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 86px !important; padding-left: 16px !important; padding-right: 16px !important; padding-bottom: 8px !important; }
           .desktop-only { display: none !important; }
-          .mobile-only { display: flex !important; }
           .filter-bar { gap: 8px !important; flex-wrap: nowrap !important; margin-bottom: 8px !important; }
           .filter-bar .filter-select { flex: 1; }
-          .mobile-select-all { margin-bottom: 0 !important; }
-          .act-table-card { display: none !important; }
-          .act-mobile-list {
-            display: flex !important; flex-direction: column;
-            gap: 8px; width: 100%;
-            margin-top: 8px; margin-bottom: 95px;
-          }
-          .act-mobile-card {
-            width: 100%;
-            box-sizing: border-box;
-            background: #ffffff;
-            border: 1px solid #E8E8E6;
-            border-left: 3px solid #367C2B;
-            border-radius: 8px;
-            padding: 14px 16px;
-            padding-right: 44px;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-          }
-          .act-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-          .act-card-date { font-size: 12px; color: #ABABAB; white-space: nowrap; flex-shrink: 0; }
-          .act-card-account { font-size: 14px; font-weight: 600; color: #1A1A1A; }
-          .act-card-rep { font-size: 12px; color: #767676; }
-          .act-card-outcome { font-size: 12px; font-weight: 500; color: #374151; }
-          .act-card-notes {
-            font-size: 12px; color: #767676;
-            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-          }
-          .act-card-checkbox {
-            position: absolute; top: 14px; right: 14px;
-            width: 18px; height: 18px;
-            cursor: pointer; accent-color: #367C2B;
-          }
           .mobile-select-all {
             display: flex !important; align-items: center; gap: 10px;
             padding: 10px 16px; background: #fff;
             border: 1px solid #E8E8E6; border-radius: 8px;
           }
           .mobile-delete-btn { width: 100% !important; text-align: center; }
+          .act-mobile-list {
+            display: flex !important; flex-direction: column;
+            gap: 8px; width: 100%;
+            margin-top: 8px; margin-bottom: 95px;
+          }
+          .act-mobile-card {
+            width: 100%; box-sizing: border-box;
+            background: #ffffff; border: 1px solid #E8E8E6;
+            border-left: 3px solid #367C2B; border-radius: 8px;
+            padding: 14px 16px; padding-right: 44px;
+            position: relative; display: flex; flex-direction: column; gap: 6px;
+          }
+          .act-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+          .act-card-date { font-size: 12px; color: #ABABAB; white-space: nowrap; flex-shrink: 0; }
+          .act-card-account { font-size: 14px; font-weight: 600; color: #1A1A1A; }
+          .act-card-rep { font-size: 12px; color: #767676; }
+          .act-card-outcome { font-size: 12px; font-weight: 500; color: #374151; }
+          .act-card-notes { font-size: 12px; color: #767676; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+          .act-card-checkbox { position: absolute; top: 14px; right: 14px; width: 18px; height: 18px; cursor: pointer; accent-color: #367C2B; }
         }
       `}</style>
 
@@ -184,11 +154,9 @@ export default function ManagerActivities() {
         <ManagerBottomNav activePath="/dashboard/activities" />
         <Sidebar role="manager" profile={profile} onSignOut={handleSignOut} activePath="/dashboard/activities" />
 
-        {/* MAIN */}
         <div className="main-content" style={styles.main}>
           <PullToRefresh onRefresh={loadData}>
           <TopBar title="Activities" profile={profile} onSignOut={handleSignOut} />
-
 
           {/* Filters */}
           <div className="filter-bar" style={styles.filterBar}>
@@ -208,11 +176,15 @@ export default function ManagerActivities() {
             </select>
           </div>
 
-          {/* Delete button */}
+          {/* Action bar */}
           {selectedIds.length > 0 && (
-            <button onClick={handleDelete} disabled={deleting} className="mobile-delete-btn" style={styles.deleteBtn}>
-              {deleting ? "Deleting…" : `Delete selected (${selectedIds.length})`}
-            </button>
+            <div style={{ backgroundColor: "#ffffff", border: "0.5px solid #E0E0DC", borderRadius: "6px", padding: "10px 16px", display: "flex", alignItems: "center", gap: "12px" }}>
+              <span style={{ fontSize: "13px", fontWeight: 600, color: "#1A1A1A" }}>{selectedIds.length} selected</span>
+              <button onClick={handleDelete} disabled={deleting} className="mobile-delete-btn" style={{ padding: "6px 14px", borderRadius: "6px", fontSize: "13px", fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", backgroundColor: "#FEF2F2", color: "#DC2626", border: "1px solid #FECACA" }}>
+                {deleting ? "Deleting…" : "Delete"}
+              </button>
+              <button onClick={() => setSelectedIds([])} style={{ background: "none", border: "none", color: "#767676", fontSize: "13px", cursor: "pointer", marginLeft: "auto", fontFamily: "'DM Sans', sans-serif" }}>Clear selection</button>
+            </div>
           )}
 
           {/* Mobile select-all */}
@@ -223,83 +195,71 @@ export default function ManagerActivities() {
               onChange={e => setSelectedIds(e.target.checked ? filtered.map(a => a.id) : [])}
               style={{ width: "18px", height: "18px", accentColor: "#367C2B", cursor: "pointer" }}
             />
-            <span style={{ fontSize: "13px", fontWeight: 600, color: "#374151", fontFamily: "'DM Sans', sans-serif" }}>
-              Select all
-            </span>
+            <span style={{ fontSize: "13px", fontWeight: 600, color: "#374151" }}>Select all</span>
             {selectedIds.length > 0 && (
-              <span style={{ fontSize: "12px", color: "#767676", fontFamily: "'DM Sans', sans-serif" }}>
-                ({selectedIds.length} selected)
-              </span>
+              <span style={{ fontSize: "12px", color: "#767676" }}>({selectedIds.length} selected)</span>
             )}
           </div>
 
-          {/* Table — desktop only */}
-          <div className="act-table-card desktop-only" style={styles.tableCard}>
-            <div className="act-table-header" style={{ ...styles.actRowStyle, ...styles.tableHeader, boxShadow: "0 2px 4px rgba(0,0,0,0.06)", position: "relative", zIndex: 1, minWidth: "650px" }}>
-              <input
-                type="checkbox"
-                checked={filtered.length > 0 && filtered.every(a => selectedIds.includes(a.id))}
-                onChange={e => setSelectedIds(e.target.checked ? filtered.map(a => a.id) : [])}
-                style={styles.checkbox}
-              />
-              <span>Date</span>
-              <span>Company Name</span>
-              <span>Rep</span>
-              <span>Type</span>
-              <span>Notes</span>
-            </div>
-
-            <div className="table-scroll">
+          {/* Desktop table */}
+          <div className="desktop-only">
+          <div style={{ backgroundColor: "#ffffff", border: "0.5px solid #E8E8E6", borderRadius: "8px", flex: 1, overflowY: "auto", minHeight: 0 }}>
             {filtered.length === 0 ? (
-              <p style={styles.emptyText}>No activities found</p>
+              <div style={{ fontSize: "14px", color: "#ABABAB", padding: "40px 0", textAlign: "center" }}>No activities found</div>
             ) : (
-              filtered.map(act => {
-                const typeColors = {
-                  Call:    { bg: "#EFF6FF", color: "#2563EB" },
-                  Meeting: { bg: "#F0FDF4", color: "#16A34A" },
-                  Email:   { bg: "#FAF5FF", color: "#7C3AED" },
-                };
-                const tc = typeColors[act.activity_type] || typeColors.Call;
-                return (
-                  <div key={act.id} className="act-row">
-                    <input
-                      type="checkbox"
-                      className="act-checkbox"
-                      checked={selectedIds.includes(act.id)}
-                      onChange={() => toggleSelect(act.id)}
-                      style={styles.checkbox}
-                    />
-                    <span className="act-date" style={styles.dateText}>{formatDate(act.activity_date)}</span>
-                    <span className="act-account" style={styles.accountText}>{getAccountName(act.account_id)}</span>
-                    <span className="act-rep" style={styles.cellText}>{getRepName(act.rep_id)}</span>
-                    <span className="act-type">
-                      <span className="type-badge" style={{ background: tc.bg, color: tc.color }}>
-                        {act.activity_type}
-                      </span>
-                    </span>
-                    <div className="act-notes">
-                      {act.outcome && <p style={styles.outcomeText}>{act.outcome}</p>}
-                      {act.notes && <p style={styles.notesText}>{act.notes}</p>}
-                    </div>
-                  </div>
-                );
-              })
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr>
+                    <th style={{ ...styles.th, width: "40px", padding: "10px 12px" }}>
+                      <input type="checkbox"
+                        checked={filtered.length > 0 && filtered.every(a => selectedIds.includes(a.id))}
+                        onChange={e => setSelectedIds(e.target.checked ? filtered.map(a => a.id) : [])}
+                        style={styles.checkbox}
+                      />
+                    </th>
+                    <th style={styles.th}>Date</th>
+                    <th style={styles.th}>Company Name</th>
+                    <th style={styles.th}>Rep</th>
+                    <th style={styles.th}>Type</th>
+                    <th style={styles.th}>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map(act => {
+                    const tc = TYPE_COLORS[act.activity_type] || TYPE_COLORS.Call;
+                    return (
+                      <tr key={act.id} className="data-row">
+                        <td style={{ ...styles.td, padding: "12px 12px", width: "40px" }} onClick={e => { e.stopPropagation(); toggleSelect(act.id); }}>
+                          <input type="checkbox" checked={selectedIds.includes(act.id)} readOnly style={styles.checkbox} />
+                        </td>
+                        <td style={{ ...styles.td, color: "#767676" }}>{formatDate(act.activity_date)}</td>
+                        <td style={{ ...styles.td, fontWeight: 600, color: "#1A1A1A" }}>{getAccountName(act.account_id)}</td>
+                        <td style={styles.td}>{getRepName(act.rep_id)}</td>
+                        <td style={styles.td}>
+                          <span style={{ display: "inline-block", padding: "2px 10px", borderRadius: "999px", fontSize: "12px", fontWeight: 500, background: tc.bg, color: tc.color }}>
+                            {act.activity_type}
+                          </span>
+                        </td>
+                        <td style={styles.td}>
+                          {act.outcome && <div style={{ fontSize: "12px", fontWeight: 500, color: "#374151", marginBottom: "2px" }}>{act.outcome}</div>}
+                          {act.notes && <div style={{ fontSize: "12px", color: "#767676" }}>{act.notes}</div>}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             )}
-            </div>
+          </div>
           </div>
 
           {/* MOBILE: Activity Cards */}
-          <div className="act-mobile-list mobile-only" style={{ flexDirection: "column" }}>
+          <div className="act-mobile-list" style={{ flexDirection: "column" }}>
             {filtered.length === 0 ? (
-              <p style={styles.emptyText}>No activities found</p>
+              <p style={{ fontSize: "14px", color: "#ABABAB", padding: "24px 20px" }}>No activities found</p>
             ) : (
               filtered.map(act => {
-                const typeColors = {
-                  Call:    { bg: "#EFF6FF", color: "#2563EB" },
-                  Meeting: { bg: "#F0FDF4", color: "#16A34A" },
-                  Email:   { bg: "#FAF5FF", color: "#7C3AED" },
-                };
-                const tc = typeColors[act.activity_type] || typeColors.Call;
+                const tc = TYPE_COLORS[act.activity_type] || TYPE_COLORS.Call;
                 return (
                   <div key={`m-${act.id}`} className="act-mobile-card">
                     <input
@@ -309,7 +269,7 @@ export default function ManagerActivities() {
                       onChange={() => toggleSelect(act.id)}
                     />
                     <div className="act-card-top">
-                      <span className="type-badge" style={{ background: tc.bg, color: tc.color }}>
+                      <span style={{ display: "inline-block", padding: "3px 10px", borderRadius: "100px", fontSize: "11px", fontWeight: 600, background: tc.bg, color: tc.color }}>
                         {act.activity_type}
                       </span>
                       <span className="act-card-date">{formatDate(act.activity_date)}</span>
@@ -335,20 +295,13 @@ const styles = {
   layout: { display: "flex", minHeight: "100vh", backgroundColor: "#F5F5F3" },
   loadingPage: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#F5F5F3" },
   spinner: { width: "32px", height: "32px", borderRadius: "50%", border: "3px solid #E0E0DC", borderTopColor: "#367C2B", animation: "spin 0.8s linear infinite" },
-  main: { marginLeft: "220px", flex: 1, padding: "28px 32px", display: "flex", flexDirection: "column", gap: "20px", minHeight: "100vh" },
-  topBar: { display: "flex", alignItems: "baseline", gap: "12px" },
-  pageTitle: { fontSize: "22px", fontWeight: 600, color: "#1A1A1A" },
-  subTitle: { fontSize: "13px", color: "#767676" },
-  filterBar: { display: "flex", gap: "10px", flexWrap: "wrap" },
-  tableCard: { backgroundColor: "#ffffff", border: "1px solid #E8E8E6", borderRadius: "8px", overflowX: "auto", WebkitOverflowScrolling: "touch" },
-  actRowStyle: { display: "grid", gridTemplateColumns: "32px 130px 1.2fr 1fr 100px 1.5fr", gap: "12px", alignItems: "start", padding: "13px 20px", borderBottom: "1px solid #F0F0ED" },
-  checkbox: { width: "16px", height: "16px", cursor: "pointer", accentColor: "#367C2B", marginTop: "2px" },
-  deleteBtn: { alignSelf: "flex-start", padding: "8px 16px", backgroundColor: "#DC2626", color: "#fff", border: "none", borderRadius: "6px", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" },
-  tableHeader: { fontSize: "11px", fontWeight: 600, color: "#ABABAB", textTransform: "uppercase", letterSpacing: "0.06em" },
-  dateText: { fontSize: "13px", color: "#767676" },
-  accountText: { fontSize: "14px", fontWeight: 500, color: "#1A1A1A" },
-  cellText: { fontSize: "13px", color: "#374151" },
-  outcomeText: { fontSize: "12px", fontWeight: 500, color: "#374151", marginBottom: "2px" },
-  notesText: { fontSize: "12px", color: "#767676" },
-  emptyText: { fontSize: "14px", color: "#ABABAB", padding: "24px 20px" },
+  main: { marginLeft: "220px", flex: 1, padding: "28px 32px", display: "flex", flexDirection: "column", gap: "14px", minHeight: "100vh", fontFamily: "'DM Sans', sans-serif" },
+  filterBar: { display: "flex", gap: "8px", flexWrap: "wrap" },
+  checkbox: { width: "16px", height: "16px", cursor: "pointer", accentColor: "#367C2B" },
+  th: {
+    backgroundColor: "#ffffff", fontSize: "11px", fontWeight: 600, color: "#ABABAB",
+    position: "sticky", top: 0, zIndex: 1, padding: "10px 20px", textAlign: "left",
+    borderBottom: "1px solid #E8E8E6", textTransform: "uppercase", letterSpacing: "0.06em",
+  },
+  td: { fontSize: "13px", color: "#374151", padding: "12px 20px", borderBottom: "1px solid #F0F0ED" },
 };
