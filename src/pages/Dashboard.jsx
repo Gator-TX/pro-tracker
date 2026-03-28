@@ -553,29 +553,6 @@ export default function Dashboard() {
                   ))}
                 </div>
 
-                {sprint && (
-                  <div style={styles.dtCard}>
-                    <div style={styles.dtCardHeader}><span style={styles.dtCardTitle}>Target Overview</span></div>
-                    <div style={styles.dtSprintNumbers}>
-                      <div style={styles.dtSprintNum}>
-                        <span style={styles.dtSprintVal}>{daysLeft()}</span>
-                        <span style={{ ...styles.dtSprintPill, background: "#FFDE00", color: "#1A1A1A" }}>Days Left</span>
-                      </div>
-                      <div style={styles.dtSprintNum}>
-                        <span style={{ ...styles.dtSprintVal, color: "#16A34A" }}>{sprintRepStats.withActivity}</span>
-                        <span style={{ ...styles.dtSprintPill, background: "#F0FDF4", color: "#16A34A" }}>With Activity</span>
-                      </div>
-                      <div style={styles.dtSprintNum}>
-                        <span style={{ ...styles.dtSprintVal, color: "#DC2626" }}>{sprintRepStats.withoutActivity}</span>
-                        <span style={{ ...styles.dtSprintPill, background: "#FEF2F2", color: "#DC2626" }}>No Activity</span>
-                      </div>
-                    </div>
-                    <div style={styles.dtProgressTrack}>
-                      <div style={{ ...styles.dtProgressFill, width: `${sprintProgress()}%` }} />
-                    </div>
-                    <p style={styles.dtProgressLabel}>{sprintProgress()}% of target elapsed</p>
-                  </div>
-                )}
               </div>
 
               {/* RIGHT: At Risk Leads + At Risk Reps */}
@@ -720,32 +697,6 @@ export default function Dashboard() {
                 ))}
             </div>
 
-            {/* 4. Target Overview */}
-            {sprint && (
-              <div className="dm-card">
-                <div className="dm-card-header">
-                  <span className="dm-card-title">Target Overview</span>
-                </div>
-                  <div className="dm-sprint-numbers">
-                    <div className="dm-sprint-num">
-                      <span className="dm-sprint-val">{daysLeft()}</span>
-                      <span className="dm-sprint-pill" style={{ background: "#FFDE00", color: "#1A1A1A" }}>Days Left</span>
-                    </div>
-                    <div className="dm-sprint-num">
-                      <span className="dm-sprint-val" style={{ color: "#16A34A" }}>{sprintRepStats.withActivity}</span>
-                      <span className="dm-sprint-pill" style={{ background: "#F0FDF4", color: "#16A34A" }}>With Activity</span>
-                    </div>
-                    <div className="dm-sprint-num">
-                      <span className="dm-sprint-val" style={{ color: "#DC2626" }}>{sprintRepStats.withoutActivity}</span>
-                      <span className="dm-sprint-pill" style={{ background: "#FEF2F2", color: "#DC2626" }}>No Activity</span>
-                    </div>
-                  </div>
-                  <div className="dm-progress-track">
-                    <div className="dm-progress-fill" style={{ width: `${sprintProgress()}%` }} />
-                  </div>
-                  <p className="dm-progress-label">{sprintProgress()}% of target elapsed</p>
-              </div>
-            )}
 
             {/* 5. At Risk Leads */}
             <div>
