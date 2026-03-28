@@ -436,7 +436,7 @@ const styles = {
   layout: { display: "flex", minHeight: "100vh", backgroundColor: "#F5F5F3" },
   loadingPage: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#F5F5F3" },
   spinner: { width: "32px", height: "32px", borderRadius: "50%", border: "3px solid #E0E0DC", borderTopColor: "#367C2B", animation: "spin 0.8s linear infinite" },
-  main: { marginLeft: "220px", flex: 1, padding: "28px 32px", display: "flex", flexDirection: "column", gap: "12px", minHeight: "100vh", fontFamily: "'DM Sans', sans-serif" },
+  main: { marginLeft: "220px", flex: 1, padding: "28px 32px", display: "flex", flexDirection: "column", gap: "14px", minHeight: "100vh", fontFamily: "'DM Sans', sans-serif" },
   filterBar: { display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" },
   checkbox: { width: "16px", height: "16px", cursor: "pointer", accentColor: "#367C2B" },
   th: {
