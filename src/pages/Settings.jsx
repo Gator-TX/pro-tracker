@@ -110,6 +110,21 @@ export default function Settings() {
       { setting_key: "sprint_length", setting_value: String(sprintLength), updated_by: profile.id },
       { setting_key: "accounts_per_rep", setting_value: String(accountsPerRep), updated_by: profile.id },
     ], { onConflict: "setting_key" });
+
+    // Recalculate end_date on all leads that have a start_date
+    const days = parseInt(sprintLength) || 60;
+    const { data: leadsWithDates } = await supabase
+      .from("target_leads").select("id, start_date").not("start_date", "is", null);
+    if (leadsWithDates && leadsWithDates.length > 0) {
+      for (const lead of leadsWithDates) {
+        const [y, m, d] = lead.start_date.split("-");
+        const end = new Date(y, m - 1, d);
+        end.setDate(end.getDate() + days);
+        const endStr = end.getFullYear() + "-" + String(end.getMonth() + 1).padStart(2, "0") + "-" + String(end.getDate()).padStart(2, "0");
+        await supabase.from("target_leads").update({ end_date: endStr }).eq("id", lead.id);
+      }
+    }
+
     setSaving(false);
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 3000);
