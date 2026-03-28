@@ -625,34 +625,6 @@ export default function RepHome() {
                   )}
                 </div>
 
-                {/* Sprint Progress card */}
-                <div style={dt.card}>
-                  <p style={dt.sectionLabel}>TARGET PROGRESS</p>
-                  <div style={dt.sprintStats}>
-                    <div style={{ textAlign: "center" }}>
-                      <span style={{ ...dt.sprintPill, background: "#FEF9C3", color: "#92400E" }}>
-                        {daysLeft() ?? "—"}
-                      </span>
-                      <p style={dt.sprintStatLbl}>Days Left</p>
-                    </div>
-                    <div style={{ textAlign: "center" }}>
-                      <span style={{ ...dt.sprintPill, background: "#F0FDF4", color: "#16A34A" }}>
-                        {stats.active}
-                      </span>
-                      <p style={dt.sprintStatLbl}>Active</p>
-                    </div>
-                    <div style={{ textAlign: "center" }}>
-                      <span style={{ ...dt.sprintPill, background: "#FEF2F2", color: "#DC2626" }}>
-                        {noActivityCount}
-                      </span>
-                      <p style={dt.sprintStatLbl}>No Activity</p>
-                    </div>
-                  </div>
-                  <div style={dt.progressTrack}>
-                    <div style={{ ...dt.progressFill, width: `${sprintPct()}%` }} />
-                  </div>
-                  <p style={dt.progressLabel}>{sprintPct()}% of target elapsed</p>
-                </div>
 
               </div>
             </div>
