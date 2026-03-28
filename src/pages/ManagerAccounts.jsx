@@ -169,34 +169,18 @@ export default function ManagerAccounts() {
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #F5F5F3; font-family: 'DM Sans', sans-serif; }
 
-        .account-row {
-          display: grid;
-          grid-template-columns: 32px 2fr 120px 120px 110px 80px 80px 90px;
-          gap: 12px; align-items: center;
-          padding: 13px 20px;
-          border-bottom: 1px solid #F0F0ED;
-          cursor: pointer; transition: background 0.15s;
-        }
-        .account-row:hover { background: #F9F9F8; }
-        .account-row:last-child { border-bottom: none; }
+        .data-row:hover { background: #F9F9F8; }
+        .data-row:last-child td { border-bottom: none; }
 
-        .filter-select {
+        .filter-select, .search-input {
           padding: 8px 12px; font-size: 13px;
           font-family: 'DM Sans', sans-serif;
           border: 1.5px solid #E0E0DC; border-radius: 6px;
           background: #fff; color: #1A1A1A; outline: none;
-          cursor: pointer;
         }
-        .filter-select:focus { border-color: #367C2B; }
-
-        .search-input {
-          padding: 8px 12px; font-size: 13px;
-          font-family: 'DM Sans', sans-serif;
-          border: 1.5px solid #E0E0DC; border-radius: 6px;
-          background: #fff; color: #1A1A1A; outline: none;
-          width: 220px;
-        }
-        .search-input:focus { border-color: #367C2B; }
+        .filter-select:focus, .search-input:focus { border-color: #367C2B; }
+        .search-input { width: 200px; }
+        .filter-select { cursor: pointer; }
 
         .field-input {
           padding: 7px 10px; font-size: 13px;
@@ -207,13 +191,8 @@ export default function ManagerAccounts() {
         }
         .field-input:focus { border-color: #367C2B; }
 
-        .table-scroll {
-          max-height: 600px; overflow-y: auto; min-width: 800px;
-          scrollbar-width: thin; scrollbar-color: #E0E0DC transparent;
-        }
-        .account-row { min-width: 800px; }
         .mobile-only { display: none; }
-        .desktop-only { display: block; }
+        .desktop-only { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
@@ -222,16 +201,10 @@ export default function ManagerAccounts() {
           .mobile-only { display: flex !important; flex-direction: column; gap: 8px; margin-top: 8px; }
           .acct-filter-bar { gap: 8px !important; }
           .acct-mobile-card {
-            background: #fff;
-            width: 100%;
-            box-sizing: border-box;
-            border: 1px solid #E8E8E6;
-            border-radius: 8px;
-            padding: 14px 16px;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+            background: #fff; width: 100%; box-sizing: border-box;
+            border: 1px solid #E8E8E6; border-radius: 8px;
+            padding: 14px 16px; cursor: pointer;
+            display: flex; flex-direction: column; gap: 8px;
             transition: background 0.15s;
           }
           .acct-mobile-card:active { background: #F9F9F8; }
@@ -280,88 +253,79 @@ export default function ManagerAccounts() {
             </select>
           </div>
 
-          {/* Bulk actions */}
+          {/* Action bar */}
           {selectedIds.length > 0 && (
-            <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
-              <span style={{ fontSize: "13px", color: "#374151", fontWeight: 500 }}>
-                {selectedIds.length} selected:
-              </span>
-              <button onClick={openDateModal} style={styles.setDatesBtn}>
+            <div style={{ backgroundColor: "#ffffff", border: "0.5px solid #E0E0DC", borderRadius: "6px", padding: "10px 16px", display: "flex", alignItems: "center", gap: "12px" }}>
+              <span style={{ fontSize: "13px", fontWeight: 600, color: "#1A1A1A" }}>{selectedIds.length} selected</span>
+              <button onClick={openDateModal} style={{ padding: "6px 14px", borderRadius: "6px", fontSize: "13px", fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", backgroundColor: "#F0FDF4", color: "#15803D", border: "1px solid #BBF7D0" }}>
                 Set Target Dates
               </button>
-              <button onClick={handleDelete} disabled={deleting} style={styles.deleteBtn}>
+              <button onClick={handleDelete} disabled={deleting} style={{ padding: "6px 14px", borderRadius: "6px", fontSize: "13px", fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", backgroundColor: "#FEF2F2", color: "#DC2626", border: "1px solid #FECACA" }}>
                 {deleting ? "Deleting…" : "Delete"}
               </button>
+              <button onClick={() => setSelectedIds([])} style={{ background: "none", border: "none", color: "#767676", fontSize: "13px", cursor: "pointer", marginLeft: "auto", fontFamily: "'DM Sans', sans-serif" }}>Clear selection</button>
             </div>
           )}
 
-          {/* Table */}
-          <div className="acct-table-card desktop-only" style={styles.tableCard}>
-            <div className="acct-table-header" style={{ ...styles.accountRow, ...styles.tableHeader, boxShadow: "0 2px 4px rgba(0,0,0,0.06)", position: "relative", zIndex: 1, minWidth: "800px" }}>
-              <input
-                type="checkbox"
-                checked={filtered.length > 0 && filtered.every(a => selectedIds.includes(a.id))}
-                onChange={e => setSelectedIds(e.target.checked ? filtered.map(a => a.id) : [])}
-                style={styles.checkbox}
-              />
-              <span style={{ cursor: "pointer" }} onClick={() => setSortDirection(d => d === "asc" ? "desc" : "asc")}>
-                Account {sortDirection === "asc" ? "↑" : "↓"}
-              </span>
-              <span>Status</span>
-              <span>Assigned Rep</span>
-              <span>Last Activity</span>
-              <span>Days Left</span>
-              <span>Logs</span>
-              <span>Actions</span>
-            </div>
-
-            <div className="table-scroll">
+          {/* Desktop table */}
+          <div className="desktop-only">
+          <div style={{ backgroundColor: "#ffffff", border: "0.5px solid #E8E8E6", borderRadius: "8px", flex: 1, overflowY: "auto", minHeight: 0 }}>
             {filtered.length === 0 ? (
-              <p style={styles.emptyText}>No accounts found</p>
+              <div style={{ fontSize: "14px", color: "#ABABAB", padding: "40px 0", textAlign: "center" }}>No leads found</div>
             ) : (
-              filtered.map(account => {
-                const sc = STATUS_COLORS[account.status] || STATUS_COLORS.New;
-                return (
-                  <div key={account.id}>
-                    <div className="account-row"
-                      onClick={() => navigate(`/leads/${account.id}`)}>
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.includes(account.id)}
-                        onChange={e => { e.stopPropagation(); toggleSelect(account.id); }}
-                        onClick={e => e.stopPropagation()}
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr>
+                    <th style={{ ...styles.th, width: "40px", padding: "10px 12px" }}>
+                      <input type="checkbox"
+                        checked={filtered.length > 0 && filtered.every(a => selectedIds.includes(a.id))}
+                        onChange={e => setSelectedIds(e.target.checked ? filtered.map(a => a.id) : [])}
                         style={styles.checkbox}
                       />
-                      <span className="acct-name" style={styles.accountName}>{account.name || account.company}</span>
-                      <span className="acct-status" style={{
-                        ...styles.statusBadge,
-                        background: sc.bg, color: sc.color, border: `1px solid ${sc.border}`,
-                      }}>
-                        {account.status || "New"}
-                      </span>
-                      <span className="acct-rep" style={styles.cellText}>{getRepName(account.rep_id)}</span>
-                      <span className="acct-last" style={styles.cellText}>{getLastActivity(account) || "—"}</span>
-                      <span className="acct-days" style={styles.cellText}>
-                        {account.end_date ? Math.max(0, Math.ceil((new Date(account.end_date) - new Date()) / (1000 * 60 * 60 * 24))) : "—"}
-                      </span>
-                      <span className="acct-logs" style={styles.cellText}>{account.target_lead_activities?.length || 0}</span>
-                      <span onClick={e => e.stopPropagation()}>
-                        {account.rep_id ? (
-                          <button
-                            onClick={e => { e.stopPropagation(); handleUnassign(account.id); }}
-                            style={styles.unassignLink}>
-                            Unassign
-                          </button>
-                        ) : (
-                          <span style={styles.cellText}>—</span>
-                        )}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })
+                    </th>
+                    <th style={{ ...styles.th, cursor: "pointer", userSelect: "none" }} onClick={() => setSortDirection(d => d === "asc" ? "desc" : "asc")}>
+                      Company Name {sortDirection === "asc" ? "↑" : "↓"}
+                    </th>
+                    <th style={styles.th}>Status</th>
+                    <th style={styles.th}>Assigned Rep</th>
+                    <th style={styles.th}>Last Activity</th>
+                    <th style={styles.th}>Days Left</th>
+                    <th style={styles.th}>Logs</th>
+                    <th style={styles.th}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map(account => {
+                    const sc = STATUS_COLORS[account.status] || STATUS_COLORS.New;
+                    return (
+                      <tr key={account.id} className="data-row" style={{ cursor: "pointer" }}>
+                        <td style={{ ...styles.td, padding: "12px 12px", width: "40px" }} onClick={e => { e.stopPropagation(); toggleSelect(account.id); }}>
+                          <input type="checkbox" checked={selectedIds.includes(account.id)} readOnly style={styles.checkbox} />
+                        </td>
+                        <td style={{ ...styles.td, fontSize: "14px", fontWeight: 600, color: "#1A1A1A" }} onClick={() => navigate(`/leads/${account.id}`)}>{account.name || account.company}</td>
+                        <td style={styles.td} onClick={() => navigate(`/leads/${account.id}`)}>
+                          <span style={{ ...styles.statusBadge, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
+                            {account.status || "New"}
+                          </span>
+                        </td>
+                        <td style={styles.td} onClick={() => navigate(`/leads/${account.id}`)}>{getRepName(account.rep_id)}</td>
+                        <td style={styles.td} onClick={() => navigate(`/leads/${account.id}`)}>{getLastActivity(account) || "—"}</td>
+                        <td style={styles.td} onClick={() => navigate(`/leads/${account.id}`)}>
+                          {account.end_date ? Math.max(0, Math.ceil((new Date(account.end_date) - new Date()) / (1000 * 60 * 60 * 24))) : "—"}
+                        </td>
+                        <td style={styles.td} onClick={() => navigate(`/leads/${account.id}`)}>{account.target_lead_activities?.length || 0}</td>
+                        <td style={styles.td} onClick={e => e.stopPropagation()}>
+                          {account.rep_id ? (
+                            <button onClick={() => handleUnassign(account.id)} style={styles.unassignLink}>Unassign</button>
+                          ) : "—"}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             )}
-            </div>
+          </div>
           </div>
 
           {/* MOBILE: Account Cards */}
@@ -472,21 +436,15 @@ const styles = {
   layout: { display: "flex", minHeight: "100vh", backgroundColor: "#F5F5F3" },
   loadingPage: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#F5F5F3" },
   spinner: { width: "32px", height: "32px", borderRadius: "50%", border: "3px solid #E0E0DC", borderTopColor: "#367C2B", animation: "spin 0.8s linear infinite" },
-  main: { marginLeft: "220px", flex: 1, padding: "28px 32px", display: "flex", flexDirection: "column", gap: "20px", minHeight: "100vh" },
-  topBar: { display: "flex", alignItems: "baseline", gap: "12px" },
-  pageTitle: { fontSize: "22px", fontWeight: 600, color: "#1A1A1A" },
-  subTitle: { fontSize: "13px", color: "#767676" },
-  filterBar: { display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" },
-  tableCard: { backgroundColor: "#ffffff", border: "1px solid #E8E8E6", borderRadius: "8px", overflowX: "auto", WebkitOverflowScrolling: "touch" },
-  accountRow: { display: "grid", gridTemplateColumns: "32px 2fr 120px 120px 110px 80px 80px 90px", gap: "12px", alignItems: "center", padding: "13px 20px", borderBottom: "1px solid #F0F0ED" },
+  main: { marginLeft: "220px", flex: 1, padding: "28px 32px", display: "flex", flexDirection: "column", gap: "12px", minHeight: "100vh", fontFamily: "'DM Sans', sans-serif" },
+  filterBar: { display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" },
   checkbox: { width: "16px", height: "16px", cursor: "pointer", accentColor: "#367C2B" },
-  deleteBtn: { padding: "8px 16px", backgroundColor: "#DC2626", color: "#fff", border: "none", borderRadius: "6px", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" },
-  setDatesBtn: { padding: "8px 16px", backgroundColor: "#367C2B", color: "#fff", border: "none", borderRadius: "6px", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" },
-  tableHeader: { fontSize: "11px", fontWeight: 600, color: "#ABABAB", textTransform: "uppercase", letterSpacing: "0.06em", cursor: "default" },
-  accountName: { fontSize: "14px", fontWeight: 500, color: "#1A1A1A" },
-  statusBadge: { fontSize: "11px", fontWeight: 600, padding: "4px 10px", borderRadius: "100px", whiteSpace: "nowrap", textAlign: "center", display: "inline-block" },
-  cellText: { fontSize: "13px", color: "#374151" },
-  emptyText: { fontSize: "14px", color: "#ABABAB", padding: "24px 20px" },
-
+  th: {
+    backgroundColor: "#ffffff", fontSize: "11px", fontWeight: 600, color: "#ABABAB",
+    position: "sticky", top: 0, zIndex: 1, padding: "10px 20px", textAlign: "left",
+    borderBottom: "1px solid #E8E8E6", textTransform: "uppercase", letterSpacing: "0.06em",
+  },
+  td: { fontSize: "13px", color: "#374151", padding: "12px 20px", borderBottom: "1px solid #F0F0ED" },
+  statusBadge: { fontSize: "12px", fontWeight: 500, padding: "2px 10px", borderRadius: "999px", whiteSpace: "nowrap", display: "inline-block" },
   unassignLink: { background: "none", border: "none", fontSize: "12px", color: "#DC2626", cursor: "pointer", textDecoration: "underline", fontFamily: "'DM Sans', sans-serif", padding: 0 },
 };
