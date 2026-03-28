@@ -54,10 +54,77 @@ export default function Sidebar({ role, profile, onSignOut, activePath }) {
   const [overIndex, setOverIndex] = useState(null);
   const dragStartY = useRef(null);
   const didDrag = useRef(false);
+  const touchDragIndex = useRef(null);
+  const touchOverIndex = useRef(null);
+  const navRef = useRef(null);
 
   useEffect(() => {
     setNavItems(getOrderedNav(role));
   }, [role]);
+
+  // Touch drag support for iPad
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+
+    const getItemIndex = (el) => {
+      const btn = el?.closest?.("[data-nav-index]");
+      return btn ? parseInt(btn.dataset.navIndex) : null;
+    };
+
+    const onTouchStart = (e) => {
+      const idx = getItemIndex(e.target);
+      if (idx === null) return;
+      touchDragIndex.current = idx;
+      touchOverIndex.current = null;
+      didDrag.current = false;
+      dragStartY.current = e.touches[0].clientY;
+      setDragIndex(idx);
+    };
+
+    const onTouchMove = (e) => {
+      if (touchDragIndex.current === null) return;
+      const dy = Math.abs(e.touches[0].clientY - dragStartY.current);
+      if (dy > 4) {
+        didDrag.current = true;
+        e.preventDefault();
+      }
+      const el = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+      const idx = getItemIndex(el);
+      if (idx !== null && idx !== touchDragIndex.current) {
+        touchOverIndex.current = idx;
+        setOverIndex(idx);
+      }
+    };
+
+    const onTouchEnd = () => {
+      const from = touchDragIndex.current;
+      const to = touchOverIndex.current;
+      if (from !== null && to !== null && from !== to) {
+        setNavItems(prev => {
+          const next = [...prev];
+          const [moved] = next.splice(from, 1);
+          next.splice(to, 0, moved);
+          saveNavOrder(role, next.map(i => i.key));
+          return next;
+        });
+      }
+      touchDragIndex.current = null;
+      touchOverIndex.current = null;
+      dragStartY.current = null;
+      setDragIndex(null);
+      setOverIndex(null);
+    };
+
+    nav.addEventListener("touchstart", onTouchStart, { passive: true });
+    nav.addEventListener("touchmove", onTouchMove, { passive: false });
+    nav.addEventListener("touchend", onTouchEnd, { passive: true });
+    return () => {
+      nav.removeEventListener("touchstart", onTouchStart);
+      nav.removeEventListener("touchmove", onTouchMove);
+      nav.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [role, navItems]);
 
   const handleDragStart = useCallback((e, index) => {
     dragStartY.current = e.clientY;
@@ -160,10 +227,11 @@ export default function Sidebar({ role, profile, onSignOut, activePath }) {
           <div style={styles.logoAccent} />
         </div>
 
-        <nav style={styles.nav}>
+        <nav ref={navRef} style={styles.nav}>
           {navItems.filter(item => !(isPWA && item.external)).map((item, index) => (
             <button
               key={item.key}
+              data-nav-index={index}
               draggable
               onDragStart={(e) => handleDragStart(e, index)}
               onDragOver={(e) => handleDragOver(e, index)}
