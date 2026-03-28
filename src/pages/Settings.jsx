@@ -175,6 +175,7 @@ export default function Settings() {
         <div className="main-content" style={styles.main}>
           <TopBar title="Settings" profile={profile} onSignOut={handleSignOut} />
 
+          <div style={{ maxWidth: "720px", display: "flex", flexDirection: "column", gap: "20px" }}>
           {saveSuccess && (
             <div style={styles.successBanner}>Settings saved successfully</div>
           )}
@@ -337,6 +338,7 @@ export default function Settings() {
           <button className="btn-primary" disabled={saving} onClick={handleSave}>
             {saving ? "Saving…" : "Save Settings"}
           </button>
+          </div>
 
         </div>
       </div>
@@ -348,7 +350,7 @@ const styles = {
   layout: { display: "flex", minHeight: "100vh", backgroundColor: "#F5F5F3" },
   loadingPage: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#F5F5F3" },
   spinner: { width: "32px", height: "32px", borderRadius: "50%", border: "3px solid #E0E0DC", borderTopColor: "#367C2B", animation: "spin 0.8s linear infinite" },
-  main: { marginLeft: "220px", flex: 1, padding: "28px 32px", display: "flex", flexDirection: "column", gap: "20px", minHeight: "100vh", maxWidth: "720px" },
+  main: { marginLeft: "220px", flex: 1, padding: "28px 32px", display: "flex", flexDirection: "column", gap: "20px", minHeight: "100vh" },
   pageTitle: { fontSize: "22px", fontWeight: 600, color: "#1A1A1A" },
   successBanner: { backgroundColor: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: "6px", padding: "10px 14px", fontSize: "13px", color: "#16A34A", fontWeight: 500 },
   errorBanner: { backgroundColor: "#FEF2F2", border: "1px solid #FECACA", borderRadius: "6px", padding: "10px 14px", fontSize: "13px", color: "#DC2626", fontWeight: 500 },
