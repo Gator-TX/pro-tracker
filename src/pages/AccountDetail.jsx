@@ -39,7 +39,7 @@ export default function AccountDetail() {
   const [showAddContact, setShowAddContact] = useState(false);
   const [editingContactId, setEditingContactId] = useState(null);
   const [contactForm, setContactForm] = useState({
-    first_name: "", last_name: "", title: "", phone: "", email: "", branch_location: "", is_primary: false,
+    first_name: "", last_name: "", title: "", phone: "", mobile_phone: "", email: "", branch_location: "", is_primary: false,
   });
 
   const STATUSES = ["New", "Contacted", "Engaged", "Proposal", "Won", "Lost"];
@@ -275,6 +275,7 @@ export default function AccountDetail() {
       last_name: contact.last_name || "",
       title: contact.title || "",
       phone: contact.phone || "",
+      mobile_phone: contact.mobile_phone || "",
       email: contact.email || "",
       branch_location: contact.branch_location || "",
       is_primary: contact.is_primary || false,
@@ -597,10 +598,17 @@ export default function AccountDetail() {
                   <input className="field-input" value={contactForm.title}
                     onChange={e => setContactForm(p => ({ ...p, title: e.target.value }))} />
                 </div>
-                <div style={styles.field}>
-                  <label style={styles.fieldLabel}>Phone</label>
-                  <input className="field-input" type="tel" value={contactForm.phone}
-                    onChange={e => setContactForm(p => ({ ...p, phone: e.target.value }))} />
+                <div style={styles.rowFields}>
+                  <div style={styles.field}>
+                    <label style={styles.fieldLabel}>Work Phone</label>
+                    <input className="field-input" type="tel" value={contactForm.phone}
+                      onChange={e => setContactForm(p => ({ ...p, phone: e.target.value }))} />
+                  </div>
+                  <div style={styles.field}>
+                    <label style={styles.fieldLabel}>Mobile Phone</label>
+                    <input className="field-input" type="tel" value={contactForm.mobile_phone || ""}
+                      onChange={e => setContactForm(p => ({ ...p, mobile_phone: e.target.value }))} />
+                  </div>
                 </div>
                 <div style={styles.field}>
                   <label style={styles.fieldLabel}>Email</label>
@@ -628,34 +636,38 @@ export default function AccountDetail() {
               </div>
             )}
 
-            {/* Contact list */}
-            {contacts.length === 0 && !showAddContact && (
+            {/* Contact table */}
+            {contacts.length === 0 && !showAddContact ? (
               <p style={styles.infoMuted}>No contacts added yet</p>
-            )}
-            {contacts.map(contact => (
-              <div key={contact.id} style={styles.contactCard}>
-                <div style={styles.contactTop}>
-                  <div>
-                    <p style={styles.contactName}>
-                      {contact.first_name} {contact.last_name}
-                      {contact.is_primary && (
-                        <span style={styles.primaryBadge}>Primary</span>
-                      )}
-                    </p>
-                    {contact.title && <p style={styles.contactTitle}>{contact.title}</p>}
-                  </div>
-                  <button className="green-link" onClick={() => openEditContact(contact)}>Edit</button>
-                </div>
-                <div style={styles.contactLinks}>
-                  {contact.phone && (
-                    <a href={`tel:${contact.phone}`} style={styles.contactLink}>📞 {contact.phone}</a>
-                  )}
-                  {contact.email && (
-                    <a href={`mailto:${contact.email}`} style={styles.contactLink}>✉️ {contact.email}</a>
-                  )}
-                </div>
+            ) : contacts.length > 0 && (
+              <div style={{ border: "0.5px solid #E8E8E6", borderRadius: "6px", overflow: "hidden" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr>
+                      {["Contact", "Work Phone", "Mobile Phone", "Email", ""].map(h => (
+                        <th key={h} style={{ backgroundColor: "#ffffff", fontSize: "11px", fontWeight: 600, color: "#ABABAB", padding: "10px 16px", textAlign: "left", borderBottom: "1px solid #E8E8E6", textTransform: "uppercase", letterSpacing: "0.06em" }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {contacts.map(contact => (
+                      <tr key={contact.id}>
+                        <td style={{ fontSize: "14px", color: "#1A1A1A", fontWeight: 500, padding: "12px 16px", borderBottom: "1px solid #F0F0ED" }}>
+                          {`${contact.first_name || ""} ${contact.last_name || ""}`.trim() || "—"}
+                          {contact.is_primary && <span style={styles.primaryBadge}> Primary</span>}
+                        </td>
+                        <td style={{ fontSize: "13px", color: "#374151", padding: "12px 16px", borderBottom: "1px solid #F0F0ED" }}>{contact.phone || "—"}</td>
+                        <td style={{ fontSize: "13px", color: "#374151", padding: "12px 16px", borderBottom: "1px solid #F0F0ED" }}>{contact.mobile_phone || "—"}</td>
+                        <td style={{ fontSize: "13px", color: "#374151", padding: "12px 16px", borderBottom: "1px solid #F0F0ED" }}>{contact.email || "—"}</td>
+                        <td style={{ padding: "12px 16px", borderBottom: "1px solid #F0F0ED" }}>
+                          <button className="green-link" onClick={() => openEditContact(contact)}>Edit</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            ))}
+            )}
           </div>
 
           {/* ── STATUS SELECTOR ── */}

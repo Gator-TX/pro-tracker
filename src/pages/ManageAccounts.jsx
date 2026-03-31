@@ -42,6 +42,7 @@ export default function ManageAccounts() {
 
   const PROTO_FIELDS = [
     "Company name", "Physical address", "Contact name",
+    "First name", "Last name",
     "Work phone", "Mobile phone", "Email",
     "Industry", "Source", "Assigned rep",
   ];
@@ -119,7 +120,9 @@ export default function ManageAccounts() {
     for (const row of importRows) {
       const companyName = (row[columnMap["Company name"]] || "").trim();
       const address = row[columnMap["Physical address"]] || "";
-      const contactName = row[columnMap["Contact name"]] || "";
+      const firstName = (row[columnMap["First name"]] || "").trim();
+      const lastName = (row[columnMap["Last name"]] || "").trim();
+      const contactName = (row[columnMap["Contact name"]] || "").trim() || [firstName, lastName].filter(Boolean).join(" ");
       const workPhone = row[columnMap["Work phone"]] || "";
       const mobilePhone = row[columnMap["Mobile phone"]] || "";
       const email = row[columnMap["Email"]] || "";
