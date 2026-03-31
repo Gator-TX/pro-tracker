@@ -287,6 +287,9 @@ export default function ManagerAccounts() {
               <button onClick={() => { setAssignRepId(""); setShowAssignModal(true); }} style={{ padding: "6px 14px", borderRadius: "6px", fontSize: "13px", fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", backgroundColor: "#ffffff", color: "#374151", border: "1px solid #E0E0DC" }}>
                 Assign Rep
               </button>
+              <button onClick={handleBulkUnassign} style={{ padding: "6px 14px", borderRadius: "6px", fontSize: "13px", fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", backgroundColor: "#ffffff", color: "#374151", border: "1px solid #E0E0DC" }}>
+                Unassign
+              </button>
               <button onClick={() => setSelectedIds([])} style={{ background: "none", border: "none", color: "#767676", fontSize: "13px", cursor: "pointer", marginLeft: "auto", fontFamily: "'DM Sans', sans-serif" }}>Clear selection</button>
             </div>
           )}
