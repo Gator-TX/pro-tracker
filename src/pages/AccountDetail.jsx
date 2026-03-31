@@ -384,7 +384,6 @@ export default function AccountDetail() {
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
           .main-content { margin-left: 0 !important; padding-top: 86px !important; }
-          .desktop-header { display: none !important; }
           .detail-cards { gap: 8px !important; }
         }
       `}</style>
@@ -410,48 +409,42 @@ export default function AccountDetail() {
           }
           <PullToRefresh onRefresh={loadData}>
 
-        {/* ── HEADER ── */}
-        <div className="desktop-header" style={styles.header}>
-          <button onClick={handleBack} style={styles.backBtn}>← Back</button>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{
-              ...styles.statusBadgeSmall,
-              background: statusStyle.bg,
-              color: statusStyle.color,
-              border: `1px solid ${statusStyle.border}`,
-            }}>
-              {account?.status || "New"}
-            </span>
-            {profile?.role === "manager" && (
-              <button
-                onClick={() => setShowCrmModal(true)}
-                style={{
-                  background: "#fff", border: "1.5px solid #367C2B", color: "#367C2B",
-                  borderRadius: "6px", padding: "8px 16px", fontSize: "13px", fontWeight: 600,
-                  cursor: "pointer", fontFamily: "'DM Sans', sans-serif", whiteSpace: "nowrap",
-                }}
-              >
-                Send to CRM as Account
-              </button>
-            )}
-          </div>
-        </div>
+        {/* ── BACK LINK ── */}
+        <button onClick={handleBack} style={{ background: "none", border: "none", padding: 0, fontSize: "14px", color: "#767676", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", marginBottom: "16px" }}>
+          ← {profile?.role === "manager" ? "Leads" : "My Leads"}
+        </button>
 
-        {/* Account name */}
-        <div style={styles.pageTitleWrap}>
-          <h1 style={styles.pageTitle}>{account?.name || account?.company}</h1>
+        {/* ── HEADER ── */}
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px", flexWrap: "wrap" }}>
+          <h1 style={{ fontSize: "24px", fontWeight: 600, color: "#1A1A1A", margin: 0 }}>{account?.name || account?.company}</h1>
+          <span style={{
+            ...styles.statusBadgeSmall,
+            background: statusStyle.bg,
+            color: statusStyle.color,
+            border: `1px solid ${statusStyle.border}`,
+          }}>
+            {account?.status || "New"}
+          </span>
+          <button className="green-link" onClick={() => setEditingCompany(true)}>Edit</button>
+          {profile?.role === "manager" && (
+            <button
+              onClick={() => setShowCrmModal(true)}
+              style={{
+                background: "#fff", border: "1.5px solid #367C2B", color: "#367C2B",
+                borderRadius: "6px", padding: "6px 14px", fontSize: "13px", fontWeight: 600,
+                cursor: "pointer", fontFamily: "'DM Sans', sans-serif", whiteSpace: "nowrap",
+                marginLeft: "auto",
+              }}
+            >
+              Send to CRM as Account
+            </button>
+          )}
         </div>
 
         <div className="detail-cards" style={styles.content}>
 
           {/* ── COMPANY INFO CARD ── */}
           <div style={styles.card}>
-            <div style={styles.cardHeader}>
-              <p style={styles.cardLabel}>Company Info</p>
-              {!editingCompany && (
-                <button className="green-link" onClick={() => setEditingCompany(true)}>Edit</button>
-              )}
-            </div>
 
             {editingCompany ? (
               <div style={styles.formStack}>
@@ -563,7 +556,21 @@ export default function AccountDetail() {
             ) : (
               <div>
                 {account?.notes
-                  ? <p style={{ fontSize: "14px", color: "#374151", whiteSpace: "pre-wrap", lineHeight: 1.6 }}>{account.notes}</p>
+                  ? <div style={{ fontSize: "14px", color: "#374151", whiteSpace: "pre-wrap", lineHeight: 1.6 }}>
+                      {account.notes.split(/(https?:\/\/[^\s<]+|<a\s[^>]*>.*?<\/a>)/gi).map((part, i) => {
+                        if (part.match(/^<a\s/i)) {
+                          const href = part.match(/href="([^"]+)"/)?.[1] || "#";
+                          const text = part.match(/>([^<]+)</)?.[1] || "Link";
+                          return <a key={i} href={href} target="_blank" rel="noopener noreferrer" style={{ color: "#367C2B", textDecoration: "underline" }}>{text}</a>;
+                        }
+                        if (part.match(/^https?:\/\//)) {
+                          let label = "Link";
+                          try { label = new URL(part).hostname.replace("www.", ""); } catch {}
+                          return <a key={i} href={part} target="_blank" rel="noopener noreferrer" style={{ color: "#367C2B", textDecoration: "underline" }}>{label}</a>;
+                        }
+                        return part;
+                      })}
+                    </div>
                   : <p style={styles.infoMuted}>Add notes about this lead...</p>
                 }
                 {notesSaved && <p style={{ fontSize: "12px", color: "#16A34A", marginTop: "6px" }}>Notes saved</p>}
@@ -882,8 +889,7 @@ const styles = {
     display: "flex", justifyContent: "space-between", alignItems: "center",
   },
   cardLabel: {
-    fontSize: "11px", fontWeight: 600, color: "#ABABAB",
-    textTransform: "uppercase", letterSpacing: "0.08em",
+    fontSize: "16px", fontWeight: 600, color: "#1A1A1A",
   },
 
   // Company info
