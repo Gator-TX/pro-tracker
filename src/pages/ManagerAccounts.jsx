@@ -25,6 +25,9 @@ export default function ManagerAccounts() {
   const [showDateModal, setShowDateModal] = useState(false);
   const [targetStartDate, setTargetStartDate] = useState("");
   const [settingDates, setSettingDates] = useState(false);
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [assignRepId, setAssignRepId] = useState("");
+  const [assigning, setAssigning] = useState(false);
   const STATUS_COLORS = {
     New:       { bg: "#EFF6FF", color: "#2563EB", border: "#BFDBFE" },
     Contacted: { bg: "#FEFCE8", color: "#CA8A04", border: "#FDE68A" },
@@ -130,6 +133,24 @@ export default function ManagerAccounts() {
     setAccounts(prev => prev.map(a => a.id === accountId ? { ...a, rep_id: null } : a));
     setUnassignMsg(accountId);
     setTimeout(() => setUnassignMsg(null), 3000);
+  };
+
+  const handleBulkAssign = async () => {
+    if (!assignRepId || selectedIds.length === 0) return;
+    setAssigning(true);
+    await supabase.from("target_leads").update({ rep_id: assignRepId }).in("id", selectedIds);
+    setAccounts(prev => prev.map(a => selectedIds.includes(a.id) ? { ...a, rep_id: assignRepId } : a));
+    setAssigning(false);
+    setShowAssignModal(false);
+    setSelectedIds([]);
+    setAssignRepId("");
+  };
+
+  const handleBulkUnassign = async () => {
+    if (selectedIds.length === 0) return;
+    await supabase.from("target_leads").update({ rep_id: null }).in("id", selectedIds);
+    setAccounts(prev => prev.map(a => selectedIds.includes(a.id) ? { ...a, rep_id: null } : a));
+    setSelectedIds([]);
   };
 
   const formatDate = (d) => {
@@ -257,6 +278,12 @@ export default function ManagerAccounts() {
           {selectedIds.length > 0 && (
             <div style={{ backgroundColor: "#ffffff", border: "0.5px solid #E0E0DC", borderRadius: "6px", padding: "10px 16px", display: "flex", alignItems: "center", gap: "12px" }}>
               <span style={{ fontSize: "13px", fontWeight: 600, color: "#1A1A1A" }}>{selectedIds.length} selected</span>
+              <button onClick={() => { setAssignRepId(""); setShowAssignModal(true); }} style={{ padding: "6px 14px", borderRadius: "6px", fontSize: "13px", fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", backgroundColor: "#EFF6FF", color: "#1D4ED8", border: "1px solid #BFDBFE" }}>
+                Assign Rep
+              </button>
+              <button onClick={handleBulkUnassign} style={{ padding: "6px 14px", borderRadius: "6px", fontSize: "13px", fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", backgroundColor: "#ffffff", color: "#374151", border: "1px solid #E0E0DC" }}>
+                Unassign
+              </button>
               <button onClick={openDateModal} style={{ padding: "6px 14px", borderRadius: "6px", fontSize: "13px", fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", backgroundColor: "#F0FDF4", color: "#15803D", border: "1px solid #BBF7D0" }}>
                 Set Target Dates
               </button>
@@ -293,13 +320,10 @@ export default function ManagerAccounts() {
                     <th style={styles.th}>Email</th>
                     <th style={styles.th}>Source</th>
                     <th style={styles.th}>Assigned Rep</th>
-                    <th style={styles.th}>Status</th>
-                    <th style={styles.th}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.map(account => {
-                    const sc = STATUS_COLORS[account.status] || STATUS_COLORS.New;
                     return (
                       <tr key={account.id} className="data-row" style={{ cursor: "pointer" }}>
                         <td style={{ ...styles.td, padding: "12px 12px", width: "40px" }} onClick={e => { e.stopPropagation(); toggleSelect(account.id); }}>
@@ -313,16 +337,6 @@ export default function ManagerAccounts() {
                         <td style={styles.td} onClick={() => navigate(`/leads/${account.id}`)}>{account.email || "—"}</td>
                         <td style={styles.td} onClick={() => navigate(`/leads/${account.id}`)}>{account.source || "—"}</td>
                         <td style={styles.td} onClick={() => navigate(`/leads/${account.id}`)}>{getRepName(account.rep_id)}</td>
-                        <td style={styles.td} onClick={() => navigate(`/leads/${account.id}`)}>
-                          <span style={{ ...styles.statusBadge, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
-                            {account.status || "New"}
-                          </span>
-                        </td>
-                        <td style={styles.td} onClick={e => e.stopPropagation()}>
-                          {account.rep_id ? (
-                            <button onClick={() => handleUnassign(account.id)} style={styles.unassignLink}>Unassign</button>
-                          ) : "—"}
-                        </td>
                       </tr>
                     );
                   })}
@@ -430,6 +444,45 @@ export default function ManagerAccounts() {
                 style={{ background: "#367C2B", border: "none", color: "#fff", borderRadius: "6px", padding: "8px 16px", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}
               >
                 {settingDates ? "Saving..." : "Apply Dates"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Assign Rep Modal ── */}
+      {showAssignModal && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ background: "#fff", borderRadius: "8px", padding: "24px", maxWidth: "420px", width: "90%", fontFamily: "'DM Sans', sans-serif" }}>
+            <div style={{ fontSize: "16px", fontWeight: 600, marginBottom: "4px", color: "#1A1A1A" }}>
+              Assign Rep
+            </div>
+            <div style={{ fontSize: "13px", color: "#767676", marginBottom: "20px", lineHeight: 1.5 }}>
+              Assign {selectedIds.length} lead{selectedIds.length !== 1 ? "s" : ""} to a sales rep.
+            </div>
+            <select
+              value={assignRepId}
+              onChange={e => setAssignRepId(e.target.value)}
+              style={{ width: "100%", padding: "8px 12px", border: "1.5px solid #E0E0DC", borderRadius: "6px", fontSize: "14px", fontFamily: "'DM Sans', sans-serif", marginBottom: "20px" }}
+            >
+              <option value="">Select a rep...</option>
+              {reps.map(rep => (
+                <option key={rep.id} value={rep.id}>{rep.full_name}</option>
+              ))}
+            </select>
+            <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+              <button
+                onClick={() => setShowAssignModal(false)}
+                style={{ background: "#fff", border: "1.5px solid #E0E0DC", color: "#767676", borderRadius: "6px", padding: "8px 16px", fontSize: "13px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleBulkAssign}
+                disabled={assigning || !assignRepId}
+                style={{ background: "#367C2B", border: "none", color: "#fff", borderRadius: "6px", padding: "8px 16px", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", opacity: !assignRepId ? 0.65 : 1 }}
+              >
+                {assigning ? "Assigning..." : "Assign"}
               </button>
             </div>
           </div>
