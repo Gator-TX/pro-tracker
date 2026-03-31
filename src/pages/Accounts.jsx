@@ -323,7 +323,7 @@ const styles = {
   dtTableWrap: { padding: "16px 16px 24px" },
   dtTableCard: {
     background: "#ffffff", border: "0.5px solid #E8E8E6",
-    borderRadius: "8px", overflow: "hidden",
+    borderRadius: "8px", overflow: "auto", WebkitOverflowScrolling: "touch",
   },
   dtHeader: {
     display: "grid",

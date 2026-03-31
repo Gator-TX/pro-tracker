@@ -637,7 +637,7 @@ export default function AccountDetail() {
               return contacts.length === 0 && !showLeadRow && !showAddContact ? (
                 <p style={styles.infoMuted}>No contacts added yet</p>
               ) : (
-                <div style={{ border: "0.5px solid #E8E8E6", borderRadius: "6px", overflow: "hidden" }}>
+                <div style={{ border: "0.5px solid #E8E8E6", borderRadius: "6px", overflow: "auto", WebkitOverflowScrolling: "touch" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <thead>
                       <tr>
@@ -681,7 +681,7 @@ export default function AccountDetail() {
           {linkedApollo.length > 0 && (
             <>
               <p style={{ fontSize: "16px", fontWeight: 600, color: "#1A1A1A", margin: "8px 0 4px" }}>Linked Apollo Records</p>
-              <div style={{ ...styles.card, padding: 0, overflow: "hidden" }}>
+              <div style={{ ...styles.card, padding: 0, overflow: "auto", WebkitOverflowScrolling: "touch" }}>
                 <div style={{ overflowX: "auto" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <thead>
@@ -715,7 +715,7 @@ export default function AccountDetail() {
           {linkedEda.length > 0 && (
             <>
               <p style={{ fontSize: "16px", fontWeight: 600, color: "#1A1A1A", margin: "8px 0 4px" }}>Linked EDA Records</p>
-              <div style={{ ...styles.card, padding: 0, overflow: "hidden" }}>
+              <div style={{ ...styles.card, padding: 0, overflow: "auto", WebkitOverflowScrolling: "touch" }}>
                 <div style={{ overflowX: "auto" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <thead>
@@ -827,7 +827,7 @@ export default function AccountDetail() {
                 </div>
 
                 <p style={{ fontSize: "14px", fontWeight: 600, color: "#1A1A1A", margin: "12px 0 8px" }}>Upcoming</p>
-                <div style={{ ...styles.card, padding: 0, overflow: "hidden" }}>
+                <div style={{ ...styles.card, padding: 0, overflow: "auto", WebkitOverflowScrolling: "touch" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <thead>
                       <tr>
@@ -852,7 +852,7 @@ export default function AccountDetail() {
                 </div>
 
                 <p style={{ fontSize: "14px", fontWeight: 600, color: "#1A1A1A", margin: "16px 0 8px" }}>Past</p>
-                <div style={{ ...styles.card, padding: 0, overflow: "hidden" }}>
+                <div style={{ ...styles.card, padding: 0, overflow: "auto", WebkitOverflowScrolling: "touch" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <thead>
                       <tr>

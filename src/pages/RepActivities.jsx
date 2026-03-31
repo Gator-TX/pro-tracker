@@ -264,7 +264,7 @@ export default function RepActivities() {
             {showUpcoming && upcoming.length > 0 && (
               <div style={{ marginBottom: "24px" }}>
                 <p style={dt.sectionLabel}>UPCOMING</p>
-                <div style={{ backgroundColor: "#ffffff", border: "0.5px solid #E8E8E6", borderRadius: "8px", overflow: "hidden" }}>
+                <div style={{ backgroundColor: "#ffffff", border: "0.5px solid #E8E8E6", borderRadius: "8px", overflow: "auto", WebkitOverflowScrolling: "touch" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <thead>
                       <tr>
@@ -302,7 +302,7 @@ export default function RepActivities() {
             {showPast && (
               <div>
                 <p style={dt.sectionLabel}>PAST ACTIVITY</p>
-                <div style={{ backgroundColor: "#ffffff", border: "0.5px solid #E8E8E6", borderRadius: "8px", overflow: "hidden" }}>
+                <div style={{ backgroundColor: "#ffffff", border: "0.5px solid #E8E8E6", borderRadius: "8px", overflow: "auto", WebkitOverflowScrolling: "touch" }}>
                   {activities.length === 0 ? (
                     <div style={{ fontSize: "14px", color: "#ABABAB", padding: "40px 0", textAlign: "center" }}>No activity logged yet</div>
                   ) : (

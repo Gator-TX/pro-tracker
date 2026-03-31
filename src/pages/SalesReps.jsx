@@ -194,7 +194,7 @@ export default function SalesReps() {
           )}
 
           <div className="desktop-only">
-          <div style={{ backgroundColor: "#ffffff", border: "0.5px solid #E8E8E6", borderRadius: "8px", flex: 1, overflowY: "auto", minHeight: 0 }}>
+          <div style={{ backgroundColor: "#ffffff", border: "0.5px solid #E8E8E6", borderRadius: "8px", flex: 1, overflow: "auto", minHeight: 0, WebkitOverflowScrolling: "touch" }}>
             {sorted.length === 0 ? (
               <div style={{ fontSize: "14px", color: "#ABABAB", padding: "40px 0", textAlign: "center" }}>No reps found</div>
             ) : (
