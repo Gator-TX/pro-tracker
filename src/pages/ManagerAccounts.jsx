@@ -28,6 +28,8 @@ export default function ManagerAccounts() {
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [assignRepId, setAssignRepId] = useState("");
   const [assigning, setAssigning] = useState(false);
+  const [showCrmModal, setShowCrmModal] = useState(false);
+  const [sendingToCrm, setSendingToCrm] = useState(false);
   const STATUS_COLORS = {
     New:       { bg: "#EFF6FF", color: "#2563EB", border: "#BFDBFE" },
     Contacted: { bg: "#FEFCE8", color: "#CA8A04", border: "#FDE68A" },
@@ -151,6 +153,93 @@ export default function ManagerAccounts() {
     await supabase.from("target_leads").update({ rep_id: null }).in("id", selectedIds);
     setAccounts(prev => prev.map(a => selectedIds.includes(a.id) ? { ...a, rep_id: null } : a));
     setSelectedIds([]);
+  };
+
+  const handleBulkSendToCrm = async () => {
+    setSendingToCrm(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const insertUserId = session?.user?.id;
+      const selected = accounts.filter(a => selectedIds.includes(a.id));
+
+      for (const lead of selected) {
+        // Get contacts and activities
+        const { data: freshContacts } = await supabase
+          .from("target_lead_contacts").select("*").eq("account_id", lead.id);
+        const { data: freshActivities } = await supabase
+          .from("target_lead_activities").select("*").eq("account_id", lead.id);
+
+        // Insert into CRM accounts
+        const { data: crmAccount, error: accountError } = await supabase
+          .from("accounts")
+          .insert({
+            company_name: lead.name || lead.company || "Unknown",
+            contact_name: lead.contact_name || null,
+            address: lead.address || null,
+            work_phone: lead.work_phone || null,
+            mobile_phone: lead.mobile_phone || null,
+            email: lead.email || null,
+            industry: lead.industry || null,
+            source: lead.source || null,
+            notes: lead.notes || null,
+            user_id: insertUserId,
+          })
+          .select().single();
+        if (accountError) throw accountError;
+
+        // Reassign to rep if assigned
+        if (lead.rep_id) {
+          await supabase.from("accounts").update({ user_id: lead.rep_id }).eq("id", crmAccount.id);
+        }
+
+        // Insert contacts
+        if (freshContacts?.length > 0) {
+          for (const c of freshContacts) {
+            await supabase.from("contacts").insert({
+              account_id: crmAccount.id,
+              user_id: lead.rep_id || insertUserId,
+              first_name: c.first_name || "",
+              last_name: c.last_name || null,
+              email: c.email || null,
+              phone: c.phone || null,
+              is_primary: c.is_primary || false,
+            });
+          }
+        }
+
+        // Insert activities
+        if (freshActivities?.length > 0) {
+          for (const a of freshActivities) {
+            await supabase.from("activities").insert({
+              account_id: crmAccount.id,
+              user_id: lead.rep_id || insertUserId,
+              activity_type: a.activity_type || null,
+              outcome: a.outcome || null,
+              notes: a.notes || null,
+              activity_date: a.activity_date || null,
+            });
+          }
+        }
+
+        // Transfer linked records
+        await supabase.from("linked_apollo").update({ account_id: crmAccount.id, target_lead_id: null }).eq("target_lead_id", lead.id);
+        await supabase.from("linked_eda").update({ account_id: crmAccount.id, target_lead_id: null }).eq("target_lead_id", lead.id);
+
+        // Delete from Target10
+        await supabase.from("target_lead_activities").delete().eq("account_id", lead.id);
+        await supabase.from("target_lead_contacts").delete().eq("account_id", lead.id);
+        await supabase.from("target_leads").delete().eq("id", lead.id);
+      }
+
+      setShowCrmModal(false);
+      setSelectedIds([]);
+      await loadData();
+    } catch (err) {
+      console.error("Bulk send to CRM error:", err);
+      alert("Failed to send to CRM: " + err.message);
+    } finally {
+      setSendingToCrm(false);
+    }
   };
 
   const formatDate = (d) => {
@@ -289,6 +378,9 @@ export default function ManagerAccounts() {
               </button>
               <button onClick={handleBulkUnassign} style={{ padding: "6px 14px", borderRadius: "6px", fontSize: "13px", fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", backgroundColor: "#ffffff", color: "#374151", border: "1px solid #E0E0DC" }}>
                 Unassign
+              </button>
+              <button onClick={() => setShowCrmModal(true)} style={{ padding: "6px 14px", borderRadius: "6px", fontSize: "13px", fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", backgroundColor: "#ffffff", color: "#374151", border: "1px solid #E0E0DC" }}>
+                Send to CRM as Account
               </button>
               <button onClick={() => setSelectedIds([])} style={{ background: "none", border: "none", color: "#767676", fontSize: "13px", cursor: "pointer", marginLeft: "auto", fontFamily: "'DM Sans', sans-serif" }}>Clear selection</button>
             </div>
@@ -444,6 +536,28 @@ export default function ManagerAccounts() {
                 style={{ background: "#367C2B", border: "none", color: "#fff", borderRadius: "6px", padding: "8px 16px", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}
               >
                 {settingDates ? "Saving..." : "Apply Dates"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Send to CRM Modal ── */}
+      {showCrmModal && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ background: "#fff", borderRadius: "8px", padding: "24px", maxWidth: "420px", width: "90%", fontFamily: "'DM Sans', sans-serif" }}>
+            <div style={{ fontSize: "16px", fontWeight: 600, marginBottom: "8px", color: "#1A1A1A" }}>
+              Send to CRM as Account?
+            </div>
+            <div style={{ fontSize: "13px", color: "#767676", marginBottom: "20px", lineHeight: 1.5 }}>
+              {selectedIds.length} lead{selectedIds.length !== 1 ? "s" : ""} and all associated data will be moved to the CRM and removed from Target10.
+            </div>
+            <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+              <button onClick={() => setShowCrmModal(false)} style={{ background: "#fff", border: "1.5px solid #E0E0DC", color: "#767676", borderRadius: "6px", padding: "8px 16px", fontSize: "13px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
+                Cancel
+              </button>
+              <button onClick={handleBulkSendToCrm} disabled={sendingToCrm} style={{ background: "#367C2B", border: "none", color: "#fff", borderRadius: "6px", padding: "8px 16px", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
+                {sendingToCrm ? "Sending..." : "Confirm"}
               </button>
             </div>
           </div>
