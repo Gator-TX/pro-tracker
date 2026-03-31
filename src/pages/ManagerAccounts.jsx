@@ -286,11 +286,14 @@ export default function ManagerAccounts() {
                     <th style={{ ...styles.th, cursor: "pointer", userSelect: "none" }} onClick={() => setSortDirection(d => d === "asc" ? "desc" : "asc")}>
                       Company Name {sortDirection === "asc" ? "↑" : "↓"}
                     </th>
-                    <th style={styles.th}>Status</th>
+                    <th style={styles.th}>Address</th>
+                    <th style={styles.th}>Contact</th>
+                    <th style={styles.th}>Work Phone</th>
+                    <th style={styles.th}>Mobile Phone</th>
+                    <th style={styles.th}>Email</th>
+                    <th style={styles.th}>Source</th>
                     <th style={styles.th}>Assigned Rep</th>
-                    <th style={styles.th}>Last Activity</th>
-                    <th style={styles.th}>Days Left</th>
-                    <th style={styles.th}>Logs</th>
+                    <th style={styles.th}>Status</th>
                     <th style={styles.th}>Actions</th>
                   </tr>
                 </thead>
@@ -303,17 +306,18 @@ export default function ManagerAccounts() {
                           <input type="checkbox" checked={selectedIds.includes(account.id)} readOnly style={styles.checkbox} />
                         </td>
                         <td style={{ ...styles.td, fontSize: "14px", fontWeight: 600, color: "#1A1A1A" }} onClick={() => navigate(`/leads/${account.id}`)}>{account.name || account.company}</td>
+                        <td style={styles.td} onClick={() => navigate(`/leads/${account.id}`)}>{account.address || "—"}</td>
+                        <td style={styles.td} onClick={() => navigate(`/leads/${account.id}`)}>{account.contact_name || "—"}</td>
+                        <td style={styles.td} onClick={() => navigate(`/leads/${account.id}`)}>{account.work_phone || "—"}</td>
+                        <td style={styles.td} onClick={() => navigate(`/leads/${account.id}`)}>{account.mobile_phone || "—"}</td>
+                        <td style={styles.td} onClick={() => navigate(`/leads/${account.id}`)}>{account.email || "—"}</td>
+                        <td style={styles.td} onClick={() => navigate(`/leads/${account.id}`)}>{account.source || "—"}</td>
+                        <td style={styles.td} onClick={() => navigate(`/leads/${account.id}`)}>{getRepName(account.rep_id)}</td>
                         <td style={styles.td} onClick={() => navigate(`/leads/${account.id}`)}>
                           <span style={{ ...styles.statusBadge, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
                             {account.status || "New"}
                           </span>
                         </td>
-                        <td style={styles.td} onClick={() => navigate(`/leads/${account.id}`)}>{getRepName(account.rep_id)}</td>
-                        <td style={styles.td} onClick={() => navigate(`/leads/${account.id}`)}>{getLastActivity(account) || "—"}</td>
-                        <td style={styles.td} onClick={() => navigate(`/leads/${account.id}`)}>
-                          {account.end_date ? Math.max(0, Math.ceil((new Date(account.end_date) - new Date()) / (1000 * 60 * 60 * 24))) : "—"}
-                        </td>
-                        <td style={styles.td} onClick={() => navigate(`/leads/${account.id}`)}>{account.target_lead_activities?.length || 0}</td>
                         <td style={styles.td} onClick={e => e.stopPropagation()}>
                           {account.rep_id ? (
                             <button onClick={() => handleUnassign(account.id)} style={styles.unassignLink}>Unassign</button>
@@ -354,13 +358,16 @@ export default function ManagerAccounts() {
                         {status}
                       </span>
                     </div>
+                    {account.contact_name && (
+                      <div style={{ fontSize: "13px", color: "#767676" }}>{account.contact_name}</div>
+                    )}
                     <div className="acct-card-row2">
                       <span className="acct-card-rep">{getRepName(account.rep_id)}</span>
-                      <span className="acct-card-days">{daysLeft !== null ? `${daysLeft}d left` : "—"}</span>
+                      <span className="acct-card-days">{account.source || "—"}</span>
                     </div>
                     <div className="acct-card-row3">
                       <span className="acct-card-meta">
-                        {getLastActivity(account) ? `Last: ${getLastActivity(account)}` : "No activity"} · {account.target_lead_activities?.length || 0} logs
+                        {account.work_phone || account.mobile_phone || account.email || "No contact info"}
                       </span>
                       {account.rep_id && (
                         unassignMsg === account.id

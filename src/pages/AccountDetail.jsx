@@ -33,13 +33,13 @@ export default function AccountDetail() {
 
   // Edit company info
   const [editingCompany, setEditingCompany] = useState(false);
-  const [companyForm, setCompanyForm] = useState({ name: "", address: "" });
+  const [companyForm, setCompanyForm] = useState({ name: "", address: "", contact_name: "", work_phone: "", mobile_phone: "", email: "", industry: "", source: "" });
 
   // Add / edit contact
   const [showAddContact, setShowAddContact] = useState(false);
   const [editingContactId, setEditingContactId] = useState(null);
   const [contactForm, setContactForm] = useState({
-    first_name: "", last_name: "", title: "", phone: "", email: "", is_primary: false,
+    first_name: "", last_name: "", title: "", phone: "", email: "", branch_location: "", is_primary: false,
   });
 
   const STATUSES = ["New", "Contacted", "Engaged", "Proposal", "Won", "Lost"];
@@ -72,7 +72,12 @@ export default function AccountDetail() {
       .single();
     setAccount(acc);
     setNotesValue(acc?.notes || "");
-    setCompanyForm({ name: acc?.name || "", address: acc?.address || "" });
+    setCompanyForm({
+      name: acc?.name || "", address: acc?.address || "",
+      contact_name: acc?.contact_name || "", work_phone: acc?.work_phone || "",
+      mobile_phone: acc?.mobile_phone || "", email: acc?.email || "",
+      industry: acc?.industry || "", source: acc?.source || "",
+    });
 
     // Contacts
     const { data: cons } = await supabase
@@ -128,7 +133,13 @@ export default function AccountDetail() {
         .from("accounts")
         .insert({
           company_name: account?.name || account?.company || "Unknown",
+          contact_name: account?.contact_name || null,
           address: account?.address || null,
+          work_phone: account?.work_phone || null,
+          mobile_phone: account?.mobile_phone || null,
+          email: account?.email || null,
+          industry: account?.industry || null,
+          source: account?.source || null,
           notes: account?.notes || null,
           user_id: insertUserId,
         })
@@ -158,6 +169,7 @@ export default function AccountDetail() {
               last_name: contact.last_name || null,
               email: contact.email || null,
               phone: contact.phone || null,
+              branch_location: contact.branch_location || null,
               is_primary: contact.is_primary || false,
             });
           if (contactError) console.error("Contact insert error:", contactError);
@@ -239,10 +251,14 @@ export default function AccountDetail() {
 
   // ── Save company info ──
   const saveCompany = async () => {
-    await supabase.from("target_leads")
-      .update({ name: companyForm.name, address: companyForm.address })
-      .eq("id", id);
-    setAccount(prev => ({ ...prev, name: companyForm.name, address: companyForm.address }));
+    const updates = {
+      name: companyForm.name, address: companyForm.address,
+      contact_name: companyForm.contact_name || null, work_phone: companyForm.work_phone || null,
+      mobile_phone: companyForm.mobile_phone || null, email: companyForm.email || null,
+      industry: companyForm.industry || null, source: companyForm.source || null,
+    };
+    await supabase.from("target_leads").update(updates).eq("id", id);
+    setAccount(prev => ({ ...prev, ...updates }));
     setEditingCompany(false);
   };
 
@@ -260,6 +276,7 @@ export default function AccountDetail() {
       title: contact.title || "",
       phone: contact.phone || "",
       email: contact.email || "",
+      branch_location: contact.branch_location || "",
       is_primary: contact.is_primary || false,
     });
     setEditingContactId(contact.id);
@@ -443,9 +460,43 @@ export default function AccountDetail() {
                     onChange={e => setCompanyForm(p => ({ ...p, name: e.target.value }))} />
                 </div>
                 <div style={styles.field}>
+                  <label style={styles.fieldLabel}>Contact Name</label>
+                  <input className="field-input" value={companyForm.contact_name}
+                    onChange={e => setCompanyForm(p => ({ ...p, contact_name: e.target.value }))} />
+                </div>
+                <div style={styles.field}>
                   <label style={styles.fieldLabel}>Address</label>
                   <input className="field-input" value={companyForm.address}
                     onChange={e => setCompanyForm(p => ({ ...p, address: e.target.value }))} />
+                </div>
+                <div style={styles.rowFields}>
+                  <div style={styles.field}>
+                    <label style={styles.fieldLabel}>Work Phone</label>
+                    <input className="field-input" type="tel" value={companyForm.work_phone}
+                      onChange={e => setCompanyForm(p => ({ ...p, work_phone: e.target.value }))} />
+                  </div>
+                  <div style={styles.field}>
+                    <label style={styles.fieldLabel}>Mobile Phone</label>
+                    <input className="field-input" type="tel" value={companyForm.mobile_phone}
+                      onChange={e => setCompanyForm(p => ({ ...p, mobile_phone: e.target.value }))} />
+                  </div>
+                </div>
+                <div style={styles.field}>
+                  <label style={styles.fieldLabel}>Email</label>
+                  <input className="field-input" type="email" value={companyForm.email}
+                    onChange={e => setCompanyForm(p => ({ ...p, email: e.target.value }))} />
+                </div>
+                <div style={styles.rowFields}>
+                  <div style={styles.field}>
+                    <label style={styles.fieldLabel}>Industry</label>
+                    <input className="field-input" value={companyForm.industry}
+                      onChange={e => setCompanyForm(p => ({ ...p, industry: e.target.value }))} />
+                  </div>
+                  <div style={styles.field}>
+                    <label style={styles.fieldLabel}>Source</label>
+                    <input className="field-input" value={companyForm.source}
+                      onChange={e => setCompanyForm(p => ({ ...p, source: e.target.value }))} />
+                  </div>
                 </div>
                 <div style={styles.rowBtns}>
                   <button className="btn-primary" style={{ flex: 1 }} onClick={saveCompany}>Save</button>
@@ -468,6 +519,21 @@ export default function AccountDetail() {
                 )}
               </div>
             )}
+          </div>
+
+          {/* ── INFO CARDS ── */}
+          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+            {[
+              { label: "Contact", value: account?.contact_name },
+              { label: "Work Phone", value: account?.work_phone },
+              { label: "Mobile Phone", value: account?.mobile_phone },
+              { label: "Email", value: account?.email },
+            ].map(card => (
+              <div key={card.label} style={{ ...styles.card, flex: 1, minWidth: "120px", gap: "4px" }}>
+                <p style={{ fontSize: "12px", color: "#767676", fontWeight: 500 }}>{card.label}</p>
+                <p style={{ fontSize: "14px", color: "#1A1A1A", fontWeight: 500 }}>{card.value || "—"}</p>
+              </div>
+            ))}
           </div>
 
           {/* ── NOTES ── */}
@@ -540,6 +606,11 @@ export default function AccountDetail() {
                   <label style={styles.fieldLabel}>Email</label>
                   <input className="field-input" type="email" value={contactForm.email}
                     onChange={e => setContactForm(p => ({ ...p, email: e.target.value }))} />
+                </div>
+                <div style={styles.field}>
+                  <label style={styles.fieldLabel}>Branch Location</label>
+                  <input className="field-input" value={contactForm.branch_location}
+                    onChange={e => setContactForm(p => ({ ...p, branch_location: e.target.value }))} />
                 </div>
                 <label style={styles.checkboxRow}>
                   <input type="checkbox" checked={contactForm.is_primary}

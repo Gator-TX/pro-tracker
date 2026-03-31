@@ -25,7 +25,7 @@ export default function ManageAccounts() {
 
   // Tab 2 — Add manually
   const [manualForm, setManualForm] = useState({
-    company: "", address: "", contact_name: "", phone: "", email: "", rep_id: "",
+    company: "", address: "", contact_name: "", work_phone: "", mobile_phone: "", email: "", industry: "", source: "", rep_id: "",
   });
   const [savingManual, setSavingManual] = useState(false);
   const [manualSuccess, setManualSuccess] = useState(false);
@@ -42,7 +42,8 @@ export default function ManageAccounts() {
 
   const PROTO_FIELDS = [
     "Company name", "Physical address", "Contact name",
-    "Contact phone", "Contact email", "Assigned rep",
+    "Work phone", "Mobile phone", "Email",
+    "Industry", "Source", "Assigned rep",
   ];
 
   useEffect(() => { loadData(); }, []);
@@ -119,8 +120,11 @@ export default function ManageAccounts() {
       const companyName = (row[columnMap["Company name"]] || "").trim();
       const address = row[columnMap["Physical address"]] || "";
       const contactName = row[columnMap["Contact name"]] || "";
-      const phone = row[columnMap["Contact phone"]] || "";
-      const email = row[columnMap["Contact email"]] || "";
+      const workPhone = row[columnMap["Work phone"]] || "";
+      const mobilePhone = row[columnMap["Mobile phone"]] || "";
+      const email = row[columnMap["Email"]] || "";
+      const industry = row[columnMap["Industry"]] || "";
+      const source = row[columnMap["Source"]] || "";
       const assignedRepName = row[columnMap["Assigned rep"]] || "";
 
       if (!companyName) continue;
@@ -145,7 +149,13 @@ export default function ManageAccounts() {
         .insert({
           name: companyName,
           company: companyName,
-          address,
+          address: address || null,
+          contact_name: contactName || null,
+          work_phone: workPhone || null,
+          mobile_phone: mobilePhone || null,
+          email: email || null,
+          industry: industry || null,
+          source: source || null,
           rep_id: matchedRep?.id || null,
           status: "New",
         })
@@ -157,8 +167,8 @@ export default function ManageAccounts() {
           account_id: newAccount.id,
           first_name: parts[0] || "",
           last_name: parts.slice(1).join(" ") || "",
-          phone,
-          email,
+          phone: workPhone || null,
+          email: email || null,
           is_primary: true,
         });
       }
@@ -180,7 +190,13 @@ export default function ManageAccounts() {
       .insert({
         name: manualForm.company,
         company: manualForm.company,
-        address: manualForm.address,
+        address: manualForm.address || null,
+        contact_name: manualForm.contact_name || null,
+        work_phone: manualForm.work_phone || null,
+        mobile_phone: manualForm.mobile_phone || null,
+        email: manualForm.email || null,
+        industry: manualForm.industry || null,
+        source: manualForm.source || null,
         rep_id: manualForm.rep_id || null,
         status: "New",
       })
@@ -192,8 +208,8 @@ export default function ManageAccounts() {
         account_id: newAccount.id,
         first_name: parts[0] || "",
         last_name: parts.slice(1).join(" ") || "",
-        phone: manualForm.phone,
-        email: manualForm.email,
+        phone: manualForm.work_phone || null,
+        email: manualForm.email || null,
         is_primary: true,
       });
     }
