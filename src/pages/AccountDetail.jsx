@@ -462,10 +462,9 @@ export default function AccountDetail() {
 
         <div className="detail-cards" style={styles.content}>
 
-          {/* ── COMPANY INFO CARD ── */}
-          <div style={styles.card}>
-
-            {editingCompany ? (
+          {/* ── COMPANY INFO EDIT FORM ── */}
+          {editingCompany && (
+            <div style={styles.card}>
               <div style={styles.formStack}>
                 <div style={styles.field}>
                   <label style={styles.fieldLabel}>Company Name</label>
@@ -516,23 +515,8 @@ export default function AccountDetail() {
                   <button className="btn-secondary" style={{ flex: 1 }} onClick={() => setEditingCompany(false)}>Cancel</button>
                 </div>
               </div>
-            ) : (
-              <div style={styles.infoStack}>
-                <p style={styles.infoValue}>{account?.name || "—"}</p>
-                {account?.address ? (
-                  <a
-                    href={`https://maps.google.com/?q=${encodeURIComponent(account.address)}`}
-                    target="_blank" rel="noreferrer"
-                    style={styles.addressLink}
-                  >
-                    {account.address}
-                  </a>
-                ) : (
-                  <p style={styles.infoMuted}>No address added</p>
-                )}
-              </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* ── INFO CARDS ── */}
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
