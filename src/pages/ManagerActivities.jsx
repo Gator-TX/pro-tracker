@@ -201,56 +201,74 @@ export default function ManagerActivities() {
             )}
           </div>
 
-          {/* Desktop table */}
+          {/* Desktop tables - Upcoming and Past */}
           <div className="desktop-only">
-          <div style={{ backgroundColor: "#ffffff", border: "0.5px solid #E8E8E6", borderRadius: "8px", flex: 1, overflow: "auto", minHeight: 0, WebkitOverflowScrolling: "touch" }}>
-            {filtered.length === 0 ? (
-              <div style={{ fontSize: "14px", color: "#ABABAB", padding: "40px 0", textAlign: "center" }}>No activities found</div>
-            ) : (
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead>
-                  <tr>
-                    <th style={{ ...styles.th, width: "40px", padding: "10px 12px" }}>
-                      <input type="checkbox"
-                        checked={filtered.length > 0 && filtered.every(a => selectedIds.includes(a.id))}
-                        onChange={e => setSelectedIds(e.target.checked ? filtered.map(a => a.id) : [])}
-                        style={styles.checkbox}
-                      />
-                    </th>
-                    <th style={styles.th}>Date</th>
-                    <th style={styles.th}>Company Name</th>
-                    <th style={styles.th}>Rep</th>
-                    <th style={styles.th}>Type</th>
-                    <th style={styles.th}>Notes</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map(act => {
-                    const tc = TYPE_COLORS[act.activity_type] || TYPE_COLORS.Call;
-                    return (
-                      <tr key={act.id} className="data-row">
-                        <td style={{ ...styles.td, padding: "12px 12px", width: "40px" }} onClick={e => { e.stopPropagation(); toggleSelect(act.id); }}>
-                          <input type="checkbox" checked={selectedIds.includes(act.id)} readOnly style={styles.checkbox} />
-                        </td>
-                        <td style={{ ...styles.td, color: "#767676" }}>{formatDate(act.activity_date)}</td>
-                        <td style={{ ...styles.td, fontWeight: 600, color: "#1A1A1A" }}>{getAccountName(act.account_id)}</td>
-                        <td style={styles.td}>{getRepName(act.rep_id)}</td>
-                        <td style={styles.td}>
-                          <span style={{ display: "inline-block", padding: "2px 10px", borderRadius: "999px", fontSize: "12px", fontWeight: 500, background: tc.bg, color: tc.color }}>
-                            {act.activity_type}
-                          </span>
-                        </td>
-                        <td style={styles.td}>
-                          {act.outcome && <div style={{ fontSize: "12px", fontWeight: 500, color: "#374151", marginBottom: "2px" }}>{act.outcome}</div>}
-                          {act.notes && <div style={{ fontSize: "12px", color: "#767676" }}>{act.notes}</div>}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            )}
-          </div>
+          {(() => {
+            const d = new Date();
+            const todayStr = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+            const upcoming = filtered.filter(a => a.activity_date && a.activity_date > todayStr).sort((a, b) => a.activity_date.localeCompare(b.activity_date));
+            const past = filtered.filter(a => !a.activity_date || a.activity_date <= todayStr);
+
+            const renderTable = (rows, emptyMsg) => (
+              <div style={{ backgroundColor: "#ffffff", border: "0.5px solid #E8E8E6", borderRadius: "8px", overflow: "auto", WebkitOverflowScrolling: "touch" }}>
+                <table style={{ width: "100%", minWidth: "700px", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr>
+                      <th style={{ ...styles.th, width: "40px", padding: "10px 12px" }}>
+                        <input type="checkbox"
+                          checked={rows.length > 0 && rows.every(a => selectedIds.includes(a.id))}
+                          onChange={e => {
+                            const ids = rows.map(a => a.id);
+                            setSelectedIds(prev => e.target.checked ? [...new Set([...prev, ...ids])] : prev.filter(x => !ids.includes(x)));
+                          }}
+                          style={styles.checkbox}
+                        />
+                      </th>
+                      <th style={styles.th}>Date</th>
+                      <th style={styles.th}>Company Name</th>
+                      <th style={styles.th}>Rep</th>
+                      <th style={styles.th}>Type</th>
+                      <th style={styles.th}>Outcome</th>
+                      <th style={styles.th}>Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.length === 0 ? (
+                      <tr><td colSpan={7} style={{ ...styles.td, textAlign: "center", color: "#ABABAB" }}>{emptyMsg}</td></tr>
+                    ) : rows.map(act => {
+                      const tc = TYPE_COLORS[act.activity_type] || TYPE_COLORS.Call;
+                      return (
+                        <tr key={act.id} className="data-row">
+                          <td style={{ ...styles.td, padding: "12px 12px", width: "40px" }} onClick={e => { e.stopPropagation(); toggleSelect(act.id); }}>
+                            <input type="checkbox" checked={selectedIds.includes(act.id)} readOnly style={styles.checkbox} />
+                          </td>
+                          <td style={{ ...styles.td, color: "#767676" }}>{formatDate(act.activity_date)}</td>
+                          <td style={{ ...styles.td, fontWeight: 600, color: "#1A1A1A" }}>{getAccountName(act.account_id)}</td>
+                          <td style={styles.td}>{getRepName(act.rep_id)}</td>
+                          <td style={styles.td}>
+                            <span style={{ display: "inline-block", padding: "2px 10px", borderRadius: "999px", fontSize: "12px", fontWeight: 500, background: tc.bg, color: tc.color }}>
+                              {act.activity_type}
+                            </span>
+                          </td>
+                          <td style={styles.td}>{act.outcome || "—"}</td>
+                          <td style={styles.td}>{act.notes || "—"}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            );
+
+            return (
+              <div style={{ display: "flex", flexDirection: "column", gap: "14px", flex: 1, minHeight: 0, overflow: "auto" }}>
+                <p style={{ fontSize: "14px", fontWeight: 600, color: "#1A1A1A" }}>Upcoming</p>
+                {renderTable(upcoming, "No upcoming activities")}
+                <p style={{ fontSize: "14px", fontWeight: 600, color: "#1A1A1A" }}>Past</p>
+                {renderTable(past, "No past activities")}
+              </div>
+            );
+          })()}
           </div>
 
           {/* MOBILE: Activity Cards */}
