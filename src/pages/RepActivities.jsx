@@ -265,22 +265,21 @@ export default function RepActivities() {
 
             {/* Upcoming table */}
             {showUpcoming && (
-              <div style={{ marginBottom: "24px" }}>
-                <p style={dt.sectionLabel}>UPCOMING</p>
+              <div style={{ marginBottom: "14px" }}>
+                <p style={{ fontSize: "14px", fontWeight: 600, color: "#1A1A1A", marginBottom: "8px" }}>Upcoming</p>
                 <div style={{ backgroundColor: "#ffffff", border: "0.5px solid #E8E8E6", borderRadius: "8px", overflow: "auto", WebkitOverflowScrolling: "touch" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <thead>
                       <tr>
-                        {["Date", "Company Name", "Type", "Notes"].map(h => (
+                        {["Date", "Company Name", "Type", "Outcome", "Notes"].map(h => (
                           <th key={h} style={dt.thStyle}>{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
-                      {upcoming.length === 0 && (
-                        <tr><td colSpan={4} style={{ ...dt.tdStyle, textAlign: "center", color: "#ABABAB" }}>No upcoming activities</td></tr>
-                      )}
-                      {upcoming.map(act => {
+                      {upcoming.length === 0 ? (
+                        <tr><td colSpan={5} style={{ ...dt.tdStyle, textAlign: "center", color: "#ABABAB" }}>No upcoming activities</td></tr>
+                      ) : upcoming.map(act => {
                         const tc = TYPE_COLORS[act.scheduled_next_type] || TYPE_COLORS.Call;
                         const today = isToday(act.scheduled_next_date);
                         return (
@@ -294,6 +293,7 @@ export default function RepActivities() {
                                 {act.scheduled_next_type || "Activity"}
                               </span>
                             </td>
+                            <td style={dt.tdStyle}>{act.outcome || "—"}</td>
                             <td style={{ ...dt.tdStyle, maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{act.notes || "—"}</td>
                           </tr>
                         );
@@ -307,21 +307,20 @@ export default function RepActivities() {
             {/* Past activity table */}
             {showPast && (
               <div>
-                <p style={dt.sectionLabel}>PAST ACTIVITY</p>
+                <p style={{ fontSize: "14px", fontWeight: 600, color: "#1A1A1A", marginBottom: "8px" }}>Past</p>
                 <div style={{ backgroundColor: "#ffffff", border: "0.5px solid #E8E8E6", borderRadius: "8px", overflow: "auto", WebkitOverflowScrolling: "touch" }}>
-                  {activities.length === 0 ? (
-                    <div style={{ fontSize: "14px", color: "#ABABAB", padding: "40px 0", textAlign: "center" }}>No activity logged yet</div>
-                  ) : (
-                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                      <thead>
-                        <tr>
-                          {["Date", "Company Name", "Type", "Outcome", "Notes"].map(h => (
-                            <th key={h} style={dt.thStyle}>{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {activities.map(act => {
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr>
+                        {["Date", "Company Name", "Type", "Outcome", "Notes"].map(h => (
+                          <th key={h} style={dt.thStyle}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {activities.length === 0 ? (
+                        <tr><td colSpan={5} style={{ ...dt.tdStyle, textAlign: "center", color: "#ABABAB" }}>No past activities</td></tr>
+                      ) : activities.map(act => {
                           const tc = TYPE_COLORS[act.activity_type] || TYPE_COLORS.Call;
                           return (
                             <tr key={act.id} className="data-row" style={{ cursor: "pointer" }} onClick={() => navigate(`/leads/${act.account_id}`)}>
@@ -339,7 +338,6 @@ export default function RepActivities() {
                         })}
                       </tbody>
                     </table>
-                  )}
                 </div>
               </div>
             )}
