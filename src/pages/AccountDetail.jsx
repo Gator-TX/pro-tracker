@@ -21,6 +21,8 @@ export default function AccountDetail() {
   const [account, setAccount] = useState(null);
   const [contacts, setContacts] = useState([]);
   const [activities, setActivities] = useState([]);
+  const [linkedApollo, setLinkedApollo] = useState([]);
+  const [linkedEda, setLinkedEda] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCrmModal, setShowCrmModal] = useState(false);
   const [sendingToCRM, setSendingToCRM] = useState(false);
@@ -94,6 +96,15 @@ export default function AccountDetail() {
       .eq("account_id", id)
       .order("activity_date", { ascending: false });
     setActivities(acts || []);
+
+    // Linked records
+    const { data: apolloData } = await supabase
+      .from("linked_apollo").select("*").eq("lead_id", id);
+    setLinkedApollo(apolloData || []);
+
+    const { data: edaData } = await supabase
+      .from("linked_eda").select("*").eq("lead_id", id);
+    setLinkedEda(edaData || []);
 
     setLoading(false);
   };
@@ -694,6 +705,75 @@ export default function AccountDetail() {
               );
             })()}
           </div>
+
+          {/* ── LINKED APOLLO RECORDS ── */}
+          {linkedApollo.length > 0 && (
+            <>
+              <p style={{ fontSize: "16px", fontWeight: 600, color: "#1A1A1A", margin: "8px 0 4px" }}>Linked Apollo Records</p>
+              <div style={{ ...styles.card, padding: 0, overflow: "hidden" }}>
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr>
+                        {["Company", "Website", "Industry", "City/State", "Phone", "Employees"].map(h => (
+                          <th key={h} style={{ backgroundColor: "#ffffff", fontSize: "11px", fontWeight: 600, color: "#ABABAB", padding: "10px 16px", textAlign: "left", borderBottom: "1px solid #E8E8E6", textTransform: "uppercase", letterSpacing: "0.06em" }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {linkedApollo.map(a => (
+                        <tr key={a.id}>
+                          <td style={{ fontSize: "13px", color: "#1A1A1A", fontWeight: 500, padding: "12px 16px", borderBottom: "1px solid #F0F0ED" }}>{a.company_name || "—"}</td>
+                          <td style={{ fontSize: "13px", color: "#374151", padding: "12px 16px", borderBottom: "1px solid #F0F0ED" }}>
+                            {a.website ? <a href={a.website.startsWith("http") ? a.website : `https://${a.website}`} target="_blank" rel="noopener noreferrer" style={{ color: "#367C2B", textDecoration: "underline" }}>{a.website}</a> : "—"}
+                          </td>
+                          <td style={{ fontSize: "13px", color: "#374151", padding: "12px 16px", borderBottom: "1px solid #F0F0ED" }}>{a.industry || "—"}</td>
+                          <td style={{ fontSize: "13px", color: "#374151", padding: "12px 16px", borderBottom: "1px solid #F0F0ED" }}>{[a.city, a.state].filter(Boolean).join(", ") || "—"}</td>
+                          <td style={{ fontSize: "13px", color: "#374151", padding: "12px 16px", borderBottom: "1px solid #F0F0ED" }}>{a.phone || "—"}</td>
+                          <td style={{ fontSize: "13px", color: "#374151", padding: "12px 16px", borderBottom: "1px solid #F0F0ED" }}>{a.employee_count || "—"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* ── LINKED EDA RECORDS ── */}
+          {linkedEda.length > 0 && (
+            <>
+              <p style={{ fontSize: "16px", fontWeight: 600, color: "#1A1A1A", margin: "8px 0 4px" }}>Linked EDA Records</p>
+              <div style={{ ...styles.card, padding: 0, overflow: "hidden" }}>
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr>
+                        {["Company", "County", "State", "Buying Probability", "Fleet Size", "Equipment", "EDA Link"].map(h => (
+                          <th key={h} style={{ backgroundColor: "#ffffff", fontSize: "11px", fontWeight: 600, color: "#ABABAB", padding: "10px 16px", textAlign: "left", borderBottom: "1px solid #E8E8E6", textTransform: "uppercase", letterSpacing: "0.06em" }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {linkedEda.map(e => (
+                        <tr key={e.id}>
+                          <td style={{ fontSize: "13px", color: "#1A1A1A", fontWeight: 500, padding: "12px 16px", borderBottom: "1px solid #F0F0ED" }}>{e.buycomp1 || "—"}</td>
+                          <td style={{ fontSize: "13px", color: "#374151", padding: "12px 16px", borderBottom: "1px solid #F0F0ED" }}>{e.buycty || "—"}</td>
+                          <td style={{ fontSize: "13px", color: "#374151", padding: "12px 16px", borderBottom: "1px solid #F0F0ED" }}>{e.buystate || "—"}</td>
+                          <td style={{ fontSize: "13px", color: "#374151", padding: "12px 16px", borderBottom: "1px solid #F0F0ED" }}>{e.buyingprobability || "—"}</td>
+                          <td style={{ fontSize: "13px", color: "#374151", padding: "12px 16px", borderBottom: "1px solid #F0F0ED" }}>{e.fleetcount || "—"}</td>
+                          <td style={{ fontSize: "13px", color: "#374151", padding: "12px 16px", borderBottom: "1px solid #F0F0ED" }}>{e.eqtdesc || "—"}</td>
+                          <td style={{ fontSize: "13px", padding: "12px 16px", borderBottom: "1px solid #F0F0ED" }}>
+                            {e.prospectprofilelink ? <a href={e.prospectprofilelink.startsWith("http") ? e.prospectprofilelink : `https://${e.prospectprofilelink}`} target="_blank" rel="noopener noreferrer" style={{ color: "#367C2B", textDecoration: "underline", fontWeight: 600 }}>View</a> : "—"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          )}
 
           {/* ── STATUS SELECTOR ── */}
           <div style={styles.card}>
