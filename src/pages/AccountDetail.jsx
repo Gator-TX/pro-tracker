@@ -735,43 +735,82 @@ export default function AccountDetail() {
             </div>
           )}
 
-          {/* ── ACTIVITY HISTORY ── */}
-          <div style={styles.card}>
-            <p style={styles.cardLabel}>Activity History</p>
-            {activities.length === 0 ? (
-              <p style={styles.infoMuted}>No activity logged yet</p>
-            ) : (
-              <div style={styles.timeline}>
-                {activities.map((act, i) => (
-                  <div key={act.id} style={styles.timelineItem}>
-                    <div style={styles.timelineDotWrap}>
-                      <div style={styles.timelineDot} />
-                      {i < activities.length - 1 && <div style={styles.timelineLine} />}
-                    </div>
-                    <div style={styles.timelineContent}>
-                      <div style={styles.timelineHeader}>
-                        <span style={styles.activityType}>{act.activity_type}</span>
-                        <span style={styles.activityDate}>{formatActivityDate(act.activity_date)}</span>
-                      </div>
-                      {act.outcome && <p style={styles.activityOutcome}>{act.outcome}</p>}
-                      {act.notes && <p style={styles.activityNotes}>{act.notes}</p>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          {/* ── ACTIVITIES ── */}
+          {(() => {
+            const d = new Date();
+            const todayStr = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+            const upcoming = activities.filter(a => a.activity_date && a.activity_date > todayStr).sort((a, b) => a.activity_date.localeCompare(b.activity_date));
+            const past = activities.filter(a => !a.activity_date || a.activity_date <= todayStr);
+            const actTh = { backgroundColor: "#ffffff", fontSize: "11px", fontWeight: 600, color: "#ABABAB", position: "sticky", top: 0, zIndex: 1, padding: "10px 16px", textAlign: "left", borderBottom: "1px solid #E8E8E6", textTransform: "uppercase", letterSpacing: "0.06em" };
+            const actTd = { fontSize: "13px", color: "#374151", padding: "12px 16px", borderBottom: "1px solid #F0F0ED" };
+            return (
+              <>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "8px 0 4px" }}>
+                  <p style={{ fontSize: "16px", fontWeight: 600, color: "#1A1A1A" }}>Activities</p>
+                  {profile?.role === "rep" && (
+                    <button
+                      onClick={() => navigate(`/leads/${id}/log`)}
+                      style={{ backgroundColor: "#367C2B", color: "#fff", padding: "6px 12px", borderRadius: "6px", fontSize: "13px", fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}
+                    >
+                      + Add Activity
+                    </button>
+                  )}
+                </div>
 
-          {/* ── LOG ACTIVITY BUTTON ── */}
-          {profile?.role === "rep" && (
-            <button
-              className="btn-primary"
-              style={{ marginBottom: "95px" }}
-              onClick={() => navigate(`/leads/${id}/log`)}
-            >
-              + Log Activity
-            </button>
-          )}
+                <p style={{ fontSize: "14px", fontWeight: 600, color: "#1A1A1A", margin: "12px 0 8px" }}>Upcoming</p>
+                <div style={{ ...styles.card, padding: 0, overflow: "hidden" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr>
+                        {["Date", "Type", "Outcome", "Notes"].map(h => (
+                          <th key={h} style={actTh}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {upcoming.length === 0 ? (
+                        <tr><td colSpan={4} style={{ ...actTd, textAlign: "center", color: "#ABABAB" }}>No upcoming activities</td></tr>
+                      ) : upcoming.map(act => (
+                        <tr key={act.id}>
+                          <td style={actTd}>{formatActivityDate(act.activity_date)}</td>
+                          <td style={actTd}>{act.activity_type || "—"}</td>
+                          <td style={actTd}>{act.outcome || "—"}</td>
+                          <td style={actTd}>{act.notes || "—"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <p style={{ fontSize: "14px", fontWeight: 600, color: "#1A1A1A", margin: "16px 0 8px" }}>Past</p>
+                <div style={{ ...styles.card, padding: 0, overflow: "hidden" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr>
+                        {["Date", "Type", "Outcome", "Notes"].map(h => (
+                          <th key={h} style={actTh}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {past.length === 0 ? (
+                        <tr><td colSpan={4} style={{ ...actTd, textAlign: "center", color: "#ABABAB" }}>No past activities</td></tr>
+                      ) : past.map(act => (
+                        <tr key={act.id}>
+                          <td style={actTd}>{formatActivityDate(act.activity_date)}</td>
+                          <td style={actTd}>{act.activity_type || "—"}</td>
+                          <td style={actTd}>{act.outcome || "—"}</td>
+                          <td style={actTd}>{act.notes || "—"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            );
+          })()}
+
+          <div style={{ marginBottom: "95px" }} />
 
         </div>
                   </PullToRefresh>
