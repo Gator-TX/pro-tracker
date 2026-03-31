@@ -41,7 +41,7 @@ export default function Accounts() {
 
     let query = supabase
       .from("target_leads")
-      .select("*, start_date, end_date, activities(id, activity_date)")
+      .select("*, start_date, end_date, target_lead_activities(id, activity_date)")
       .order("created_at", { ascending: false });
 
     if (profileData?.role === "rep") {

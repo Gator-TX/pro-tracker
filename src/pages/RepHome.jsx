@@ -52,7 +52,7 @@ export default function RepHome() {
     // Accounts with activities
     const { data: accountsData } = await supabase
       .from("target_leads")
-      .select("id, name, company, status, created_at, activities(id, activity_date, activity_type, notes, outcome, scheduled_next_date, scheduled_next_type, scheduled_next_time)")
+      .select("id, name, company, status, created_at, target_lead_activities(id, activity_date, activity_type, notes, outcome, scheduled_next_date, scheduled_next_type, scheduled_next_time)")
       .eq("rep_id", user.id);
 
     const ACTIVE = ["New", "Contacted", "Engaged", "Proposal"];

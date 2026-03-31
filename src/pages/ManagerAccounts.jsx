@@ -60,7 +60,7 @@ export default function ManagerAccounts() {
 
     const { data: accountsData } = await supabase
       .from("target_leads")
-      .select("*, start_date, end_date, activities(activity_date)")
+      .select("*, start_date, end_date, target_lead_activities(activity_date)")
       .order("created_at", { ascending: false });
     setAccounts(accountsData || []);
 
