@@ -48,7 +48,7 @@ export default function Settings() {
     setFullName(profileData?.full_name || "");
 
     const { data: settingsData } = await supabase
-      .from("target_app_settings").select("setting_key, setting_value");
+      .from("app_settings").select("setting_key, setting_value");
     (settingsData || []).forEach(s => {
       if (s.setting_key === "rep_at_risk_days") setRepAtRiskDays(s.setting_value);
       if (s.setting_key === "account_at_risk_days") setAccountAtRiskDays(s.setting_value);
@@ -104,7 +104,7 @@ export default function Settings() {
     await supabase.from("profiles")
       .update({ full_name: fullName })
       .eq("id", profile.id);
-    await supabase.from("target_app_settings").upsert([
+    await supabase.from("app_settings").upsert([
       { setting_key: "rep_at_risk_days", setting_value: String(repAtRiskDays), updated_by: profile.id },
       { setting_key: "account_at_risk_days", setting_value: String(accountAtRiskDays), updated_by: profile.id },
       { setting_key: "sprint_length", setting_value: String(sprintLength), updated_by: profile.id },
@@ -114,14 +114,14 @@ export default function Settings() {
     // Recalculate end_date on all leads that have a start_date
     const days = parseInt(sprintLength) || 60;
     const { data: leadsWithDates } = await supabase
-      .from("target_leads").select("id, start_date").not("start_date", "is", null);
+      .from("accounts").select("id, start_date").not("start_date", "is", null);
     if (leadsWithDates && leadsWithDates.length > 0) {
       for (const lead of leadsWithDates) {
         const [y, m, d] = lead.start_date.split("-");
         const end = new Date(y, m - 1, d);
         end.setDate(end.getDate() + days);
         const endStr = end.getFullYear() + "-" + String(end.getMonth() + 1).padStart(2, "0") + "-" + String(end.getDate()).padStart(2, "0");
-        await supabase.from("target_leads").update({ end_date: endStr }).eq("id", lead.id);
+        await supabase.from("accounts").update({ end_date: endStr }).eq("id", lead.id);
       }
     }
 

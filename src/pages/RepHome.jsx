@@ -38,21 +38,21 @@ export default function RepHome() {
     // Sprint
     const today = new Date().toISOString().split("T")[0];
     const { data: sprintData } = await supabase
-      .from("target_lead_sprints").select("*")
+      .from("sprints").select("*")
       .lte("start_date", today).gte("end_date", today).limit(1).single();
     setSprint(sprintData);
 
     // Load configurable thresholds
     const { data: settingsData } = await supabase
-      .from("target_app_settings").select("setting_key, setting_value");
+      .from("app_settings").select("setting_key, setting_value");
     const settingsMap = {};
     (settingsData || []).forEach(s => { settingsMap[s.setting_key] = s.setting_value; });
     const accountAtRiskDays = parseInt(settingsMap["account_at_risk_days"] || "7", 10);
 
     // Accounts with activities
     const { data: accountsData } = await supabase
-      .from("target_leads")
-      .select("id, name, company, status, created_at, target_lead_activities(id, activity_date, activity_type, notes, outcome, scheduled_next_date, scheduled_next_type, scheduled_next_time)")
+      .from("accounts")
+      .select("id, name, company, status, created_at, activities(id, activity_date, activity_type, notes, outcome, scheduled_next_date, scheduled_next_type, scheduled_next_time)")
       .eq("rep_id", user.id);
 
     const ACTIVE = ["New", "Contacted", "Engaged", "Proposal"];
@@ -66,7 +66,7 @@ export default function RepHome() {
     const isAtRisk = (a) => {
       if (!ACTIVE.includes(a.status)) return false;
       if (new Date(a.created_at) >= thresholdDate) return false;
-      const acts = a.target_lead_activities || [];
+      const acts = a.activities || [];
       if (!acts.length) return true;
       const latest = new Date(Math.max(...acts.map(x => new Date(x.activity_date))));
       return latest < thresholdDate;
@@ -79,7 +79,7 @@ export default function RepHome() {
     const attentionList = (accountsData || [])
       .filter(isAtRisk)
       .map(a => {
-        const acts = a.target_lead_activities || [];
+        const acts = a.activities || [];
         const lastDate = acts.length
           ? new Date(Math.max(...acts.map(x => new Date(x.activity_date))))
           : null;
@@ -101,7 +101,7 @@ export default function RepHome() {
     // No activity during sprint
     const noActivity = sprintData ? (accountsData || []).filter(a =>
       ACTIVE.includes(a.status) &&
-      !(a.target_lead_activities || []).some(act => act.activity_date >= sprintData.start_date)
+      !(a.activities || []).some(act => act.activity_date >= sprintData.start_date)
     ).length : 0;
     setNoActivityCount(noActivity);
 
@@ -110,7 +110,7 @@ export default function RepHome() {
     (accountsData || []).forEach(a => { accountNameMap[a.id] = a.name || a.company; });
 
     const { data: upcomingData } = await supabase
-      .from("target_lead_activities")
+      .from("activities")
       .select("id, account_id, scheduled_next_date, scheduled_next_type, scheduled_next_time")
       .eq("rep_id", user.id)
       .not("scheduled_next_date", "is", null)
@@ -133,7 +133,7 @@ export default function RepHome() {
 
     const allActs = [];
     (accountsData || []).forEach(acc => {
-      (acc.target_lead_activities || []).forEach(act => {
+      (acc.activities || []).forEach(act => {
         if (act.activity_date >= fortyEightHoursAgoStr) {
           allActs.push({ ...act, accountName: acc.name || acc.company, accountId: acc.id });
         }

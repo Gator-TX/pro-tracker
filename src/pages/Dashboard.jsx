@@ -48,7 +48,7 @@ export default function Dashboard() {
 
     // Load configurable thresholds
     const { data: settingsData } = await supabase
-      .from("target_app_settings").select("setting_key, setting_value");
+      .from("app_settings").select("setting_key, setting_value");
     const settingsMap = {};
     (settingsData || []).forEach(s => { settingsMap[s.setting_key] = s.setting_value; });
     const repAtRiskDays = parseInt(settingsMap["rep_at_risk_days"] || "2", 10);
@@ -57,7 +57,7 @@ export default function Dashboard() {
     // Fetch sprint first so start_date is available for activity queries
     const today = new Date().toISOString().split("T")[0];
     const { data: sprintData } = await supabase
-      .from("target_lead_sprints").select("*")
+      .from("sprints").select("*")
       .lte("start_date", today).gte("end_date", today).limit(1).single();
     setSprint(sprintData);
 
@@ -67,25 +67,25 @@ export default function Dashboard() {
 
     const repsWithData = await Promise.all((repsData || []).map(async (rep) => {
       const { data: accounts } = await supabase
-        .from("target_leads").select("id, status").eq("rep_id", rep.id);
+        .from("accounts").select("id, status").eq("rep_id", rep.id);
 
       const weekAgo = new Date();
       weekAgo.setDate(weekAgo.getDate() - 7);
       const weekAgoStr = weekAgo.toISOString().split("T")[0];
 
       const { data: acts } = await supabase
-        .from("target_lead_activities").select("id").eq("rep_id", rep.id).gte("activity_date", weekAgoStr);
+        .from("activities").select("id").eq("rep_id", rep.id).gte("activity_date", weekAgoStr);
       const { data: allActs } = await supabase
-        .from("target_lead_activities").select("id").eq("rep_id", rep.id);
+        .from("activities").select("id").eq("rep_id", rep.id);
 
       const repAtRiskCutoff = new Date();
       repAtRiskCutoff.setDate(repAtRiskCutoff.getDate() - repAtRiskDays);
       const { data: recentActs } = await supabase
-        .from("target_lead_activities").select("id").eq("rep_id", rep.id)
+        .from("activities").select("id").eq("rep_id", rep.id)
         .gte("created_at", repAtRiskCutoff.toISOString()).limit(1);
 
       const { data: lastActRow } = await supabase
-        .from("target_lead_activities").select("activity_date")
+        .from("activities").select("activity_date")
         .eq("rep_id", rep.id).order("activity_date", { ascending: false }).limit(1);
       const lastActDate = lastActRow?.[0]?.activity_date || null;
 
@@ -133,7 +133,7 @@ export default function Dashboard() {
 
     // All accounts — health counts + name map
     const { data: allAccountsData } = await supabase
-      .from("target_leads").select("id, name, company, status, rep_id, created_at");
+      .from("accounts").select("id, name, company, status, rep_id, created_at");
 
     const health = { New: 0, Contacted: 0, Engaged: 0, Proposal: 0, Won: 0, Lost: 0 };
     const accountNameMap = {};
@@ -153,7 +153,7 @@ export default function Dashboard() {
     let lastActMap = {};
     if (activeAccIds.length > 0) {
       const { data: lastActs } = await supabase
-        .from("target_lead_activities").select("account_id, activity_date")
+        .from("activities").select("account_id, activity_date")
         .in("account_id", activeAccIds).order("activity_date", { ascending: false });
       (lastActs || []).forEach(act => {
         if (!lastActMap[act.account_id]) lastActMap[act.account_id] = act.activity_date;
@@ -180,7 +180,7 @@ export default function Dashboard() {
     const fortyEightHoursAgoAct = new Date();
     fortyEightHoursAgoAct.setHours(fortyEightHoursAgoAct.getHours() - 48);
     const { data: recentActsData } = await supabase
-      .from("target_lead_activities").select("id, activity_type, activity_date, outcome, notes, account_id, rep_id")
+      .from("activities").select("id, activity_type, activity_date, outcome, notes, account_id, rep_id")
       .gte("created_at", fortyEightHoursAgoAct.toISOString())
       .order("activity_date", { ascending: false }).limit(20);
     setRecentActivities((recentActsData || []).slice(0, 5).map(act => ({
@@ -192,7 +192,7 @@ export default function Dashboard() {
     // Sprint rep stats: reps who logged at least once since sprint start
     if (sprintData) {
       const { data: sprintActs } = await supabase
-        .from("target_lead_activities").select("rep_id").gte("activity_date", sprintData.start_date);
+        .from("activities").select("rep_id").gte("activity_date", sprintData.start_date);
       const repsWithActSet = new Set((sprintActs || []).map(a => a.rep_id).filter(id => repNameMap[id]));
       const withActivity = repsWithActSet.size;
       setSprintRepStats({ withActivity, withoutActivity: repsWithData.length - withActivity });

@@ -57,14 +57,14 @@ export default function LogActivity() {
     if (profileData?.role === "manager") { navigate(`/leads/${id}`); return; }
 
     const { data: acc } = await supabase
-      .from("target_leads")
+      .from("accounts")
       .select("*")
       .eq("id", id)
       .single();
     setAccount(acc);
 
     const { data: contacts } = await supabase
-      .from("target_lead_contacts")
+      .from("contacts")
       .select("*")
       .eq("account_id", id)
       .eq("is_primary", true)
@@ -98,7 +98,7 @@ export default function LogActivity() {
       } : {}),
     };
 
-    await supabase.from("target_lead_activities").insert(record);
+    await supabase.from("activities").insert(record);
     setSaving(false);
     navigate(`/leads/${id}`);
   };
