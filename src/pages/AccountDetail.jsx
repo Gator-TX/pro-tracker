@@ -644,37 +644,55 @@ export default function AccountDetail() {
             )}
 
             {/* Contact table */}
-            {contacts.length === 0 && !showAddContact ? (
-              <p style={styles.infoMuted}>No contacts added yet</p>
-            ) : contacts.length > 0 && (
-              <div style={{ border: "0.5px solid #E8E8E6", borderRadius: "6px", overflow: "hidden" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                  <thead>
-                    <tr>
-                      {["Contact", "Work Phone", "Mobile Phone", "Email", ""].map(h => (
-                        <th key={h} style={{ backgroundColor: "#ffffff", fontSize: "11px", fontWeight: 600, color: "#ABABAB", padding: "10px 16px", textAlign: "left", borderBottom: "1px solid #E8E8E6", textTransform: "uppercase", letterSpacing: "0.06em" }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {contacts.map(contact => (
-                      <tr key={contact.id}>
-                        <td style={{ fontSize: "14px", color: "#1A1A1A", fontWeight: 500, padding: "12px 16px", borderBottom: "1px solid #F0F0ED" }}>
-                          {`${contact.first_name || ""} ${contact.last_name || ""}`.trim() || "—"}
-                          {contact.is_primary && <span style={styles.primaryBadge}> Primary</span>}
-                        </td>
-                        <td style={{ fontSize: "13px", color: "#374151", padding: "12px 16px", borderBottom: "1px solid #F0F0ED" }}>{contact.phone || "—"}</td>
-                        <td style={{ fontSize: "13px", color: "#374151", padding: "12px 16px", borderBottom: "1px solid #F0F0ED" }}>{contact.mobile_phone || "—"}</td>
-                        <td style={{ fontSize: "13px", color: "#374151", padding: "12px 16px", borderBottom: "1px solid #F0F0ED" }}>{contact.email || "—"}</td>
-                        <td style={{ padding: "12px 16px", borderBottom: "1px solid #F0F0ED" }}>
-                          <button className="green-link" onClick={() => openEditContact(contact)}>Edit</button>
-                        </td>
+            {(() => {
+              const cTh = { backgroundColor: "#ffffff", fontSize: "11px", fontWeight: 600, color: "#ABABAB", padding: "10px 16px", textAlign: "left", borderBottom: "1px solid #E8E8E6", textTransform: "uppercase", letterSpacing: "0.06em" };
+              const cTd = { fontSize: "13px", color: "#374151", padding: "12px 16px", borderBottom: "1px solid #F0F0ED" };
+              const hasLeadContact = account?.contact_name || account?.work_phone || account?.mobile_phone || account?.email;
+              const leadContactAlreadyInTable = contacts.some(c =>
+                `${c.first_name || ""} ${c.last_name || ""}`.trim().toLowerCase() === (account?.contact_name || "").toLowerCase()
+              );
+              const showLeadRow = hasLeadContact && !leadContactAlreadyInTable && contacts.length === 0;
+              return contacts.length === 0 && !showLeadRow && !showAddContact ? (
+                <p style={styles.infoMuted}>No contacts added yet</p>
+              ) : (
+                <div style={{ border: "0.5px solid #E8E8E6", borderRadius: "6px", overflow: "hidden" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr>
+                        {["Contact", "Work Phone", "Mobile Phone", "Email", ""].map(h => (
+                          <th key={h} style={cTh}>{h}</th>
+                        ))}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                    </thead>
+                    <tbody>
+                      {showLeadRow && (
+                        <tr>
+                          <td style={{ ...cTd, fontWeight: 500, color: "#1A1A1A" }}>{account.contact_name || "—"}</td>
+                          <td style={cTd}>{account.work_phone || "—"}</td>
+                          <td style={cTd}>{account.mobile_phone || "—"}</td>
+                          <td style={cTd}>{account.email || "—"}</td>
+                          <td style={cTd} />
+                        </tr>
+                      )}
+                      {contacts.map(contact => (
+                        <tr key={contact.id}>
+                          <td style={{ ...cTd, fontWeight: 500, color: "#1A1A1A" }}>
+                            {`${contact.first_name || ""} ${contact.last_name || ""}`.trim() || "—"}
+                            {contact.is_primary && <span style={styles.primaryBadge}> Primary</span>}
+                          </td>
+                          <td style={cTd}>{contact.phone || contact.work_phone || "—"}</td>
+                          <td style={cTd}>{contact.mobile_phone || "—"}</td>
+                          <td style={cTd}>{contact.email || "—"}</td>
+                          <td style={{ ...cTd, padding: "12px 16px" }}>
+                            <button className="green-link" onClick={() => openEditContact(contact)}>Edit</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })()}
           </div>
 
           {/* ── STATUS SELECTOR ── */}
