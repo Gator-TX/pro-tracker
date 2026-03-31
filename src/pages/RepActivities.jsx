@@ -180,10 +180,13 @@ export default function RepActivities() {
             </select>
 
             {/* Section 1 — Upcoming Scheduled */}
-            {showUpcoming && upcoming.length > 0 && (
+            {showUpcoming && (
               <>
                 <p className="ra-section-label">Upcoming</p>
                 <div className="ra-card-list">
+                  {upcoming.length === 0 && (
+                    <p style={{ fontSize: "13px", color: "#ABABAB", textAlign: "center", padding: "16px 0" }}>No upcoming activities</p>
+                  )}
                   {upcoming.map(act => {
                     const tc = TYPE_COLORS[act.scheduled_next_type] || TYPE_COLORS.Call;
                     const today = isToday(act.scheduled_next_date);
@@ -261,7 +264,7 @@ export default function RepActivities() {
             </div>
 
             {/* Upcoming table */}
-            {showUpcoming && upcoming.length > 0 && (
+            {showUpcoming && (
               <div style={{ marginBottom: "24px" }}>
                 <p style={dt.sectionLabel}>UPCOMING</p>
                 <div style={{ backgroundColor: "#ffffff", border: "0.5px solid #E8E8E6", borderRadius: "8px", overflow: "auto", WebkitOverflowScrolling: "touch" }}>
@@ -274,6 +277,9 @@ export default function RepActivities() {
                       </tr>
                     </thead>
                     <tbody>
+                      {upcoming.length === 0 && (
+                        <tr><td colSpan={4} style={{ ...dt.tdStyle, textAlign: "center", color: "#ABABAB" }}>No upcoming activities</td></tr>
+                      )}
                       {upcoming.map(act => {
                         const tc = TYPE_COLORS[act.scheduled_next_type] || TYPE_COLORS.Call;
                         const today = isToday(act.scheduled_next_date);
