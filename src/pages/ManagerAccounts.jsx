@@ -54,12 +54,12 @@ export default function ManagerAccounts() {
     setReps(repsData || []);
 
     const { data: settingsData } = await supabase
-      .from("app_settings").select("setting_key, setting_value");
+      .from("target_app_settings").select("setting_key, setting_value");
     const sprintSetting = (settingsData || []).find(s => s.setting_key === "sprint_length");
     if (sprintSetting) setSprintLength(parseInt(sprintSetting.setting_value) || 60);
 
     const { data: accountsData } = await supabase
-      .from("accounts")
+      .from("target_leads")
       .select("*, start_date, end_date, activities(activity_date)")
       .order("created_at", { ascending: false });
     setAccounts(accountsData || []);
@@ -78,7 +78,7 @@ export default function ManagerAccounts() {
   };
 
   const getLastActivity = (account) => {
-    const acts = account.activities || [];
+    const acts = account.target_lead_activities || [];
     if (!acts.length) return null;
     const latest = acts.reduce((a, b) =>
       new Date(a.activity_date) > new Date(b.activity_date) ? a : b
@@ -90,7 +90,7 @@ export default function ManagerAccounts() {
   const handleDelete = async () => {
     if (!window.confirm(`Delete ${selectedIds.length} account${selectedIds.length > 1 ? "s" : ""}? This cannot be undone.`)) return;
     setDeleting(true);
-    await supabase.from("accounts").delete().in("id", selectedIds);
+    await supabase.from("target_leads").delete().in("id", selectedIds);
     setSelectedIds([]);
     await loadData();
     setDeleting(false);
@@ -116,7 +116,7 @@ export default function ManagerAccounts() {
     end.setDate(end.getDate() + sprintLength);
     const endStr = end.getFullYear() + "-" + String(end.getMonth() + 1).padStart(2, "0") + "-" + String(end.getDate()).padStart(2, "0");
 
-    await supabase.from("accounts")
+    await supabase.from("target_leads")
       .update({ start_date: targetStartDate, end_date: endStr })
       .in("id", selectedIds);
 
@@ -129,7 +129,7 @@ export default function ManagerAccounts() {
   };
 
   const handleUnassign = async (accountId) => {
-    await supabase.from("accounts").update({ rep_id: null }).eq("id", accountId);
+    await supabase.from("target_leads").update({ rep_id: null }).eq("id", accountId);
     setAccounts(prev => prev.map(a => a.id === accountId ? { ...a, rep_id: null } : a));
     setUnassignMsg(accountId);
     setTimeout(() => setUnassignMsg(null), 3000);
@@ -138,7 +138,7 @@ export default function ManagerAccounts() {
   const handleBulkAssign = async () => {
     if (!assignRepId || selectedIds.length === 0) return;
     setAssigning(true);
-    await supabase.from("accounts").update({ rep_id: assignRepId }).in("id", selectedIds);
+    await supabase.from("target_leads").update({ rep_id: assignRepId }).in("id", selectedIds);
     setAccounts(prev => prev.map(a => selectedIds.includes(a.id) ? { ...a, rep_id: assignRepId } : a));
     setAssigning(false);
     setShowAssignModal(false);
@@ -148,7 +148,7 @@ export default function ManagerAccounts() {
 
   const handleBulkUnassign = async () => {
     if (selectedIds.length === 0) return;
-    await supabase.from("accounts").update({ rep_id: null }).in("id", selectedIds);
+    await supabase.from("target_leads").update({ rep_id: null }).in("id", selectedIds);
     setAccounts(prev => prev.map(a => selectedIds.includes(a.id) ? { ...a, rep_id: null } : a));
     setSelectedIds([]);
   };

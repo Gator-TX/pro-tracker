@@ -36,11 +36,11 @@ export default function ManagerActivities() {
     setReps(repsData || []);
 
     const { data: accountsData } = await supabase
-      .from("accounts").select("id, name, company");
+      .from("target_leads").select("id, name, company");
     setAccounts(accountsData || []);
 
     const { data: actsData } = await supabase
-      .from("activities").select("*")
+      .from("target_lead_activities").select("*")
       .order("activity_date", { ascending: false })
       .limit(200);
     setActivities(actsData || []);
@@ -62,7 +62,7 @@ export default function ManagerActivities() {
   const handleDelete = async () => {
     if (!window.confirm(`Delete ${selectedIds.length} activit${selectedIds.length > 1 ? "ies" : "y"}? This cannot be undone.`)) return;
     setDeleting(true);
-    await supabase.from("activities").delete().in("id", selectedIds);
+    await supabase.from("target_lead_activities").delete().in("id", selectedIds);
     setSelectedIds([]);
     await loadData();
     setDeleting(false);

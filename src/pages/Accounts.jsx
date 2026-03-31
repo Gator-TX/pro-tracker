@@ -40,7 +40,7 @@ export default function Accounts() {
     setProfile(profileData);
 
     let query = supabase
-      .from("accounts")
+      .from("target_leads")
       .select("*, start_date, end_date, activities(id, activity_date)")
       .order("created_at", { ascending: false });
 
@@ -51,11 +51,11 @@ export default function Accounts() {
     const { data: accountsData } = await query;
 
     const sorted = (accountsData || []).sort((a, b) => {
-      const aDate = a.activities?.length
-        ? Math.max(...a.activities.map(x => new Date(x.activity_date)))
+      const aDate = a.target_lead_activities?.length
+        ? Math.max(...a.target_lead_activities.map(x => new Date(x.activity_date)))
         : new Date(a.created_at);
-      const bDate = b.activities?.length
-        ? Math.max(...b.activities.map(x => new Date(x.activity_date)))
+      const bDate = b.target_lead_activities?.length
+        ? Math.max(...b.target_lead_activities.map(x => new Date(x.activity_date)))
         : new Date(b.created_at);
       return bDate - aDate;
     });
@@ -69,7 +69,7 @@ export default function Accounts() {
   };
 
   const getLastContact = (account) => {
-    const acts = account.activities || [];
+    const acts = account.target_lead_activities || [];
     if (!acts.length) return null;
     const sorted = acts.sort((a, b) => a.activity_date > b.activity_date ? -1 : 1);
     const d = sorted[0].activity_date;
@@ -223,7 +223,7 @@ export default function Accounts() {
                         </span>
                         <span style={styles.dtCell}>{daysLeft !== null ? `${daysLeft}d` : "—"}</span>
                         <span style={styles.dtCell}>{lastContact || "—"}</span>
-                        <span style={styles.dtCell}>{account.activities?.length || 0}</span>
+                        <span style={styles.dtCell}>{account.target_lead_activities?.length || 0}</span>
                         <span>
                           <button
                             onClick={e => { e.stopPropagation(); navigate(`/leads/${account.id}`); }}

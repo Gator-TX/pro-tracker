@@ -39,7 +39,7 @@ export default function SalesReps() {
     if (profileData?.role !== "manager") { navigate("/leads"); return; }
 
     const { data: settings } = await supabase
-      .from("app_settings").select("setting_key, setting_value");
+      .from("target_app_settings").select("setting_key, setting_value");
     const repAtRiskDays = parseInt(settings?.find(s => s.setting_key === "rep_at_risk_days")?.setting_value || "2");
 
     const { data: repsData } = await supabase
@@ -47,16 +47,16 @@ export default function SalesReps() {
 
     const repsWithStats = await Promise.all((repsData || []).map(async (rep) => {
       const { data: accounts } = await supabase
-        .from("accounts").select("id, status").eq("rep_id", rep.id);
+        .from("target_leads").select("id, status").eq("rep_id", rep.id);
 
       const weekAgo = new Date();
       weekAgo.setDate(weekAgo.getDate() - 7);
       const { data: weekActs } = await supabase
-        .from("activities").select("id").eq("rep_id", rep.id)
+        .from("target_lead_activities").select("id").eq("rep_id", rep.id)
         .gte("activity_date", weekAgo.toISOString().split("T")[0]);
 
       const { data: allActs } = await supabase
-        .from("activities").select("id").eq("rep_id", rep.id);
+        .from("target_lead_activities").select("id").eq("rep_id", rep.id);
 
       const activeCount = (accounts || []).filter(a => ["New", "Contacted", "Engaged", "Proposal"].includes(a.status)).length;
       const wonCount = (accounts || []).filter(a => a.status === "Won").length;
@@ -66,7 +66,7 @@ export default function SalesReps() {
       const repAtRiskMs = repAtRiskDays * 24 * 60 * 60 * 1000;
       const repAtRiskCutoff = new Date(Date.now() - repAtRiskMs);
       const { data: recentActs } = await supabase
-        .from("activities")
+        .from("target_lead_activities")
         .select("id")
         .eq("rep_id", rep.id)
         .gte("created_at", repAtRiskCutoff.toISOString())
@@ -102,7 +102,7 @@ export default function SalesReps() {
     if (!window.confirm(`Delete ${count} rep${count > 1 ? "s" : ""}? This will also remove their profile. This cannot be undone.`)) return;
     setDeleting(true);
     for (const repId of selectedIds) {
-      await supabase.from("accounts").update({ rep_id: null }).eq("rep_id", repId);
+      await supabase.from("target_leads").update({ rep_id: null }).eq("rep_id", repId);
       await supabase.from("profiles").delete().eq("id", repId);
     }
     setSelectedIds([]);

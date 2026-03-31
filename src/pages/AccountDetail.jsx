@@ -66,7 +66,7 @@ export default function AccountDetail() {
 
     // Account
     const { data: acc } = await supabase
-      .from("accounts")
+      .from("target_leads")
       .select("*, start_date, end_date")
       .eq("id", id)
       .single();
@@ -81,7 +81,7 @@ export default function AccountDetail() {
 
     // Contacts
     const { data: cons } = await supabase
-      .from("contacts")
+      .from("target_lead_contacts")
       .select("*")
       .eq("account_id", id)
       .order("is_primary", { ascending: false });
@@ -89,7 +89,7 @@ export default function AccountDetail() {
 
     // Activities
     const { data: acts } = await supabase
-      .from("activities")
+      .from("target_lead_activities")
       .select("*")
       .eq("account_id", id)
       .order("activity_date", { ascending: false });
@@ -123,10 +123,10 @@ export default function AccountDetail() {
 
       // Step 1 - Get fresh contacts and activities
       const { data: freshContacts } = await supabase
-        .from("contacts").select("*").eq("account_id", id);
+        .from("target_lead_contacts").select("*").eq("account_id", id);
 
       const { data: freshActivities } = await supabase
-        .from("activities").select("*").eq("account_id", id);
+        .from("target_lead_activities").select("*").eq("account_id", id);
 
       // Step 2 - Insert into CRM accounts with rep assignment
       const { data: crmAccount, error: accountError } = await supabase
@@ -208,10 +208,10 @@ export default function AccountDetail() {
       }
 
       // Step 5 - Delete from Target10
-      await supabase.from("activities").delete().eq("account_id", id);
-      await supabase.from("contacts").delete().eq("account_id", id);
+      await supabase.from("target_lead_activities").delete().eq("account_id", id);
+      await supabase.from("target_lead_contacts").delete().eq("account_id", id);
       const { error: deleteError } = await supabase
-        .from("accounts").delete().eq("id", id);
+        .from("target_leads").delete().eq("id", id);
 
       if (deleteError) throw deleteError;
 
@@ -236,13 +236,13 @@ export default function AccountDetail() {
 
   // ── Status update ──
   const updateStatus = async (status) => {
-    await supabase.from("accounts").update({ status }).eq("id", id);
+    await supabase.from("target_leads").update({ status }).eq("id", id);
     setAccount(prev => ({ ...prev, status }));
   };
 
   // ── Save notes ──
   const saveNotes = async () => {
-    await supabase.from("accounts").update({ notes: notesValue }).eq("id", id);
+    await supabase.from("target_leads").update({ notes: notesValue }).eq("id", id);
     setAccount(prev => ({ ...prev, notes: notesValue }));
     setEditingNotes(false);
     setNotesSaved(true);
@@ -257,7 +257,7 @@ export default function AccountDetail() {
       mobile_phone: companyForm.mobile_phone || null, email: companyForm.email || null,
       industry: companyForm.industry || null, source: companyForm.source || null,
     };
-    await supabase.from("accounts").update(updates).eq("id", id);
+    await supabase.from("target_leads").update(updates).eq("id", id);
     setAccount(prev => ({ ...prev, ...updates }));
     setEditingCompany(false);
   };
@@ -286,9 +286,9 @@ export default function AccountDetail() {
 
   const saveContact = async () => {
     if (editingContactId) {
-      await supabase.from("contacts").update(contactForm).eq("id", editingContactId);
+      await supabase.from("target_lead_contacts").update(contactForm).eq("id", editingContactId);
     } else {
-      await supabase.from("contacts").insert({ ...contactForm, account_id: id });
+      await supabase.from("target_lead_contacts").insert({ ...contactForm, account_id: id });
     }
     setShowAddContact(false);
     setEditingContactId(null);
