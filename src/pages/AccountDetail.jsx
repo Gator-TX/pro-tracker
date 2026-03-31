@@ -99,11 +99,11 @@ export default function AccountDetail() {
 
     // Linked records
     const { data: apolloData } = await supabase
-      .from("linked_apollo").select("*").eq("lead_id", id);
+      .from("linked_apollo").select("*").eq("target_lead_id", id);
     setLinkedApollo(apolloData || []);
 
     const { data: edaData } = await supabase
-      .from("linked_eda").select("*").eq("lead_id", id);
+      .from("linked_eda").select("*").eq("target_lead_id", id);
     setLinkedEda(edaData || []);
 
     setLoading(false);
@@ -218,7 +218,15 @@ export default function AccountDetail() {
         }
       }
 
-      // Step 5 - Delete from Target10
+      // Step 5 - Transfer linked records to CRM account
+      await supabase.from("linked_apollo")
+        .update({ account_id: crmAccount.id, target_lead_id: null })
+        .eq("target_lead_id", id);
+      await supabase.from("linked_eda")
+        .update({ account_id: crmAccount.id, target_lead_id: null })
+        .eq("target_lead_id", id);
+
+      // Step 6 - Delete from Target10
       await supabase.from("target_lead_activities").delete().eq("account_id", id);
       await supabase.from("target_lead_contacts").delete().eq("account_id", id);
       const { error: deleteError } = await supabase
