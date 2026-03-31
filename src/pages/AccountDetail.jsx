@@ -538,7 +538,7 @@ export default function AccountDetail() {
             <div style={styles.cardHeader}>
               <p style={styles.cardLabel}>Notes</p>
               {!editingNotes && (
-                <button className="green-link" onClick={() => setEditingNotes(true)}>Edit</button>
+                <button className="green-link" onClick={() => setEditingNotes(true)}>Add Note</button>
               )}
             </div>
             {editingNotes ? (

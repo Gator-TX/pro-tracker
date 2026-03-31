@@ -278,17 +278,14 @@ export default function ManagerAccounts() {
           {selectedIds.length > 0 && (
             <div style={{ backgroundColor: "#ffffff", border: "0.5px solid #E0E0DC", borderRadius: "6px", padding: "10px 16px", display: "flex", alignItems: "center", gap: "12px" }}>
               <span style={{ fontSize: "13px", fontWeight: 600, color: "#1A1A1A" }}>{selectedIds.length} selected</span>
-              <button onClick={() => { setAssignRepId(""); setShowAssignModal(true); }} style={{ padding: "6px 14px", borderRadius: "6px", fontSize: "13px", fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", backgroundColor: "#EFF6FF", color: "#1D4ED8", border: "1px solid #BFDBFE" }}>
-                Assign Rep
-              </button>
-              <button onClick={handleBulkUnassign} style={{ padding: "6px 14px", borderRadius: "6px", fontSize: "13px", fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", backgroundColor: "#ffffff", color: "#374151", border: "1px solid #E0E0DC" }}>
-                Unassign
-              </button>
-              <button onClick={openDateModal} style={{ padding: "6px 14px", borderRadius: "6px", fontSize: "13px", fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", backgroundColor: "#F0FDF4", color: "#15803D", border: "1px solid #BBF7D0" }}>
-                Set Target Dates
-              </button>
               <button onClick={handleDelete} disabled={deleting} style={{ padding: "6px 14px", borderRadius: "6px", fontSize: "13px", fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", backgroundColor: "#FEF2F2", color: "#DC2626", border: "1px solid #FECACA" }}>
                 {deleting ? "Deleting…" : "Delete"}
+              </button>
+              <button onClick={openDateModal} style={{ padding: "6px 14px", borderRadius: "6px", fontSize: "13px", fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", backgroundColor: "#ffffff", color: "#374151", border: "1px solid #E0E0DC" }}>
+                Set Target Dates
+              </button>
+              <button onClick={() => { setAssignRepId(""); setShowAssignModal(true); }} style={{ padding: "6px 14px", borderRadius: "6px", fontSize: "13px", fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", backgroundColor: "#ffffff", color: "#374151", border: "1px solid #E0E0DC" }}>
+                Assign Rep
               </button>
               <button onClick={() => setSelectedIds([])} style={{ background: "none", border: "none", color: "#767676", fontSize: "13px", cursor: "pointer", marginLeft: "auto", fontFamily: "'DM Sans', sans-serif" }}>Clear selection</button>
             </div>
