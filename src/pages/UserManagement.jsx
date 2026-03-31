@@ -335,7 +335,7 @@ export default function UserManagement() {
 const styles = {
   layout: { display: "flex", minHeight: "100vh", backgroundColor: "#F5F5F3" },
   main: {
-    marginLeft: "220px", flex: 1, minHeight: "100vh",
+    marginLeft: "220px", flex: 1, height: "100vh", overflow: "hidden",
     padding: "28px 32px", display: "flex", flexDirection: "column", gap: "14px",
     fontFamily: "'DM Sans', sans-serif",
   },

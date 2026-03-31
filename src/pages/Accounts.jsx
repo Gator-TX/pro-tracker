@@ -308,10 +308,10 @@ export default function Accounts() {
 const styles = {
   layout: { display: "flex", minHeight: "100vh", backgroundColor: "#F5F5F3" },
   page: {
-    marginLeft: "220px", flex: 1, minHeight: "100vh",
+    marginLeft: "220px", flex: 1, height: "100vh", overflow: "hidden",
     display: "flex", flexDirection: "column",
     backgroundColor: "#F5F5F3", fontFamily: "'DM Sans', sans-serif",
-    padding: "28px 32px 40px", overflowX: "hidden",
+    padding: "28px 32px 40px",
   },
 
   loadingPage: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#F5F5F3" },

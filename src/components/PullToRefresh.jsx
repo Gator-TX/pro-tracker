@@ -66,7 +66,7 @@ export default function PullToRefresh({ onRefresh, children }) {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+        style={{ display: "flex", flexDirection: "column", gap: "14px", flex: 1, minHeight: 0, overflow: "hidden" }}
       >
         {showIndicator && (
           <div className="ptr-indicator">
