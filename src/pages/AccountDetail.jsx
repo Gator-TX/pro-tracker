@@ -591,22 +591,11 @@ export default function AccountDetail() {
             {/* Add / Edit contact form */}
             {showAddContact && (
               <div style={styles.formStack}>
-                <div style={styles.rowFields}>
-                  <div style={styles.field}>
-                    <label style={styles.fieldLabel}>First name</label>
-                    <input className="field-input" value={contactForm.first_name}
-                      onChange={e => setContactForm(p => ({ ...p, first_name: e.target.value }))} />
-                  </div>
-                  <div style={styles.field}>
-                    <label style={styles.fieldLabel}>Last name</label>
-                    <input className="field-input" value={contactForm.last_name}
-                      onChange={e => setContactForm(p => ({ ...p, last_name: e.target.value }))} />
-                  </div>
-                </div>
                 <div style={styles.field}>
-                  <label style={styles.fieldLabel}>Title</label>
-                  <input className="field-input" value={contactForm.title}
-                    onChange={e => setContactForm(p => ({ ...p, title: e.target.value }))} />
+                  <label style={styles.fieldLabel}>Contact</label>
+                  <input className="field-input" value={contactForm.first_name}
+                    onChange={e => setContactForm(p => ({ ...p, first_name: e.target.value }))}
+                    placeholder="Full name" />
                 </div>
                 <div style={styles.rowFields}>
                   <div style={styles.field}>
@@ -625,16 +614,6 @@ export default function AccountDetail() {
                   <input className="field-input" type="email" value={contactForm.email}
                     onChange={e => setContactForm(p => ({ ...p, email: e.target.value }))} />
                 </div>
-                <div style={styles.field}>
-                  <label style={styles.fieldLabel}>Branch Location</label>
-                  <input className="field-input" value={contactForm.branch_location}
-                    onChange={e => setContactForm(p => ({ ...p, branch_location: e.target.value }))} />
-                </div>
-                <label style={styles.checkboxRow}>
-                  <input type="checkbox" checked={contactForm.is_primary}
-                    onChange={e => setContactForm(p => ({ ...p, is_primary: e.target.checked }))} />
-                  <span style={{ fontSize: "13px", color: "#374151" }}>Primary contact</span>
-                </label>
                 <div style={styles.rowBtns}>
                   <button className="btn-primary" style={{ flex: 1 }} onClick={saveContact}>
                     {editingContactId ? "Save changes" : "Add contact"}
